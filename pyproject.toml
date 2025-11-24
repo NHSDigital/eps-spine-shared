@@ -1,0 +1,50 @@
+[tool.poetry]
+name = "eps-spine-shared"
+version = "0.1.0"
+description = "A library to hold code shared by EPS and Spine"
+authors = [
+    "Jolo Das <jolo.das@nhs.net>",
+    "Anthony Brown <anthony.brown8@nhs.net>",
+    "Matthew Popat <matthew.popat1@nhs.net>",
+    "Phil Gee <phil.gee@nhs.net>",
+    "Jack Spagnoli <jack.spagnoli1@nhs.net>",
+]
+readme = "README.md"
+packages = [{include = "eps_spine_shared", from = "src"}]
+
+[tool.poetry.dependencies]
+python = "^3.12"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.0"
+pytest-cov = "^6.0"
+flake8 = "^7.0"
+flake8-bugbear = "^24.0"
+black = "^24.0"
+isort = "^5.13"
+pre-commit = "^4.0"
+
+[build-system]
+requires = ["poetry-core>=2.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+python_classes = ["Test*"]
+python_functions = ["test_*"]
+addopts = "--cov=eps_spine_shared --cov-report=term-missing --cov-report=html"
+
+[tool.black]
+line-length = 100
+target-version = ["py312"]
+
+[tool.isort]
+profile = "black"
+line_length = 100
+known_first_party = ["eps_spine_shared"]
+
+[tool.flake8]
+max-line-length = 100
+extend-ignore = ["E203", "W503"]
+max-complexity = 10
