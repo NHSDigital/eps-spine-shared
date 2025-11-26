@@ -29,6 +29,7 @@ jobs:
     uses: NHSDigital/eps-common-workflows/.github/workflows/quality-checks.yml@3cba6a3733673bafc95526503478674332c26007
     with:
       asdfVersion: ${{ needs.get_asdf_version.outputs.version }}
+      reinstall_poetry: true
       run_sonar: false
 
   tag_release:
@@ -57,7 +58,7 @@ jobs:
       - uses: actions/checkout@v5
         name: Checkout source code
 
-      - uses: ./.github/actions/install_dependencies/install-dependencies
+      - uses: ./.github/actions/install_dependencies
         name: Install dependencies
         with:
           asdf_version: ${{ needs.get_asdf_version.outputs.version }}

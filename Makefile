@@ -1,7 +1,7 @@
 SHELL:=/usr/bin/env bash -O globstar
 .SHELLFLAGS = -ec
 
-.PHONY: build check-licenses clean deep-clean format install lint test
+.PHONY: build check-licenses clean deep-clean format install lint reinstall-poetry test
 
 build:
 	poetry build
@@ -30,6 +30,9 @@ lint:
 	poetry run flake8 src tests
 	poetry run black --check src tests
 	poetry run isort --check-only src tests
+
+reinstall-poetry:
+	./.github/scripts/reinstall_poetry.sh
 
 test:
 	poetry run pytest tests
