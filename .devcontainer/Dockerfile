@@ -40,5 +40,4 @@ WORKDIR /workspaces/eps-spine-shared
 ADD .tool-versions /workspaces/eps-spine-shared/.tool-versions
 ADD .tool-versions /home/vscode/.tool-versions
 
-RUN asdf install python; \
-    asdf install
+RUN asdf install
