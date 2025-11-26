@@ -32,7 +32,7 @@ lint:
 	poetry run isort --check-only src tests
 
 reinstall-poetry:
-	./.github/scripts/reinstall_poetry.sh
+	./.github/scripts/reinstall-poetry.sh
 
 test:
 	poetry run pytest tests
