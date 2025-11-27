@@ -16,7 +16,6 @@ clean:
 
 deep-clean: clean
 	rm -rf .venv
-	rm poetry.lock
 
 format:
 	poetry run black src tests
