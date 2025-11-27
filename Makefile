@@ -35,4 +35,5 @@ reinstall-poetry:
 	./.github/scripts/reinstall-poetry.sh
 
 test:
-	poetry run pytest tests
+	poetry run python -m coverage run --data-file=.coverage/coverage -m pytest tests && \
+	poetry run python -m coverage xml --data-file=.coverage/coverage -o .coverage/info.xml
