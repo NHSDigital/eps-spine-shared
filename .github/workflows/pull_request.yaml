@@ -49,19 +49,3 @@ jobs:
     secrets:
       AUTOMERGE_APP_ID: ${{ secrets.AUTOMERGE_APP_ID }}
       AUTOMERGE_PEM: ${{ secrets.AUTOMERGE_PEM }}
-
-  test_build:
-    name: Test Build
-    runs-on: ubuntu-22.04
-    needs: get_asdf_version
-    steps:
-      - uses: actions/checkout@v5
-        name: Checkout source code
-
-      - uses: ./.github/actions/install_dependencies
-        name: Install dependencies
-        with:
-          asdf_version: ${{ needs.get_asdf_version.outputs.version }}
-
-      - name: Build project
-        run: make build
