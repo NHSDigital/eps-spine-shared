@@ -12,10 +12,6 @@ authors = [
 readme = "README.md"
 packages = [{include = "eps_spine_shared", from = "src"}]
 
-[virtualenvs]
-in-project = true
-prefer-active-python = true
-
 [tool.poetry.dependencies]
 python = "^3.12"
 
