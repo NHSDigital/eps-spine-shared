@@ -22,3 +22,4 @@ cover/
 
 # Build
 dist/
+__pycache__/
