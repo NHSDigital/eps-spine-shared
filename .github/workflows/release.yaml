@@ -1,0 +1,99 @@
+name: Release
+
+on:
+  workflow_dispatch:
+
+jobs:
+  get_asdf_version:
+    name: Get asdf Version
+    runs-on: ubuntu-22.04
+    outputs:
+      version: ${{ steps.get-asdf-version.outputs.version }}
+    steps:
+      - uses: actions/checkout@v5
+        name: Checkout source code
+
+      - name: Get asdf version
+        id: get-asdf-version
+        uses: ./.github/actions/get_asdf_version
+
+  get_current_tag:
+    name: Get Current Tag
+    runs-on: ubuntu-22.04
+    outputs:
+      current_tag: ${{ steps.get_current_tag.outputs.current_tag }}
+    steps:
+      - uses: actions/checkout@v5
+        name: Checkout source code
+
+      - name: Get current tag
+        id: get_current_tag
+        run: |
+          current_tag=$(git describe --tags $(git rev-list --tags --max-count=1))
+          echo "current_tag=$current_tag" >> "$GITHUB_OUTPUT"
+
+  tag_release:
+    name: Tag Release
+    uses: NHSDigital/eps-common-workflows/.github/workflows/tag-release.yml@3932c174e457b9d91b2e36fde68b9ae6fff32b9a
+    needs: get_asdf_version
+    with:
+      asdfVersion: ${{ needs.get_asdf_version.outputs.version }}
+      branch_name: main
+      dry_run: false
+      publish_package: false
+
+  create_release_candidate:
+    name: Create Release Candidate
+    needs: [get_current_tag, tag_release]
+    if: ${{ needs.get_current_tag.outputs.current_tag != needs.tag_release.outputs.version_tag }}
+    uses: NHSDigital/electronic-prescription-service-release-notes/.github/workflows/create_release_candidate.yml@9e6a4c9b57dd8da59d09539baf0819d474772a6e
+    with:
+      CURRENT_DEPLOYED_TAG: ${{ needs.get_current_tag.outputs.current_tag }}
+      PAGE_ID: 1244171620
+      PRODUCT_NAME: EPS Spine Shared
+      RELEASE_PREFIX: "EPS-SS"
+      RELEASE_TAG: ${{ needs.tag_release.outputs.version_tag }}
+      REPO_NAME: eps-spine-shared
+      TARGET_ENV: INT
+    secrets:
+      DEV_CLOUD_FORMATION_EXECUTE_LAMBDA_ROLE: ${{ secrets.DEV_CLOUD_FORMATION_EXECUTE_LAMBDA_ROLE }}
+
+  release:
+    name: Release Package to GitHub Packages
+    needs: tag_release
+    runs-on: ubuntu-22.04
+    permissions:
+      id-token: write
+      contents: write
+    steps:
+      - name: Git checkout
+        uses: actions/checkout@v5
+
+      - name: Install dependencies
+        uses: ./.github/actions/install_dependencies
+
+      - name: Build package
+        run: make build
+
+      - name: Publish to GitHub Packages
+        env:
+          POETRY_HTTP_BASIC_GITHUB_USERNAME: ${{ github.actor }}
+          POETRY_HTTP_BASIC_GITHUB_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          poetry config repositories.github https://pypi.pkg.github.com/${{ github.repository_owner }}
+          poetry publish --repository github
+
+  update_live_release_notes:
+    needs: [get_current_tag, release, tag_release]
+    if: ${{ needs.get_current_tag.outputs.current_tag != needs.tag_release.outputs.version_tag }}
+    uses: NHSDigital/electronic-prescription-service-release-notes/.github/workflows/update_release_notes.yml@9e6a4c9b57dd8da59d09539baf0819d474772a6e
+    with:
+      CURRENT_DEPLOYED_TAG: ${{ needs.get_current_tag.outputs.current_tag }}
+      PAGE_ID: 1244171610
+      PRODUCT_NAME: EPS Spine Shared
+      RELEASE_PREFIX: EPS-SS
+      RELEASE_TAG: ${{ needs.tag_release.outputs.version_tag }}
+      REPO_NAME: eps-spine-shared
+      TARGET_ENV: PROD
+    secrets:
+      DEV_CLOUD_FORMATION_EXECUTE_LAMBDA_ROLE: ${{ secrets.DEV_CLOUD_FORMATION_EXECUTE_LAMBDA_ROLE }}
