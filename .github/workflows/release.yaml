@@ -17,23 +17,6 @@ jobs:
         id: get-asdf-version
         uses: ./.github/actions/get_asdf_version
 
-  get_current_tag:
-    name: Get Current Tag
-    runs-on: ubuntu-22.04
-    outputs:
-      current_tag: ${{ steps.get_current_tag.outputs.current_tag }}
-    steps:
-      - uses: actions/checkout@v6
-        name: Checkout source code
-        with:
-          fetch-depth: 0
-
-      - name: Get current tag
-        id: get_current_tag
-        run: |
-          current_tag="$(git describe --tags "$(git rev-list --tags --max-count=1)")"
-          echo "current_tag=$current_tag" >> "$GITHUB_OUTPUT"
-
   tag_release:
     name: Tag Release
     uses: NHSDigital/eps-common-workflows/.github/workflows/tag-release.yml@3cba6a3733673bafc95526503478674332c26007
@@ -43,22 +26,6 @@ jobs:
       branch_name: main
       dry_run: false
       publish_package: false
-
-  create_release_candidate:
-    name: Create Release Candidate
-    needs: [get_current_tag, tag_release]
-    if: ${{ needs.get_current_tag.outputs.current_tag != needs.tag_release.outputs.version_tag }}
-    uses: NHSDigital/electronic-prescription-service-release-notes/.github/workflows/create_release_candidate.yml@9e6a4c9b57dd8da59d09539baf0819d474772a6e
-    with:
-      CURRENT_DEPLOYED_TAG: ${{ needs.get_current_tag.outputs.current_tag }}
-      PAGE_ID: 1244171620
-      PRODUCT_NAME: EPS Spine Shared
-      RELEASE_PREFIX: "EPS-SS"
-      RELEASE_TAG: ${{ needs.tag_release.outputs.version_tag }}
-      REPO_NAME: eps-spine-shared
-      TARGET_ENV: INT
-    secrets:
-      DEV_CLOUD_FORMATION_EXECUTE_LAMBDA_ROLE: ${{ secrets.DEV_CLOUD_FORMATION_EXECUTE_LAMBDA_ROLE }}
 
   release:
     name: Upload Package to GitHub Release
@@ -82,20 +49,4 @@ jobs:
       - name: Upload package to release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        run: |
-          gh release upload ${{ needs.tag_release.outputs.version_tag }} dist/* --clobber
-
-  update_live_release_notes:
-    needs: [get_current_tag, release, tag_release]
-    if: ${{ needs.get_current_tag.outputs.current_tag != needs.tag_release.outputs.version_tag }}
-    uses: NHSDigital/electronic-prescription-service-release-notes/.github/workflows/update_release_notes.yml@9e6a4c9b57dd8da59d09539baf0819d474772a6e
-    with:
-      CURRENT_DEPLOYED_TAG: ${{ needs.get_current_tag.outputs.current_tag }}
-      PAGE_ID: 1244171610
-      PRODUCT_NAME: EPS Spine Shared
-      RELEASE_PREFIX: EPS-SS
-      RELEASE_TAG: ${{ needs.tag_release.outputs.version_tag }}
-      REPO_NAME: eps-spine-shared
-      TARGET_ENV: PROD
-    secrets:
-      DEV_CLOUD_FORMATION_EXECUTE_LAMBDA_ROLE: ${{ secrets.DEV_CLOUD_FORMATION_EXECUTE_LAMBDA_ROLE }}
+        run: gh release upload ${{ needs.tag_release.outputs.version_tag }} dist/* --clobber
