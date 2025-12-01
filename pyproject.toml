@@ -21,7 +21,7 @@ pytest-cov = "^6.0"
 flake8 = "^7.0"
 flake8-bugbear = "^24.0"
 black = "^24.0"
-isort = "^5.13"
+isort = "^7.0"
 pre-commit = "^4.0"
 
 [build-system]
