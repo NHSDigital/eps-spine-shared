@@ -10,7 +10,7 @@ jobs:
     outputs:
       version: ${{ steps.get-asdf-version.outputs.version }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         name: Checkout source code
 
       - name: Get asdf version
@@ -23,8 +23,10 @@ jobs:
     outputs:
       current_tag: ${{ steps.get_current_tag.outputs.current_tag }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         name: Checkout source code
+        with:
+          fetch-depth: 0
 
       - name: Get current tag
         id: get_current_tag
@@ -59,7 +61,7 @@ jobs:
       DEV_CLOUD_FORMATION_EXECUTE_LAMBDA_ROLE: ${{ secrets.DEV_CLOUD_FORMATION_EXECUTE_LAMBDA_ROLE }}
 
   release:
-    name: Release Package to GitHub Packages
+    name: Upload Package to GitHub Release
     needs: [get_asdf_version, tag_release]
     runs-on: ubuntu-22.04
     permissions:
@@ -67,7 +69,7 @@ jobs:
       contents: write
     steps:
       - name: Git checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Install dependencies
         uses: ./.github/actions/install_dependencies
@@ -77,13 +79,11 @@ jobs:
       - name: Build package
         run: make build
 
-      - name: Publish to GitHub Packages
+      - name: Upload package to release
         env:
-          POETRY_HTTP_BASIC_GITHUB_USERNAME: ${{ github.actor }}
-          POETRY_HTTP_BASIC_GITHUB_PASSWORD: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          poetry config repositories.github https://pypi.pkg.github.com/${{ github.repository_owner }}
-          poetry publish --repository github
+          gh release upload ${{ needs.tag_release.outputs.version_tag }} dist/* --clobber
 
   update_live_release_notes:
     needs: [get_current_tag, release, tag_release]
