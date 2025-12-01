@@ -9,6 +9,7 @@ updates:
       time: "18:00" # UTC
     commit-message:
       prefix: "Upgrade: [dependabot] - "
+      include: "scope"
 
   - package-ecosystem: "pip"
     directory: "/"
@@ -20,3 +21,4 @@ updates:
     open-pull-requests-limit: 20
     commit-message:
       prefix: "Upgrade: [dependabot] - "
+      include: "scope"

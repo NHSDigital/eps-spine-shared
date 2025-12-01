@@ -1,27 +1,28 @@
-[tool.poetry]
+[project]
 name = "eps-spine-shared"
 version = "0.1.0"
 description = "A library to hold code shared by EPS and Spine"
 authors = [
-    "Jolo Das <jolo.das@nhs.net>",
-    "Anthony Brown <anthony.brown8@nhs.net>",
-    "Matthew Popat <matthew.popat1@nhs.net>",
-    "Phil Gee <phil.gee@nhs.net>",
-    "Jack Spagnoli <jack.spagnoli1@nhs.net>",
+    {name = "Jolo Das", email = "jolo.das@nhs.net"},
+    {name = "Anthony Brown", email = "anthony.brown8@nhs.net"},
+    {name = "Matthew Popat", email = "matthew.popat1@nhs.net"},
+    {name = "Phil Gee", email = "phil.gee@nhs.net"},
+    {name = "Jack Spagnoli", email = "jack.spagnoli1@nhs.net"},
 ]
 readme = "README.md"
+requires-python = "==3.12.12"
+dependencies = []
+
+[tool.poetry]
 packages = [{include = "eps_spine_shared", from = "src"}]
 
-[tool.poetry.dependencies]
-python = "^3.12"
-
 [tool.poetry.group.dev.dependencies]
-pytest = "^8.0"
+pytest = "^9.0"
 coverage = "^7.12.0"
 flake8 = "^7.0"
-flake8-bugbear = "^24.0"
-black = "^24.0"
-isort = "^5.13"
+flake8-bugbear = "^25.11"
+black = "^25.11"
+isort = "^7.0"
 pre-commit = "^4.0"
 pip-licenses = "^5.0"
 

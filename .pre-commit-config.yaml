@@ -16,29 +16,6 @@ repos:
       - id: detect-private-key
       - id: check-shebang-scripts-are-executable
 
-  - repo: https://github.com/psf/black
-    rev: 1b2427a2b785cc4aac97c19bb4b9a0de063f9547  # 24.10.0
-    hooks:
-      - id: black
-
-  - repo: https://github.com/pycqa/isort
-    rev: c235f5e450b4b84e58d114ed4c589cbf454175a3  # 5.13.2
-    hooks:
-      - id: isort
-
-  - repo: https://github.com/pycqa/flake8
-    rev: e43806be3607110919eff72939fda031776e885a  # 7.1.1
-    hooks:
-      - id: flake8
-        additional_dependencies: [flake8-bugbear]
-
-  - repo: https://github.com/python-poetry/poetry
-    rev: c85477da8a610a87133299f996f8d8a593aa7bff  # 1.8.0
-    hooks:
-      - id: poetry-check
-      - id: poetry-lock
-        args: [--no-update]
-
   - repo: local
     hooks:
       - id: git-secrets
@@ -48,4 +25,13 @@ repos:
         args:
           - -c
           - 'docker run -v "$LOCAL_WORKSPACE_FOLDER:/src" git-secrets --pre_commit_hook'
+        language: system
+
+      - id: python-pre-commit
+        name: Python Pre Commit
+        description: Run Python linting and poetry checks
+        entry: bash
+        args:
+          - -c
+          - make python-pre-commit
         language: system
