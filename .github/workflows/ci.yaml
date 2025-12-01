@@ -12,7 +12,7 @@ jobs:
     outputs:
       version: ${{ steps.get_asdf_version.outputs.version }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         name: Checkout source code
 
       - name: Get asdf version

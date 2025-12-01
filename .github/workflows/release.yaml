@@ -10,7 +10,7 @@ jobs:
     outputs:
       version: ${{ steps.get-asdf-version.outputs.version }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         name: Checkout source code
 
       - name: Get asdf version
@@ -23,7 +23,7 @@ jobs:
     outputs:
       current_tag: ${{ steps.get_current_tag.outputs.current_tag }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         name: Checkout source code
 
       - name: Get current tag
@@ -67,7 +67,7 @@ jobs:
       contents: write
     steps:
       - name: Git checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Install dependencies
         uses: ./.github/actions/install_dependencies
