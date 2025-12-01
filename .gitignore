@@ -13,9 +13,6 @@ coverage.xml
 .pytest_cache/
 cover/
 
-# poetry
-poetry.lock
-
 # Environments
 .env
 .venv
@@ -25,3 +22,4 @@ poetry.lock
 
 # Build
 dist/
+__pycache__/
