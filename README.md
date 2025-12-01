@@ -61,7 +61,7 @@ make format
 ```
 eps-spine-shared/
 ├── src/
-│   └── eps_spine_shared/    # Main library code
+│   └── eps_spine_shared/     # Main library code
 ├── tests/                    # Test files
 ├── pyproject.toml            # Project configuration
 ├── Makefile                  # Build automation
