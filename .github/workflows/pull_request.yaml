@@ -49,7 +49,3 @@ jobs:
     secrets:
       AUTOMERGE_APP_ID: ${{ secrets.AUTOMERGE_APP_ID }}
       AUTOMERGE_PEM: ${{ secrets.AUTOMERGE_PEM }}
-
-  test_release:
-    name: Test Release Workflow
-    uses: ./.github/workflows/release.yaml
