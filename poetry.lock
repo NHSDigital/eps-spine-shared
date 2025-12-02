@@ -411,6 +411,21 @@ files = [
 ]
 
 [[package]]
+name = "parameterized"
+version = "0.9.0"
+description = "Parameterized testing with any Python test framework"
+optional = false
+python-versions = ">=3.7"
+groups = ["dev"]
+files = [
+    {file = "parameterized-0.9.0-py2.py3-none-any.whl", hash = "sha256:4e0758e3d41bea3bbd05ec14fc2c24736723f243b28d702081aef438c9372b1b"},
+    {file = "parameterized-0.9.0.tar.gz", hash = "sha256:7fc905272cefa4f364c1a3429cbbe9c0f98b793988efb5bf90aac80f08db09b1"},
+]
+
+[package.extras]
+dev = ["jinja2"]
+
+[[package]]
 name = "pathspec"
 version = "0.12.1"
 description = "Utility library for gitignore style pattern matching of file paths."
@@ -768,4 +783,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = "==3.12.12"
-content-hash = "d65528707722d208612a2cb4568cb0d342f05b3c09d741a1878bd670c66da679"
+content-hash = "5649c27e8a863be2918a164a59839fd4037608a47c217ae2f7a860295aa46f70"
