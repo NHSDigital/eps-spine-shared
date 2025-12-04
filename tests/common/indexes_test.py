@@ -6,7 +6,7 @@ import simplejson
 from dateutil.relativedelta import relativedelta
 from freezegun import freeze_time
 
-from eps_spine_shared.common.indexes import PrescriptionIndexFactory
+from eps_spine_shared.common.indexes import EpsIndexFactory
 from eps_spine_shared.common.prescription_record import (
     PrescriptionTreatmentType,
     RepeatDispenseRecord,
@@ -74,16 +74,16 @@ class PrescriptionIndexFactoryTest(TestCase):
     @freeze_time("2025-07-15")
     def testBuildIndexes(self):
         """
-        Test that buildIndexes method creates indexes as expected.
+        Test that build_indexes method creates indexes as expected.
         """
         prescriptionId = "7D9625-Z72BF2-11E3A"
         nadReferences = getNADReferences()
-        indexFactory = PrescriptionIndexFactory(self.logObject, prescriptionId, [], nadReferences)
+        indexFactory = EpsIndexFactory(self.logObject, prescriptionId, [], nadReferences)
 
         context = Mock()
         context.epsRecord = _loadTestPrescription(self.logObject, prescriptionId)
 
-        recordIndexes = indexFactory.buildIndexes(context)
+        recordIndexes = indexFactory.build_indexes(context)
         for key, value in recordIndexes.items():
             recordIndexes[key] = sorted(value)
 
