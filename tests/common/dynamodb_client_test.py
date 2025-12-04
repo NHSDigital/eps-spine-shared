@@ -71,7 +71,7 @@ class DynamoDbClientTest(DynamoDbTest):
         key = str(uuid4())
         content = self.get_document_content()
         internal_id = self.internal_id
-        document = self.datastore.buildDocument(internal_id, {"content": content}, None)
+        document = self.datastore.build_document(internal_id, {"content": content}, None)
         document[Key.PK.name] = key
         serialised_item = self.datastore.client.serialise_for_dynamodb(document)
         self.datastore.client._log_item_size(internal_id, serialised_item)
@@ -93,7 +93,7 @@ class DynamoDbClientTest(DynamoDbTest):
         """
         key = str(uuid4())
         internal_id = self.internal_id
-        document = self.datastore.buildDocument(internal_id, {}, None)
+        document = self.datastore.build_document(internal_id, {}, None)
         document[Key.PK.name] = key
         serialised_item = self.datastore.client.serialise_for_dynamodb(document)
         self.datastore.client._log_item_size(internal_id, serialised_item)

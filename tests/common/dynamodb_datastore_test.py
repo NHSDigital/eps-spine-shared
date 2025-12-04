@@ -1,10 +1,14 @@
+import base64
 import binascii
+import zlib
 from datetime import datetime, timedelta, timezone
 from decimal import Decimal
 from threading import Thread
 from unittest.mock import Mock, patch
 from uuid import uuid4
 
+import simplejson
+from boto3.dynamodb.types import Binary
 from freezegun import freeze_time
 from parameterized import parameterized
 
@@ -37,7 +41,7 @@ class DynamoDbDataStoreTest(DynamoDbTest):
         prescriptionId, nhsNumber = self.getNewRecordKeys()
         record = self.getRecord(nhsNumber)
 
-        response = self.datastore.insertEPSRecordObject(self.internalID, prescriptionId, record)
+        response = self.datastore.insert_eps_record_object(self.internalID, prescriptionId, record)
 
         self.assertEqual(response["ResponseMetadata"]["HTTPStatusCode"], 200)
 
@@ -49,10 +53,10 @@ class DynamoDbDataStoreTest(DynamoDbTest):
         prescriptionId, nhsNumber = self.getNewRecordKeys()
         record = self.getRecord(nhsNumber)
 
-        self.datastore.insertEPSRecordObject(
+        self.datastore.insert_eps_record_object(
             self.internalID, prescriptionId, record, None, repeatDispense
         )
-        returnedRecord = self.datastore.returnRecordForProcess(self.internalID, prescriptionId)
+        returnedRecord = self.datastore.return_record_for_process(self.internalID, prescriptionId)
 
         self.assertEqual(returnedRecord["recordType"], repeatDispense)
 
@@ -62,15 +66,15 @@ class DynamoDbDataStoreTest(DynamoDbTest):
         """
         prescriptionId, nhsNumber = self.getNewRecordKeys()
         record = self.getRecord(nhsNumber)
-        self.datastore.insertEPSRecordObject(self.internalID, prescriptionId, record)
+        self.datastore.insert_eps_record_object(self.internalID, prescriptionId, record)
 
         record["instances"]["1"]["prescriptionStatus"] = PrescriptionStatus.AWAITING_RELEASE_READY
 
         with self.assertRaises(EpsDataStoreError) as cm:
-            self.datastore.insertEPSRecordObject(self.internalID, prescriptionId, record)
+            self.datastore.insert_eps_record_object(self.internalID, prescriptionId, record)
         self.assertEqual(cm.exception.errorTopic, EpsDataStoreError.DUPLICATE_ERROR)
 
-        returnedRecord = self.datastore.returnRecordForProcess(self.internalID, prescriptionId)
+        returnedRecord = self.datastore.return_record_for_process(self.internalID, prescriptionId)
         returnedRecordStatus = returnedRecord["value"]["instances"]["1"]["prescriptionStatus"]
 
         self.assertEqual(returnedRecordStatus, PrescriptionStatus.TO_BE_DISPENSED)
@@ -107,7 +111,7 @@ class DynamoDbDataStoreTest(DynamoDbTest):
         self.datastore.client.insertItems(self.internalID, [{}, {}], logItemSize=False)
         mockClient.transact_write_items.assert_called_once()
 
-    def testReturnRecordForProcess(self):
+    def test_return_record_for_process(self):
         """
         Test querying against the prescriptionId index and
         returning a record with additional required attributes.
@@ -116,47 +120,49 @@ class DynamoDbDataStoreTest(DynamoDbTest):
         self.assertFalse(self.datastore.isRecordPresent(self.internalID, prescriptionId))
 
         record = self.getRecord(nhsNumber)
-        self.datastore.insertEPSRecordObject(self.internalID, prescriptionId, record)
+        self.datastore.insert_eps_record_object(self.internalID, prescriptionId, record)
 
-        returnedRecord = self.datastore.returnRecordForProcess(self.internalID, prescriptionId)
+        returnedRecord = self.datastore.return_record_for_process(self.internalID, prescriptionId)
 
         expectedRecord = {"value": record, "vectorClock": "vc", "releaseVersion": "R2"}
 
         self.assertEqual(expectedRecord, returnedRecord)
         self.assertEqual(type(returnedRecord["value"]["prescription"]["daysSupply"]), int)
 
-    def testReturnRecordForUpdate(self):
+    def test_return_record_for_update(self):
         """
         Test querying against the prescriptionId index and
         returning a record with additional required attributes, including setting it on the dataStore.
         """
         prescriptionId, nhsNumber = self.getNewRecordKeys()
-        self.assertFalse(self.datastore.isRecordPresent(self.internalID, prescriptionId))
+        self.assertFalse(self.datastore.is_record_present(self.internalID, prescriptionId))
 
         record = self.getRecord(nhsNumber)
-        self.datastore.insertEPSRecordObject(self.internalID, prescriptionId, record)
+        self.datastore.insert_eps_record_object(self.internalID, prescriptionId, record)
 
-        returnedRecord = self.datastore.returnRecordForUpdate(self.internalID, prescriptionId)
+        returnedRecord = self.datastore.return_record_for_update(self.internalID, prescriptionId)
 
         expectedRecord = {"value": record, "vectorClock": "vc", "releaseVersion": "R2"}
 
         self.assertEqual(expectedRecord, returnedRecord)
         self.assertEqual(record, self.datastore.dataObject)
 
-    def testChangeEPSObject(self):
+    def test_change_eps_object(self):
         """
         Test update to existing record.
         """
         prescriptionId, nhsNumber = self.getNewRecordKeys()
-        self.assertFalse(self.datastore.isRecordPresent(self.internalID, prescriptionId))
+        self.assertFalse(self.datastore.is_record_present(self.internalID, prescriptionId))
 
         record = self.getRecord(nhsNumber)
-        self.datastore.insertEPSRecordObject(self.internalID, prescriptionId, record)
+        self.datastore.insert_eps_record_object(self.internalID, prescriptionId, record)
 
         record["SCN"] = 2
-        self.datastore.insertEPSRecordObject(self.internalID, prescriptionId, record, isUpdate=True)
+        self.datastore.insert_eps_record_object(
+            self.internalID, prescriptionId, record, isUpdate=True
+        )
 
-        updatedRecord = self.datastore.returnRecordForProcess(self.internalID, prescriptionId)
+        updatedRecord = self.datastore.return_record_for_process(self.internalID, prescriptionId)
 
         expectedRecord = {"value": record, "vectorClock": "vc", "releaseVersion": "R2"}
 
@@ -167,10 +173,10 @@ class DynamoDbDataStoreTest(DynamoDbTest):
         Test failed update to existing record due to no increment to SCN.
         """
         prescriptionId, nhsNumber = self.getNewRecordKeys()
-        self.assertFalse(self.datastore.isRecordPresent(self.internalID, prescriptionId))
+        self.assertFalse(self.datastore.is_record_present(self.internalID, prescriptionId))
 
         record = self.getRecord(nhsNumber)
-        self.datastore.insertEPSRecordObject(self.internalID, prescriptionId, record)
+        self.datastore.insert_eps_record_object(self.internalID, prescriptionId, record)
 
         modifiedRecord = self.getRecord(nhsNumber)
         modifiedRecord["instances"]["1"][
@@ -178,14 +184,14 @@ class DynamoDbDataStoreTest(DynamoDbTest):
         ] = PrescriptionStatus.AWAITING_RELEASE_READY
 
         with self.assertRaises(EpsDataStoreError) as cm:
-            self.datastore.insertEPSRecordObject(
+            self.datastore.insert_eps_record_object(
                 self.internalID, prescriptionId, modifiedRecord, isUpdate=True
             )
         self.assertEqual(cm.exception.errorTopic, EpsDataStoreError.CONDITIONAL_UPDATE_FAILURE)
 
         self.assertEqual(self.logger.logOccurrenceCount("DDB0022"), 1)
 
-        updatedRecord = self.datastore.returnRecordForProcess(self.internalID, prescriptionId)
+        updatedRecord = self.datastore.return_record_for_process(self.internalID, prescriptionId)
 
         expectedRecord = {"value": record, "vectorClock": "vc", "releaseVersion": "R2"}
 
@@ -198,11 +204,11 @@ class DynamoDbDataStoreTest(DynamoDbTest):
         prescriptionId, nhsNumber = self.getNewRecordKeys()
         record = self.getRecord(nhsNumber)
 
-        self.datastore.insertEPSRecordObject(self.internalID, prescriptionId, record)
+        self.datastore.insert_eps_record_object(self.internalID, prescriptionId, record)
 
         occurrences = self.logger.getLogOccurrences("DDB0002")
         self.assertEqual(len(occurrences), 1)
-        self.assertEqual(occurrences[0]["func"], "insertEPSRecordObject")
+        self.assertEqual(occurrences[0]["func"], "insert_eps_record_object")
         self.assertEqual(occurrences[0]["cls"], "PrescriptionsDynamoDbDataStore")
 
     def testInsertAndGetEPSWorkList(self):
@@ -221,9 +227,9 @@ class DynamoDbDataStoreTest(DynamoDbTest):
                 "keyList": [],
                 "responseDetails": {"XML": responseDetails},
             }
-            self.datastore.insertEPSWorkList(self.internalID, messageId, workList)
+            self.datastore.insert_eps_work_list(self.internalID, messageId, workList)
 
-            returnedWorkList = self.datastore.getWorkList(self.internalID, messageId)
+            returnedWorkList = self.datastore.get_work_list(self.internalID, messageId)
 
             self.assertEqual(returnedWorkList["responseDetails"]["XML"], xmlBytes)
             self.assertEqual(workList["responseDetails"]["XML"], responseDetails)
@@ -237,16 +243,16 @@ class DynamoDbDataStoreTest(DynamoDbTest):
             self.datastore.CLAIM_SEQUENCE_NUMBER_KEY, SortKey.SEQUENCE_NUMBER.value
         )
 
-        sequenceNumber = self.datastore.fetchNextSequenceNumber(self.internalID, 2)
+        sequenceNumber = self.datastore.fetch_next_sequence_number(self.internalID, 2)
         self.assertEqual(sequenceNumber, 1)
 
-        sequenceNumber = self.datastore.fetchNextSequenceNumber(self.internalID, 2, True)
+        sequenceNumber = self.datastore.fetch_next_sequence_number(self.internalID, 2, True)
         self.assertEqual(sequenceNumber, 2)
 
-        sequenceNumber = self.datastore.fetchNextSequenceNumber(self.internalID, 2)
+        sequenceNumber = self.datastore.fetch_next_sequence_number(self.internalID, 2)
         self.assertEqual(sequenceNumber, 2)
 
-        sequenceNumber = self.datastore.fetchNextSequenceNumber(self.internalID, 2)
+        sequenceNumber = self.datastore.fetch_next_sequence_number(self.internalID, 2)
         self.assertEqual(sequenceNumber, 1)
 
     def testFetchNextSequenceNumberNwssp(self):
@@ -260,16 +266,16 @@ class DynamoDbDataStoreTest(DynamoDbTest):
             self.datastore.NWSSP_CLAIM_SEQUENCE_NUMBER_KEY, SortKey.SEQUENCE_NUMBER.value
         )
 
-        sequenceNumber = self.datastore.fetchNextSequenceNumberNwssp(self.internalID, 2)
+        sequenceNumber = self.datastore.fetch_next_sequence_number_nwssp(self.internalID, 2)
         self.assertEqual(sequenceNumber, 1)
 
-        sequenceNumber = self.datastore.fetchNextSequenceNumberNwssp(self.internalID, 2, True)
+        sequenceNumber = self.datastore.fetch_next_sequence_number_nwssp(self.internalID, 2, True)
         self.assertEqual(sequenceNumber, 2)
 
-        sequenceNumber = self.datastore.fetchNextSequenceNumberNwssp(self.internalID, 2)
+        sequenceNumber = self.datastore.fetch_next_sequence_number_nwssp(self.internalID, 2)
         self.assertEqual(sequenceNumber, 2)
 
-        sequenceNumber = self.datastore.fetchNextSequenceNumberNwssp(self.internalID, 2)
+        sequenceNumber = self.datastore.fetch_next_sequence_number_nwssp(self.internalID, 2)
         self.assertEqual(sequenceNumber, 1)
 
     @patch("random.randint")
@@ -290,7 +296,7 @@ class DynamoDbDataStoreTest(DynamoDbTest):
         }
         dtNow = datetime.now(timezone.utc)
         with freeze_time(dtNow):
-            self.datastore.storeBatchClaim(self.internalID, batchClaim)
+            self.datastore.store_batch_claim(self.internalID, batchClaim)
 
         returnedBatchClaim = self.datastore.client.getItem(
             self.internalID, "batchGuid", SortKey.CLAIM.value
@@ -322,7 +328,7 @@ class DynamoDbDataStoreTest(DynamoDbTest):
         }
         self.assertEqual(returnedBatchClaim, expected)
 
-        fetchedBatchClaim = self.datastore.fetchBatchClaim(self.internalID, "batchGuid")
+        fetchedBatchClaim = self.datastore.fetch_batch_claim(self.internalID, "batchGuid")
         batchXml = fetchedBatchClaim["Batch XML"]
         self.assertEqual(batchXml, "<xml />")
 
@@ -333,17 +339,17 @@ class DynamoDbDataStoreTest(DynamoDbTest):
         documentKey = uuid4()
         notificationKey = self.datastore.NOTIFICATION_PREFIX + str(documentKey)
         content = self.getDocumentContent()
-        self.datastore.insertEPSDocumentObject(
+        self.datastore.insert_eps_document_object(
             self.internalID, notificationKey, {"content": content}
         )
 
-        returnedBody = self.datastore.returnDocumentForProcess(self.internalID, notificationKey)
+        returnedBody = self.datastore.return_document_for_process(self.internalID, notificationKey)
         self.assertEqual(returnedBody, {"content": content})
 
-        self.datastore.deleteClaimNotification(self.internalID, documentKey)
+        self.datastore.delete_claim_notification(self.internalID, documentKey)
         self.assertRaises(
             EpsDataStoreError,
-            self.datastore.returnDocumentForProcess,
+            self.datastore.return_document_for_process,
             notificationKey,
             self.internalID,
         )
@@ -361,11 +367,11 @@ class DynamoDbDataStoreTest(DynamoDbTest):
             indexes.INDEX_DELETE_DATE: ["20250911"],
             indexes.INDEX_PRESCRIPTION_ID: str(uuid4()),
         }
-        self.datastore.insertEPSDocumentObject(
+        self.datastore.insert_eps_document_object(
             self.internalID, notificationKey, {"payload": content}, index
         )
 
-        returnedBody = self.datastore.returnDocumentForProcess(self.internalID, notificationKey)
+        returnedBody = self.datastore.return_document_for_process(self.internalID, notificationKey)
         self.assertEqual(returnedBody, {"payload": content})
 
     def testDeleteDocument(self):
@@ -374,9 +380,11 @@ class DynamoDbDataStoreTest(DynamoDbTest):
         """
         documentKey = self.generateDocumentKey()
         content = self.getDocumentContent()
-        self.datastore.insertEPSDocumentObject(self.internalID, documentKey, {"content": content})
+        self.datastore.insert_eps_document_object(
+            self.internalID, documentKey, {"content": content}
+        )
 
-        self.assertTrue(self.datastore.deleteDocument(self.internalID, documentKey))
+        self.assertTrue(self.datastore.delete_document(self.internalID, documentKey))
 
     def testDeleteRecord(self):
         """
@@ -385,9 +393,9 @@ class DynamoDbDataStoreTest(DynamoDbTest):
         recordKey = self.generateRecordKey()
         nhsNumber = self.generateNhsNumber()
         record = self.getRecord(nhsNumber)
-        self.datastore.insertEPSRecordObject(self.internalID, recordKey, record)
+        self.datastore.insert_eps_record_object(self.internalID, recordKey, record)
 
-        self.datastore.deleteRecord(self.internalID, recordKey)
+        self.datastore.delete_record(self.internalID, recordKey)
 
         self.assertFalse(
             self.datastore.client.getItem(
@@ -395,7 +403,7 @@ class DynamoDbDataStoreTest(DynamoDbTest):
             )
         )
 
-    def testConvertIndexKeysToLowerCase(self):
+    def test_convert_index_keys_to_lower_case(self):
         """
         Test converting all keys in a dict to lower case. Returns unchanged if unexpected type.
         """
@@ -417,12 +425,12 @@ class DynamoDbDataStoreTest(DynamoDbTest):
             "nextactivitynad_bin": ["purge", "delete"],
         }
 
-        convertedDict = self.datastore.convertIndexKeysToLowerCase(indexDict)
+        convertedDict = self.datastore.convert_index_keys_to_lower_case(indexDict)
 
         self.assertEqual(convertedDict, expected)
 
         indexWrongType = "NoTaDiCt"
-        convertedWrongType = self.datastore.convertIndexKeysToLowerCase(indexWrongType)
+        convertedWrongType = self.datastore.convert_index_keys_to_lower_case(indexWrongType)
 
         self.assertEqual(convertedWrongType, indexWrongType)
 
@@ -456,7 +464,7 @@ class DynamoDbDataStoreTest(DynamoDbTest):
         """
         document = {"content": content}
         with self.assertRaises(expectedErrorType):
-            self.datastore.insertEPSDocumentObject(self.internalID, None, document)
+            self.datastore.insert_eps_document_object(self.internalID, None, document)
 
         logValue = self.datastore.logObject.getLoggedValue("DDB0031", "error")
         self.assertEqual(logValue, expectedLogValue)
@@ -475,7 +483,7 @@ class DynamoDbDataStoreTest(DynamoDbTest):
         self.datastore.client.putItem(self.internalID, document, logItemSize=False)
 
         with self.assertRaises(TypeError):
-            self.datastore.returnDocumentForProcess(self.internalID, documentKey)
+            self.datastore.return_document_for_process(self.internalID, documentKey)
 
         wasLogged = self.datastore.logObject.wasLogged("DDB0032")
         self.assertTrue(wasLogged)
@@ -494,7 +502,7 @@ class DynamoDbDataStoreTest(DynamoDbTest):
         self.datastore.client.putItem(self.internalID, batchClaim, logItemSize=False)
 
         with self.assertRaises(TypeError):
-            self.datastore.fetchBatchClaim(self.internalID, batchClaimKey)
+            self.datastore.fetch_batch_claim(self.internalID, batchClaimKey)
 
         wasLogged = self.datastore.logObject.wasLogged("DDB0033")
         self.assertTrue(wasLogged)
@@ -525,7 +533,7 @@ class DynamoDbDataStoreTest(DynamoDbTest):
             ).timestamp()
         )
 
-        builtRecord = self.datastore.buildRecord(prescriptionId, record, None, None)
+        builtRecord = self.datastore.build_record(prescriptionId, record, None, None)
 
         expireAt = builtRecord["expireAt"]
         self.assertEqual(expireAt, expectedTimestamp)
@@ -554,7 +562,7 @@ class DynamoDbDataStoreTest(DynamoDbTest):
             datetime(year=2027, month=3, day=11, tzinfo=timezone.utc).timestamp()
         )
 
-        builtRecord = self.datastore.buildRecord(prescriptionId, record, None, None)
+        builtRecord = self.datastore.build_record(prescriptionId, record, None, None)
 
         expireAt = builtRecord["expireAt"]
         self.assertEqual(expireAt, expectedTimestamp)
@@ -585,7 +593,7 @@ class DynamoDbDataStoreTest(DynamoDbTest):
         )
 
         with freeze_time(dateTime):
-            builtDocument = self.datastore.buildDocument(self.internalID, document, None)
+            builtDocument = self.datastore.build_document(self.internalID, document, None)
 
         expireAt = builtDocument["expireAt"]
         self.assertEqual(expireAt, expectedTimestamp)
@@ -608,7 +616,7 @@ class DynamoDbDataStoreTest(DynamoDbTest):
             datetime(year=2025, month=9, day=11, tzinfo=timezone.utc).timestamp()
         )
 
-        builtDocument = self.datastore.buildDocument(self.internalID, document, index)
+        builtDocument = self.datastore.build_document(self.internalID, document, index)
 
         expireAt = builtDocument["expireAt"]
         self.assertEqual(expireAt, expectedTimestamp)
@@ -624,7 +632,7 @@ class DynamoDbDataStoreTest(DynamoDbTest):
 
         def insertRecord(datastore, insertArgs):
             try:
-                datastore.insertEPSRecordObject(*insertArgs)
+                datastore.insert_eps_record_object(*insertArgs)
             except Exception as e:
                 exceptionsThrown.append(e)
 
@@ -675,7 +683,7 @@ class DynamoDbDataStoreTest(DynamoDbTest):
         prescriptionId, nhsNumber = self.getNewRecordKeys()
         record = self.getRecord(nhsNumber)
 
-        response = self.datastore.insertEPSRecordObject(self.internalID, prescriptionId, record)
+        response = self.datastore.insert_eps_record_object(self.internalID, prescriptionId, record)
 
         self.assertEqual(response["ResponseMetadata"]["HTTPStatusCode"], 200)
 
@@ -687,7 +695,7 @@ class DynamoDbDataStoreTest(DynamoDbTest):
 
         def changeRecord(datastore, changeArgs):
             try:
-                datastore.insertEPSRecordObject(*changeArgs)
+                datastore.insert_eps_record_object(*changeArgs)
             except Exception as e:
                 exceptionsThrown.append(e)
 
@@ -752,7 +760,7 @@ class DynamoDbDataStoreTest(DynamoDbTest):
                 indexes.INDEX_PRESCRIPTION_ID: str(uuid4()),
             }
 
-            builtDocument = self.datastore.buildDocument(self.internalID, document, index)
+            builtDocument = self.datastore.build_document(self.internalID, document, index)
 
             if docRefTitle == "ClaimNotification":
                 claimNotificationStoreDate = builtDocument["claimNotificationStoreDate"]
@@ -768,7 +776,7 @@ class DynamoDbDataStoreTest(DynamoDbTest):
 
         record = self.getRecord(nhsNumber)
 
-        item = self.datastore.buildRecord(prescriptionId, record, None, None)
+        item = self.datastore.build_record(prescriptionId, record, None, None)
 
         nextActivity = item[Attribute.NEXT_ACTIVITY.name]
         activity, shard = nextActivity.split(".")
@@ -787,9 +795,9 @@ class DynamoDbDataStoreTest(DynamoDbTest):
             [["5HLBWE-U5QENL-24XB"], "UNKNOWN"],
         ]
     )
-    def testBuildRecordAddsReleaseVersion(self, prescriptionIds, expected):
+    def test_build_record_adds_release_version(self, prescriptionIds, expected):
         """
-        Test that the buildRecord method adds an R1/R2 releaseVersion attribute to a record.
+        Test that the build_record method adds an R1/R2 releaseVersion attribute to a record.
         Defaults to UNKNOWN when id is too short.
         """
         nhsNumber = self.generateNhsNumber()
@@ -798,7 +806,7 @@ class DynamoDbDataStoreTest(DynamoDbTest):
         for prescriptionId in prescriptionIds:
             with patch("random.randint") as patchedRandint:
                 patchedRandint.return_value = 7
-                item = self.datastore.buildRecord(prescriptionId, record, None, None)
+                item = self.datastore.build_record(prescriptionId, record, None, None)
                 self.assertEqual(item["releaseVersion"], expected)
 
     @parameterized.expand(
@@ -813,22 +821,70 @@ class DynamoDbDataStoreTest(DynamoDbTest):
     )
     def testBuildRecordToReturnAddsReleaseVersion(self, prescriptionIds, expected):
         """
-        Test that the _buildRecordToReturn method adds an R1/R2 releaseVersion attribute to a record if it is missing.
-        Defaults to UNKNOWN when id is too short.
+        Test that the _build_record_to_return method adds an R1/R2 releaseVersion attribute to a record
+        if it is missing. Defaults to UNKNOWN when id is too short.
         """
         for prescriptionId in prescriptionIds:
             item = {"pk": prescriptionId}
-            record = self.datastore._buildRecordToReturn(item, {})
+            record = self.datastore._build_record_to_return(item, {})
             self.assertEqual(record["releaseVersion"], expected)
 
-    def testIsRecordPresent(self):
+    def test_is_record_present(self):
         """
-        Ensure that the isRecordPresent returns the correct boolean depending on presence of a record.
+        Ensure that the is_record_present returns the correct boolean depending on presence of a record.
         """
         prescriptionId, nhsNumber = self.getNewRecordKeys()
-        self.assertFalse(self.datastore.isRecordPresent(self.internalID, prescriptionId))
+        self.assertFalse(self.datastore.is_record_present(self.internalID, prescriptionId))
 
         record = self.getRecord(nhsNumber)
-        self.datastore.insertEPSRecordObject(self.internalID, prescriptionId, record)
+        self.datastore.insert_eps_record_object(self.internalID, prescriptionId, record)
 
-        self.assertTrue(self.datastore.isRecordPresent(self.internalID, prescriptionId))
+        self.assertTrue(self.datastore.is_record_present(self.internalID, prescriptionId))
+
+    def testClaimNotificationBinaryEncoding(self):
+        """
+        Ensure that fetching documents handles stringified and binary payloads
+        """
+        documentKey = self.generateDocumentKey()
+        content = self.getDocumentContent()
+        index = {
+            indexes.INDEX_STORE_TIME_DOC_REF_TITLE: ["ClaimNotification_20250911"],
+            indexes.INDEX_DELETE_DATE: ["20250911"],
+        }
+        self.datastore.insertEPSDocumentObject(
+            self.internalID, documentKey, {"payload": content}, index
+        )
+
+        # Document should be stored as a string in DynamoDB
+        self.assertTrue(
+            isinstance(
+                self.datastore.client.getItem(self.internalID, documentKey, SortKey.DOCUMENT.value)[
+                    "body"
+                ]["payload"],
+                str,
+            )
+        )
+
+        stringResponse = self.datastore.return_document_for_process(self.internalID, documentKey)
+
+        binaryContent = base64.b64encode(
+            zlib.compress(simplejson.dumps({"a": 1, "b": True}).encode("utf-8"))
+        )
+        documentKey2 = self.generateDocumentKey()
+        self.datastore.insertEPSDocumentObject(
+            self.internalID, documentKey2, {"payload": binaryContent}, index
+        )
+
+        # Document should be stored as a binary in DynamoDB
+        self.assertTrue(
+            isinstance(
+                self.datastore.client.getItem(
+                    self.internalID, documentKey2, SortKey.DOCUMENT.value
+                )["body"]["payload"],
+                Binary,
+            )
+        )
+
+        binaryResponse = self.datastore.return_document_for_process(self.internalID, documentKey2)
+
+        self.assertEqual(stringResponse, binaryResponse)

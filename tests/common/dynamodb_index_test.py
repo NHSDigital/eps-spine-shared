@@ -88,7 +88,7 @@ class DynamoDbIndexTest(DynamoDbTest):
         """
         Add ballast to the index attribute of the record to increase its size.
         """
-        builtRecord = self.datastore.buildRecord("", record, "Acute", None)
+        builtRecord = self.datastore.build_record("", record, "Acute", None)
 
         bodySize = sys.getsizeof(builtRecord["body"])
         itemDeepCopy = copy.deepcopy(builtRecord)
@@ -110,7 +110,7 @@ class DynamoDbIndexTest(DynamoDbTest):
         record = self.getNominatedRecord(nhsNumber) if nominated else self.getRecord(nhsNumber)
         if modification:
             modification(record)
-        self.datastore.insertEPSRecordObject(internalID, recordId, record)
+        self.datastore.insert_eps_record_object(internalID, recordId, record)
         return recordId
 
     def testBuildTermsWithRegex(self):
@@ -136,7 +136,7 @@ class DynamoDbIndexTest(DynamoDbTest):
 
         self.assertEqual(len(terms), 1)
 
-    def testReturnTermsByNhsNumberDate(self):
+    def test_return_terms_by_nhs_number_date(self):
         """
         Test querying against the nhsNumberDate index and returning nhsNumberDate records.
         """
@@ -150,7 +150,7 @@ class DynamoDbIndexTest(DynamoDbTest):
 
         for values in recordValues:
             record = self.getRecord(nhsNumber, values.creationTime)
-            self.datastore.insertEPSRecordObject(self.internalID, values.id, record)
+            self.datastore.insert_eps_record_object(self.internalID, values.id, record)
             self.keys.append((values.id, SortKey.RECORD.value))
 
         startDate = "20230912"
@@ -158,7 +158,9 @@ class DynamoDbIndexTest(DynamoDbTest):
         rangeStart = indexes.SEPERATOR.join([nhsNumber, startDate])
         rangeEnd = indexes.SEPERATOR.join([nhsNumber, endDate])
 
-        terms = self.datastore.returnTermsByNhsNumberDate(self.internalID, rangeStart, rangeEnd)
+        terms = self.datastore.return_terms_by_nhs_number_date(
+            self.internalID, rangeStart, rangeEnd
+        )
 
         expected = [
             (
@@ -185,14 +187,16 @@ class DynamoDbIndexTest(DynamoDbTest):
 
         for values in recordValues:
             record = self.getRecord(nhsNumber, values.creationTime)
-            self.datastore.insertEPSRecordObject(self.internalID, values.id, record)
+            self.datastore.insert_eps_record_object(self.internalID, values.id, record)
             self.keys.append((values.id, SortKey.RECORD.value))
 
         date = "20230911"
         rangeStart = indexes.SEPERATOR.join([nhsNumber, date])
         rangeEnd = indexes.SEPERATOR.join([nhsNumber, date])
 
-        terms = self.datastore.returnTermsByNhsNumberDate(self.internalID, rangeStart, rangeEnd)
+        terms = self.datastore.return_terms_by_nhs_number_date(
+            self.internalID, rangeStart, rangeEnd
+        )
 
         expected = [
             (
@@ -204,15 +208,15 @@ class DynamoDbIndexTest(DynamoDbTest):
 
         self.assertEqual(sorted(expected), sorted(terms))
 
-    def testReturnTermsByNhsNumber(self):
+    def test_return_terms_by_nhs_number(self):
         """
         Test querying against the nhsNumberDate index and returning nhsNumberDate records, without startDate.
         """
         prescriptionId, nhsNumber = self.getNewRecordKeys()
         record = self.getRecord(nhsNumber)
-        self.datastore.insertEPSRecordObject(self.internalID, prescriptionId, record)
+        self.datastore.insert_eps_record_object(self.internalID, prescriptionId, record)
 
-        terms = self.datastore.returnTermsByNhsNumber(self.internalID, nhsNumber)
+        terms = self.datastore.return_terms_by_nhs_number(self.internalID, nhsNumber)
 
         expected = [(nhsNumber, prescriptionId)]
 
@@ -224,40 +228,40 @@ class DynamoDbIndexTest(DynamoDbTest):
         """
         prescriptionId, nhsNumber = self.getNewRecordKeys()
         record = self.getRecord(nhsNumber)
-        self.datastore.insertEPSRecordObject(self.internalID, prescriptionId, record)
+        self.datastore.insert_eps_record_object(self.internalID, prescriptionId, record)
 
         prescriptionId2 = self.generateRecordKey()
         self.keys.append((prescriptionId2, SortKey.RECORD.value))
         record = self.getRecord(nhsNumber)
-        self.datastore.insertEPSRecordObject(self.internalID, prescriptionId2, record)
+        self.datastore.insert_eps_record_object(self.internalID, prescriptionId2, record)
 
-        terms = self.datastore.returnTermsByNhsNumber(self.internalID, nhsNumber)
+        terms = self.datastore.return_terms_by_nhs_number(self.internalID, nhsNumber)
 
         expected = [(nhsNumber, prescriptionId), (nhsNumber, prescriptionId2)]
         self.assertEqual(sorted(expected), sorted(terms))
 
         record["indexes"]["nextActivityNAD_bin"] = ["purge_20241114"]
         record["SCN"] = record["SCN"] + 1
-        self.datastore.insertEPSRecordObject(
+        self.datastore.insert_eps_record_object(
             self.internalID, prescriptionId2, record, isUpdate=True
         )
 
-        terms = self.datastore.returnTermsByNhsNumber(self.internalID, nhsNumber)
+        terms = self.datastore.return_terms_by_nhs_number(self.internalID, nhsNumber)
 
         expected = [(nhsNumber, prescriptionId)]
         self.assertEqual(expected, terms)
 
-    def testReturnTermsByNhsNumberMultiple(self):
+    def test_return_terms_by_nhs_number_multiple(self):
         """
         Test querying against the nhsNumberDate index and returning multiple nhsNumberDate records, without startDate.
         """
         prescriptionId, nhsNumber = self.getNewRecordKeys()
         record = self.getRecord(nhsNumber)
-        self.datastore.insertEPSRecordObject(self.internalID, prescriptionId, record)
+        self.datastore.insert_eps_record_object(self.internalID, prescriptionId, record)
 
         self.createModifyInsertRecord(self.internalID, nhsNumber)
 
-        terms = self.datastore.returnTermsByNhsNumber(self.internalID, nhsNumber)
+        terms = self.datastore.return_terms_by_nhs_number(self.internalID, nhsNumber)
 
         self.assertEqual(len(terms), 2)
 
@@ -267,11 +271,11 @@ class DynamoDbIndexTest(DynamoDbTest):
         """
         prescriptionId, nhsNumber = self.getNewRecordKeys()
         record = self.getNominatedRecord(nhsNumber)
-        self.datastore.insertEPSRecordObject(self.internalID, prescriptionId, record)
+        self.datastore.insert_eps_record_object(self.internalID, prescriptionId, record)
 
         self.createModifyInsertRecord(self.internalID, nhsNumber, self.modifyStatus, nominated=True)
 
-        terms = self.datastore.getNomPharmRecordsUnfiltered(self.internalID, NOM_ORG)
+        terms = self.datastore.get_nom_pharm_records_unfiltered(self.internalID, NOM_ORG)
 
         expected = [prescriptionId]
 
@@ -279,20 +283,20 @@ class DynamoDbIndexTest(DynamoDbTest):
 
     def testReturnTermsByNomPharmStatusWithBatchSize(self):
         """
-        Test querying against the nomPharmStatus index via the getNominatedPharmacyRecords method and returning
+        Test querying against the nomPharmStatus index via the get_nominated_pharmacy_records method and returning
         a defined number of nomPharmStatus records.
         """
         prescriptionIds = []
         for _ in range(3):
             prescriptionId, nhsNumber = self.getNewRecordKeys()
             record = self.getNominatedRecord(nhsNumber)
-            self.datastore.insertEPSRecordObject(self.internalID, prescriptionId, record)
+            self.datastore.insert_eps_record_object(self.internalID, prescriptionId, record)
             self.createModifyInsertRecord(
                 self.internalID, nhsNumber, self.modifyStatus, nominated=True
             )
             prescriptionIds.append(prescriptionId)
 
-        returnedPrescriptionIds, discardedCount = self.datastore.getNominatedPharmacyRecords(
+        returnedPrescriptionIds, discardedCount = self.datastore.get_nominated_pharmacy_records(
             NOM_ORG, 2, self.internalID
         )
 
@@ -315,7 +319,7 @@ class DynamoDbIndexTest(DynamoDbTest):
             for _ in range(totalTerms)
         ]
 
-        terms = self.datastore.getNomPharmRecordsUnfiltered(self.internalID, NOM_ORG)
+        terms = self.datastore.get_nom_pharm_records_unfiltered(self.internalID, NOM_ORG)
 
         self.assertEqual(len(terms), totalTerms)
 
@@ -332,7 +336,9 @@ class DynamoDbIndexTest(DynamoDbTest):
             for _ in range(totalTerms)
         ]
 
-        terms = self.datastore.getNomPharmRecordsUnfiltered(self.internalID, NOM_ORG, limit=limit)
+        terms = self.datastore.get_nom_pharm_records_unfiltered(
+            self.internalID, NOM_ORG, limit=limit
+        )
 
         self.assertEqual(len(terms), limit)
 
@@ -351,7 +357,9 @@ class DynamoDbIndexTest(DynamoDbTest):
             for _ in range(totalTerms)
         ]
 
-        terms = self.datastore.getNomPharmRecordsUnfiltered(self.internalID, NOM_ORG, limit=limit)
+        terms = self.datastore.get_nom_pharm_records_unfiltered(
+            self.internalID, NOM_ORG, limit=limit
+        )
 
         self.assertEqual(len(terms), limit)
 
@@ -361,13 +369,13 @@ class DynamoDbIndexTest(DynamoDbTest):
         """
         prescriptionId, nhsNumber = self.getNewRecordKeys()
         record = self.getNominatedRecord(nhsNumber)
-        self.datastore.insertEPSRecordObject(self.internalID, prescriptionId, record)
+        self.datastore.insert_eps_record_object(self.internalID, prescriptionId, record)
 
         idOfPrescriptionWithOtherStatus = self.createModifyInsertRecord(
             self.internalID, nhsNumber, self.modifyStatus, nominated=True
         )
 
-        terms = self.datastore.getAllPIDsByNominatedPharmacy(self.internalID, NOM_ORG)
+        terms = self.datastore.get_all_pids_by_nominated_pharmacy(self.internalID, NOM_ORG)
 
         expected = [prescriptionId, idOfPrescriptionWithOtherStatus]
 
@@ -376,17 +384,19 @@ class DynamoDbIndexTest(DynamoDbTest):
 
         self.assertEqual(expected, terms)
 
-    def testReturnTermsByNhsNumberDateErd(self):
+    def test_return_terms_by_nhs_number_date_erd(self):
         """
         Test querying against the nhsNumberDate index and returning multiple nhsNumberDates per record.
         """
         prescriptionId, nhsNumber = self.getNewRecordKeys()
         record = self.getErdRecord(nhsNumber)
-        self.datastore.insertEPSRecordObject(self.internalID, prescriptionId, record)
+        self.datastore.insert_eps_record_object(self.internalID, prescriptionId, record)
 
         rangeStart = f"{nhsNumber}|20230911"
         rangeEnd = f"{nhsNumber}|20230912"
-        terms = self.datastore.returnTermsByNhsNumberDate(self.internalID, rangeStart, rangeEnd)
+        terms = self.datastore.return_terms_by_nhs_number_date(
+            self.internalID, rangeStart, rangeEnd
+        )
 
         expected = [
             (
@@ -406,7 +416,7 @@ class DynamoDbIndexTest(DynamoDbTest):
         Test querying against the nhsNumberDate index and returning nhsNumberPrescriberDispenserDate records.
         """
         prescriptionId, nhsNumber = self.getNewRecordKeys()
-        self.datastore.insertEPSRecordObject(
+        self.datastore.insert_eps_record_object(
             self.internalID, prescriptionId, self.getRecord(nhsNumber)
         )
 
@@ -418,7 +428,7 @@ class DynamoDbIndexTest(DynamoDbTest):
         rangeStart = indexes.SEPERATOR.join([nhsNumber, PRESC_ORG, DISP_ORG, startDate])
         rangeEnd = indexes.SEPERATOR.join([nhsNumber, PRESC_ORG, DISP_ORG, endDate])
 
-        terms = self.datastore.returnTermsByIndexDate(
+        terms = self.datastore.return_terms_by_index_date(
             self.internalID, indexes.INDEX_NHSNUMBER_PRDSDATE, rangeStart, rangeEnd
         )
 
@@ -436,7 +446,7 @@ class DynamoDbIndexTest(DynamoDbTest):
         Test querying against the nhsNumberDate index and returning nhsNumberPrescriberDate records.
         """
         prescriptionId, nhsNumber = self.getNewRecordKeys()
-        self.datastore.insertEPSRecordObject(
+        self.datastore.insert_eps_record_object(
             self.internalID, prescriptionId, self.getRecord(nhsNumber)
         )
 
@@ -447,7 +457,7 @@ class DynamoDbIndexTest(DynamoDbTest):
         rangeStart = indexes.SEPERATOR.join([nhsNumber, PRESC_ORG, startDate])
         rangeEnd = indexes.SEPERATOR.join([nhsNumber, PRESC_ORG, endDate])
 
-        terms = self.datastore.returnTermsByIndexDate(
+        terms = self.datastore.return_terms_by_index_date(
             self.internalID, indexes.INDEX_NHSNUMBER_PRDATE, rangeStart, rangeEnd
         )
 
@@ -465,7 +475,7 @@ class DynamoDbIndexTest(DynamoDbTest):
         Test querying against the nhsNumberDate index and returning nhsNumberDispenserDate records.
         """
         prescriptionId, nhsNumber = self.getNewRecordKeys()
-        self.datastore.insertEPSRecordObject(
+        self.datastore.insert_eps_record_object(
             self.internalID, prescriptionId, self.getRecord(nhsNumber)
         )
 
@@ -476,7 +486,7 @@ class DynamoDbIndexTest(DynamoDbTest):
         rangeStart = indexes.SEPERATOR.join([nhsNumber, DISP_ORG, startDate])
         rangeEnd = indexes.SEPERATOR.join([nhsNumber, DISP_ORG, endDate])
 
-        terms = self.datastore.returnTermsByIndexDate(
+        terms = self.datastore.return_terms_by_index_date(
             self.internalID, indexes.INDEX_NHSNUMBER_DSDATE, rangeStart, rangeEnd
         )
 
@@ -494,7 +504,7 @@ class DynamoDbIndexTest(DynamoDbTest):
         Test querying against the prescriberDate index and returning prescDispDate records.
         """
         prescriptionId, nhsNumber = self.getNewRecordKeys()
-        self.datastore.insertEPSRecordObject(
+        self.datastore.insert_eps_record_object(
             self.internalID, prescriptionId, self.getRecord(nhsNumber)
         )
 
@@ -506,7 +516,7 @@ class DynamoDbIndexTest(DynamoDbTest):
         rangeStart = indexes.SEPERATOR.join([PRESC_ORG, DISP_ORG, startDate])
         rangeEnd = indexes.SEPERATOR.join([PRESC_ORG, DISP_ORG, endDate])
 
-        terms = self.datastore.returnTermsByIndexDate(
+        terms = self.datastore.return_terms_by_index_date(
             self.internalID, indexes.INDEX_PRESCRIBER_DSDATE, rangeStart, rangeEnd
         )
 
@@ -524,7 +534,7 @@ class DynamoDbIndexTest(DynamoDbTest):
         Test querying against the prescriberDate index and returning prescriberDate records.
         """
         prescriptionId, nhsNumber = self.getNewRecordKeys()
-        self.datastore.insertEPSRecordObject(
+        self.datastore.insert_eps_record_object(
             self.internalID, prescriptionId, self.getRecord(nhsNumber)
         )
 
@@ -535,7 +545,7 @@ class DynamoDbIndexTest(DynamoDbTest):
         rangeStart = indexes.SEPERATOR.join([PRESC_ORG, startDate])
         rangeEnd = indexes.SEPERATOR.join([PRESC_ORG, endDate])
 
-        terms = self.datastore.returnTermsByIndexDate(
+        terms = self.datastore.return_terms_by_index_date(
             self.internalID, indexes.INDEX_PRESCRIBER_DATE, rangeStart, rangeEnd
         )
 
@@ -550,7 +560,7 @@ class DynamoDbIndexTest(DynamoDbTest):
         Test querying against the dispenserDate index and returning dispenserDate records.
         """
         prescriptionId, nhsNumber = self.getNewRecordKeys()
-        self.datastore.insertEPSRecordObject(
+        self.datastore.insert_eps_record_object(
             self.internalID, prescriptionId, self.getRecord(nhsNumber)
         )
 
@@ -561,7 +571,7 @@ class DynamoDbIndexTest(DynamoDbTest):
         rangeStart = indexes.SEPERATOR.join([DISP_ORG, startDate])
         rangeEnd = indexes.SEPERATOR.join([DISP_ORG, endDate])
 
-        terms = self.datastore.returnTermsByIndexDate(
+        terms = self.datastore.return_terms_by_index_date(
             self.internalID, indexes.INDEX_DISPENSER_DATE, rangeStart, rangeEnd
         )
 
@@ -609,9 +619,9 @@ class DynamoDbIndexTest(DynamoDbTest):
             prescriptionId, nhsNumber = self.getNewRecordKeys()
             expected.append(prescriptionId)
             record = self.getRecord(nhsNumber)
-            self.datastore.insertEPSRecordObject(self.internalID, prescriptionId, record)
+            self.datastore.insert_eps_record_object(self.internalID, prescriptionId, record)
 
-        actual = self.datastore.returnPIDsDueForNextActivity(
+        actual = self.datastore.return_pids_due_for_next_activity(
             self.internalID, "createNoClaim_20250103", "createNoClaim_20250105"
         )
         flat = [i for generator in actual for i in generator]
@@ -627,9 +637,9 @@ class DynamoDbIndexTest(DynamoDbTest):
             prescriptionId, nhsNumber = self.getNewRecordKeys()
             expected.append(prescriptionId)
             record = self.getRecord(nhsNumber)
-            self.datastore.insertEPSRecordObject(self.internalID, prescriptionId, record)
+            self.datastore.insert_eps_record_object(self.internalID, prescriptionId, record)
 
-        actual = self.datastore.returnPIDsDueForNextActivity(
+        actual = self.datastore.return_pids_due_for_next_activity(
             self.internalID, "createNoClaim_20250104", "createNoClaim_20250104"
         )
         flat = [i for generator in actual for i in generator]
@@ -654,9 +664,9 @@ class DynamoDbIndexTest(DynamoDbTest):
         prescriptionId, nhsNumber = self.getNewRecordKeys()
         record = self.getRecord(nhsNumber)
         record["indexes"]["nextActivityNAD_bin"] = [nextActivityNAD_bin]
-        self.datastore.insertEPSRecordObject(self.internalID, prescriptionId, record)
+        self.datastore.insert_eps_record_object(self.internalID, prescriptionId, record)
 
-        actual = self.datastore.returnPIDsDueForNextActivity(
+        actual = self.datastore.return_pids_due_for_next_activity(
             self.internalID, nextActivityNAD_bin, nextActivityNAD_bin
         )
         flat = [i for generator in actual for i in generator]
@@ -674,7 +684,7 @@ class DynamoDbIndexTest(DynamoDbTest):
             """
             prescriptionId, nhsNumber = self.getNewRecordKeys()
             record = self.getRecord(nhsNumber)
-            item = self.datastore.buildRecord(prescriptionId, record, None, None)
+            item = self.datastore.build_record(prescriptionId, record, None, None)
 
             item[Attribute.NEXT_ACTIVITY.name] = nextActivity
 
@@ -688,7 +698,7 @@ class DynamoDbIndexTest(DynamoDbTest):
         for shard in range(1, NEXT_ACTIVITY_DATE_PARTITIONS + 1):
             add_record(f"createNoClaim.{shard}")
 
-        actual = self.datastore.returnPIDsDueForNextActivity(
+        actual = self.datastore.return_pids_due_for_next_activity(
             self.internalID, "createNoClaim_20250104", "createNoClaim_20250104"
         )
         consumed = [list(generator) for generator in list(actual)]
@@ -714,13 +724,13 @@ class DynamoDbIndexTest(DynamoDbTest):
                 self.keys.append((documentKey, SortKey.DOCUMENT.value))
 
                 content = self.getDocumentContent()
-                self.datastore.insertEPSDocumentObject(
+                self.datastore.insert_eps_document_object(
                     self.internalID, documentKey, {"content": content}, index
                 )
 
         [createDocuments(docRefTitle) for docRefTitle in ["ClaimNotification", "Other"]]
 
-        queryResponse = self.datastore.returnClaimNotificationIDsBetweenStoreDates(
+        queryResponse = self.datastore.return_claim_notification_ids_between_store_dates(
             self.internalID, "20240911101111", "20240912101111"
         )
 
@@ -751,13 +761,13 @@ class DynamoDbIndexTest(DynamoDbTest):
                 self.keys.append((documentKey, SortKey.DOCUMENT.value))
 
                 content = self.getDocumentContent()
-                self.datastore.insertEPSDocumentObject(
+                self.datastore.insert_eps_document_object(
                     self.internalID, documentKey, {"content": content}, index
                 )
 
         [createDocuments(storeDate) for storeDate in ["20240911", "20240912"]]
 
-        queryResponse = self.datastore.returnClaimNotificationIDsBetweenStoreDates(
+        queryResponse = self.datastore.return_claim_notification_ids_between_store_dates(
             self.internalID, "20240911101111", "20240912101110"
         )
 
@@ -823,12 +833,12 @@ class DynamoDbIndexTest(DynamoDbTest):
             if nwssp:
                 batchClaim["Nwssp Sequence Number"] = sqnValue
 
-            self.datastore.storeBatchClaim(self.internalID, batchClaim)
+            self.datastore.store_batch_claim(self.internalID, batchClaim)
 
-        returnedBatchClaimIds = self.datastore.findBatchClaimfromSeqNumber(1)
+        returnedBatchClaimIds = self.datastore.find_batch_claim_from_seq_number(1)
         self.assertEqual(returnedBatchClaimIds, [batchClaim1[0]])
 
-        returnedBatchClaimIds = self.datastore.findBatchClaimfromSeqNumber(2, True)
+        returnedBatchClaimIds = self.datastore.find_batch_claim_from_seq_number(2, True)
         self.assertEqual(returnedBatchClaimIds, [nwsspBatchClaim2[0]])
 
     @parameterized.expand(
