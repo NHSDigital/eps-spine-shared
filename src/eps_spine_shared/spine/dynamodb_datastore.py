@@ -1,9 +1,9 @@
-from eps_spine_shared.common.dynamodb_datastore import PrescriptionsDynamoDbDataStore
+from eps_spine_shared.common.dynamodb_datastore import EpsDynamoDbDataStore
 
 
-class DynamoDbDataStore(PrescriptionsDynamoDbDataStore):
+class DynamoDbDataStore(EpsDynamoDbDataStore):
     """
-    Wrapper class for PrescriptionsDynamoDbDataStore that provides backward compatibility
+    Wrapper class for EpsDynamoDbDataStore that provides backward compatibility
     with camelCase method signatures.
     """
 

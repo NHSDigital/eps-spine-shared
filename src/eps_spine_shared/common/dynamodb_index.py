@@ -19,151 +19,155 @@ from eps_spine_shared.common.prescription_record import PrescriptionStatus
 from eps_spine_shared.nhsfundamentals.timeutilities import TimeFormats
 
 
-class PrescriptionsDynamoDbIndex:
+class EpsDynamoDbIndex:
     """
     The prescriptions message store specific DynamoDB client.
     """
 
-    def __init__(self, logObject, client: EpsDynamoDbClient):
+    def __init__(self, log_object, client: EpsDynamoDbClient):
         """
         Instantiate the DynamoDB client.
         """
-        self.logObject = logObject
+        self.log_object = log_object
         self.client = client
 
-    def nhsNumberDate(self, rangeStart, rangeEnd, termRegex):
+    def nhs_number_date(self, range_start, range_end, term_regex):
         """
         Query the nhsNumberDate index.
         """
-        # POC - Use context in these methods, rather than rangeStart and rangeEnd.
-        nhsNumber, startDate = rangeStart.split(indexes.SEPERATOR)
-        endDate = rangeEnd.split(indexes.SEPERATOR)[-1]
+        # POC - Use context in these methods, rather than range_start and range_end.
+        nhs_number, start_date = range_start.split(indexes.SEPERATOR)
+        end_date = range_end.split(indexes.SEPERATOR)[-1]
 
-        return self.queryNhsNumberDate(
-            indexes.INDEX_NHSNUMBER_DATE, nhsNumber, startDate, endDate, termRegex=termRegex
+        return self.query_nhs_number_date(
+            indexes.INDEX_NHSNUMBER_DATE, nhs_number, start_date, end_date, term_regex=term_regex
         )
 
-    def nhsNumberPrescDispDate(self, rangeStart, rangeEnd, termRegex):
+    def nhs_number_presc_disp_date(self, range_start, range_end, term_regex):
         """
         Query the nhsNumberDate index, filtering on prescriber and dispenser.
         """
-        nhsNumber, prescriberOrg, dispenserOrg, startDate = rangeStart.split(indexes.SEPERATOR)
-        endDate = rangeEnd.split(indexes.SEPERATOR)[-1]
-        filterExpression = Attr(Attribute.PRESCRIBER_ORG.name).eq(prescriberOrg) & Attr(
+        nhs_number, prescriber_org, dispenser_org, start_date = range_start.split(indexes.SEPERATOR)
+        end_date = range_end.split(indexes.SEPERATOR)[-1]
+        filter_expression = Attr(Attribute.PRESCRIBER_ORG.name).eq(prescriber_org) & Attr(
             Attribute.DISPENSER_ORG.name
-        ).contains(dispenserOrg)
+        ).contains(dispenser_org)
 
-        return self.queryNhsNumberDate(
+        return self.query_nhs_number_date(
             indexes.INDEX_NHSNUMBER_PRDSDATE,
-            nhsNumber,
-            startDate,
-            endDate,
-            filterExpression,
-            termRegex,
+            nhs_number,
+            start_date,
+            end_date,
+            filter_expression,
+            term_regex,
         )
 
-    def nhsNumberPrescDate(self, rangeStart, rangeEnd, termRegex):
+    def nhs_number_presc_date(self, range_start, range_end, term_regex):
         """
         Query the nhsNumberDate index, filtering on prescriber.
         """
-        nhsNumber, prescriberOrg, startDate = rangeStart.split(indexes.SEPERATOR)
-        endDate = rangeEnd.split(indexes.SEPERATOR)[-1]
-        filterExpression = Attr(Attribute.PRESCRIBER_ORG.name).eq(prescriberOrg)
+        nhs_number, prescriber_org, start_date = range_start.split(indexes.SEPERATOR)
+        end_date = range_end.split(indexes.SEPERATOR)[-1]
+        filter_expression = Attr(Attribute.PRESCRIBER_ORG.name).eq(prescriber_org)
 
-        return self.queryNhsNumberDate(
+        return self.query_nhs_number_date(
             indexes.INDEX_NHSNUMBER_PRDATE,
-            nhsNumber,
-            startDate,
-            endDate,
-            filterExpression,
-            termRegex,
+            nhs_number,
+            start_date,
+            end_date,
+            filter_expression,
+            term_regex,
         )
 
-    def nhsNumberDispDate(self, rangeStart, rangeEnd, termRegex):
+    def nhs_number_disp_date(self, range_start, range_end, term_regex):
         """
         Query the nhsNumberDate index, filtering on dispenser.
         """
-        nhsNumber, dispenserOrg, startDate = rangeStart.split(indexes.SEPERATOR)
-        endDate = rangeEnd.split(indexes.SEPERATOR)[-1]
-        filterExpression = Attr(Attribute.DISPENSER_ORG.name).contains(dispenserOrg)
+        nhs_number, dispenser_org, start_date = range_start.split(indexes.SEPERATOR)
+        end_date = range_end.split(indexes.SEPERATOR)[-1]
+        filter_expression = Attr(Attribute.DISPENSER_ORG.name).contains(dispenser_org)
 
-        return self.queryNhsNumberDate(
+        return self.query_nhs_number_date(
             indexes.INDEX_NHSNUMBER_DSDATE,
-            nhsNumber,
-            startDate,
-            endDate,
-            filterExpression,
-            termRegex,
+            nhs_number,
+            start_date,
+            end_date,
+            filter_expression,
+            term_regex,
         )
 
-    def prescDispDate(self, rangeStart, rangeEnd, termRegex):
+    def presc_disp_date(self, range_start, range_end, term_regex):
         """
         Query the prescriberDate index, filtering on dispenser.
         """
-        prescriberOrg, dispenserOrg, startDate = rangeStart.split(indexes.SEPERATOR)
-        endDate = rangeEnd.split(indexes.SEPERATOR)[-1]
-        filterExpression = Attr(Attribute.DISPENSER_ORG.name).contains(dispenserOrg)
+        prescriber_org, dispenser_org, start_date = range_start.split(indexes.SEPERATOR)
+        end_date = range_end.split(indexes.SEPERATOR)[-1]
+        filter_expression = Attr(Attribute.DISPENSER_ORG.name).contains(dispenser_org)
 
-        return self.queryPrescriberDate(
+        return self.query_prescriber_date(
             indexes.INDEX_PRESCRIBER_DSDATE,
-            prescriberOrg,
-            startDate,
-            endDate,
-            filterExpression,
-            termRegex,
+            prescriber_org,
+            start_date,
+            end_date,
+            filter_expression,
+            term_regex,
         )
 
-    def prescDate(self, rangeStart, rangeEnd, termRegex):
+    def presc_date(self, range_start, range_end, term_regex):
         """
         Query the prescriberDate index.
         """
-        prescriberOrg, startDate = rangeStart.split(indexes.SEPERATOR)
-        endDate = rangeEnd.split(indexes.SEPERATOR)[-1]
+        prescriber_org, start_date = range_start.split(indexes.SEPERATOR)
+        end_date = range_end.split(indexes.SEPERATOR)[-1]
 
-        return self.queryPrescriberDate(
-            indexes.INDEX_PRESCRIBER_DATE, prescriberOrg, startDate, endDate, termRegex=termRegex
+        return self.query_prescriber_date(
+            indexes.INDEX_PRESCRIBER_DATE,
+            prescriber_org,
+            start_date,
+            end_date,
+            term_regex=term_regex,
         )
 
-    def dispDate(self, rangeStart, rangeEnd, termRegex):
+    def disp_date(self, range_start, range_end, term_regex):
         """
         Query the dispenserDate index.
         """
-        dispenserOrg, startDate = rangeStart.split(indexes.SEPERATOR)
-        endDate = rangeEnd.split(indexes.SEPERATOR)[-1]
+        dispenser_org, start_date = range_start.split(indexes.SEPERATOR)
+        end_date = range_end.split(indexes.SEPERATOR)[-1]
 
-        return self.queryDispenserDate(
-            indexes.INDEX_DISPENSER_DATE, dispenserOrg, startDate, endDate, termRegex=termRegex
+        return self.query_dispenser_date(
+            indexes.INDEX_DISPENSER_DATE, dispenser_org, start_date, end_date, term_regex=term_regex
         )
 
-    def nomPharmStatus(self, rangeStart, _, termRegex):
+    def nom_pharm_status(self, range_start, _, term_regex):
         """
         Query the nomPharmStatus index for terms.
         """
-        odsCode, status = rangeStart.split("_")
+        ods_code, status = range_start.split("_")
 
-        return self.queryNomPharmStatusTerms(
-            indexes.INDEX_NOMPHARM, odsCode, status, termRegex=termRegex
+        return self.query_nom_pharm_status_terms(
+            indexes.INDEX_NOMPHARM, ods_code, status, term_regex=term_regex
         )
 
-    def buildTerms(self, items, indexName, termRegex):
+    def build_terms(self, items, index_name, term_regex):
         """
         Build terms from items returned by the index query.
         """
         # POC - Project the body into the index and do away with 'terms' altogether.
         terms = []
         for item in items:
-            indexTerms = item.get(ProjectedAttribute.INDEXES.name, {}).get(indexName.lower())
-            if not indexTerms:
+            index_terms = item.get(ProjectedAttribute.INDEXES.name, {}).get(index_name.lower())
+            if not index_terms:
                 continue
             [
-                terms.append((indexTerm, item[Key.PK.name]))
-                for indexTerm in indexTerms
-                # POC - termRegex can be replaced by filter expressions for status and releaseVersion.
-                if ((not termRegex) or re.search(termRegex, indexTerm))
+                terms.append((index_term, item[Key.PK.name]))
+                for index_term in index_terms
+                # POC - term_regex can be replaced by filter expressions for status and releaseVersion.
+                if ((not term_regex) or re.search(term_regex, index_term))
             ]
         return terms
 
-    def padOrTrimDate(self, date):
+    def pad_or_trim_date(self, date):
         """
         Ensure the date length is fourteen characters, if present.
         """
@@ -177,131 +181,141 @@ class PrescriptionsDynamoDbIndex:
             date = date + "0"
         return date
 
-    def queryNhsNumberDate(
-        self, index, nhsNumber, startDate=None, endDate=None, filterExpression=None, termRegex=None
+    def query_nhs_number_date(
+        self,
+        index,
+        nhs_number,
+        start_date=None,
+        end_date=None,
+        filter_expression=None,
+        term_regex=None,
     ):
         """
         Return the epsRecord terms which match the supplied range and regex for the nhsNumberDate index.
         """
-        startDate, endDate = [self.padOrTrimDate(date) for date in [startDate, endDate]]
+        start_date, end_date = [self.pad_or_trim_date(date) for date in [start_date, end_date]]
 
-        pkExpression = BotoKey(Attribute.NHS_NUMBER.name).eq(nhsNumber)
-        skExpression = None
-        if startDate and endDate:
-            [valid, skExpression] = self._getValidRangeCondition(
-                Attribute.CREATION_DATETIME.name, startDate, endDate
+        pk_expression = BotoKey(Attribute.NHS_NUMBER.name).eq(nhs_number)
+        sk_expression = None
+        if start_date and end_date:
+            [valid, sk_expression] = self._get_valid_range_condition(
+                Attribute.CREATION_DATETIME.name, start_date, end_date
             )
 
             if not valid:
                 return []
-        elif startDate:
-            skExpression = BotoKey(Attribute.CREATION_DATETIME.name).gte(startDate)
-        elif endDate:
-            skExpression = BotoKey(Attribute.CREATION_DATETIME.name).lte(endDate)
+        elif start_date:
+            sk_expression = BotoKey(Attribute.CREATION_DATETIME.name).gte(start_date)
+        elif end_date:
+            sk_expression = BotoKey(Attribute.CREATION_DATETIME.name).lte(end_date)
 
-        keyConditionExpression = pkExpression if not skExpression else pkExpression & skExpression
-        items = self.client.queryIndex(
-            GSI.NHS_NUMBER_DATE.name, keyConditionExpression, filterExpression
+        key_condition_expression = (
+            pk_expression if not sk_expression else pk_expression & sk_expression
+        )
+        items = self.client.query_index(
+            GSI.NHS_NUMBER_DATE.name, key_condition_expression, filter_expression
         )
 
-        return self.buildTerms(items, index, termRegex)
+        return self.build_terms(items, index, term_regex)
 
-    def queryPrescriberDate(
-        self, index, prescriberOrg, startDate, endDate, filterExpression=None, termRegex=None
+    def query_prescriber_date(
+        self, index, prescriber_org, start_date, end_date, filter_expression=None, term_regex=None
     ):
         """
         Return the epsRecord terms which match the supplied range and regex for the prescriberDate index.
         """
-        startDate, endDate = [self.padOrTrimDate(date) for date in [startDate, endDate]]
+        start_date, end_date = [self.pad_or_trim_date(date) for date in [start_date, end_date]]
 
-        pkExpression = BotoKey(Attribute.PRESCRIBER_ORG.name).eq(prescriberOrg)
-        [valid, skExpression] = self._getValidRangeCondition(
-            Attribute.CREATION_DATETIME.name, startDate, endDate
+        pk_expression = BotoKey(Attribute.PRESCRIBER_ORG.name).eq(prescriber_org)
+        [valid, sk_expression] = self._get_valid_range_condition(
+            Attribute.CREATION_DATETIME.name, start_date, end_date
         )
 
         if not valid:
             return []
 
-        items = self.client.queryIndex(
-            GSI.PRESCRIBER_DATE.name, pkExpression & skExpression, filterExpression
+        items = self.client.query_index(
+            GSI.PRESCRIBER_DATE.name, pk_expression & sk_expression, filter_expression
         )
 
-        return self.buildTerms(items, index, termRegex)
+        return self.build_terms(items, index, term_regex)
 
-    def queryDispenserDate(
-        self, index, dispenserOrg, startDate, endDate, filterExpression=None, termRegex=None
+    def query_dispenser_date(
+        self, index, dispenser_org, start_date, end_date, filter_expression=None, term_regex=None
     ):
         """
         Return the epsRecord terms which match the supplied range and regex for the dispenserDate index.
         """
-        startDate, endDate = [self.padOrTrimDate(date) for date in [startDate, endDate]]
+        start_date, end_date = [self.pad_or_trim_date(date) for date in [start_date, end_date]]
 
-        pkExpression = BotoKey(Attribute.DISPENSER_ORG.name).eq(dispenserOrg)
-        [valid, skExpression] = self._getValidRangeCondition(
-            Attribute.CREATION_DATETIME.name, startDate, endDate
+        pk_expression = BotoKey(Attribute.DISPENSER_ORG.name).eq(dispenser_org)
+        [valid, sk_expression] = self._get_valid_range_condition(
+            Attribute.CREATION_DATETIME.name, start_date, end_date
         )
 
         if not valid:
             return []
 
-        items = self.client.queryIndex(
-            GSI.DISPENSER_DATE.name, pkExpression & skExpression, filterExpression
+        items = self.client.query_index(
+            GSI.DISPENSER_DATE.name, pk_expression & sk_expression, filter_expression
         )
 
-        return self.buildTerms(items, index, termRegex)
+        return self.build_terms(items, index, term_regex)
 
-    def queryNomPharmStatus(self, odsCode, allStatuses=False, limit=None):
+    def query_nom_pharm_status(self, ods_code, all_statuses=False, limit=None):
         """
         Return the nomPharmStatus prescription keys which match the supplied ODS code.
-        Query using the nominatedPharmacyStatus index. If allStatuses is False, only return prescriptions
+        Query using the nominatedPharmacyStatus index. If all_statuses is False, only return prescriptions
         with status TO_BE_DISPENSED (0001).
         """
-        keyConditionExpression = BotoKey(Attribute.NOMINATED_PHARMACY.name).eq(odsCode)
+        key_condition_expression = BotoKey(Attribute.NOMINATED_PHARMACY.name).eq(ods_code)
 
-        isReadyCondition = (
+        is_ready_condition = (
             BotoKey(Attribute.IS_READY.name).eq(int(True))
-            if not allStatuses
+            if not all_statuses
             else BotoKey(Attribute.IS_READY.name).between(0, 1)
         )
-        keyConditionExpression = keyConditionExpression & isReadyCondition
+        key_condition_expression = key_condition_expression & is_ready_condition
 
-        items = self.client.queryIndexWithLimit(
-            GSI.NOMINATED_PHARMACY_STATUS.name, keyConditionExpression, None, limit
+        items = self.client.query_index_with_limit(
+            GSI.NOMINATED_PHARMACY_STATUS.name, key_condition_expression, None, limit
         )
 
         return [item[Key.PK.name] for item in items]
 
-    def queryNomPharmStatusTerms(self, index, odsCode, status, termRegex=None):
+    def query_nom_pharm_status_terms(self, index, ods_code, status, term_regex=None):
         """
         Return the nomPharmStatus terms which match the supplied ODS code and status.
-        Query using the nominatedPharmacyStatus index, with isReady derived from the status.
+        Query using the nominatedPharmacyStatus index, with is_ready derived from the status.
         """
-        isReady = status == PrescriptionStatus.TO_BE_DISPENSED
+        is_ready = status == PrescriptionStatus.TO_BE_DISPENSED
 
-        keyConditionExpression = BotoKey(Attribute.NOMINATED_PHARMACY.name).eq(odsCode) & BotoKey(
-            Attribute.IS_READY.name
-        ).eq(int(isReady))
+        key_condition_expression = BotoKey(Attribute.NOMINATED_PHARMACY.name).eq(
+            ods_code
+        ) & BotoKey(Attribute.IS_READY.name).eq(int(is_ready))
 
-        filterExpression = Attr(ProjectedAttribute.STATUS.name).contains(status)
+        filter_expression = Attr(ProjectedAttribute.STATUS.name).contains(status)
 
-        items = self.client.queryIndex(
-            GSI.NOMINATED_PHARMACY_STATUS.name, keyConditionExpression, filterExpression
+        items = self.client.query_index(
+            GSI.NOMINATED_PHARMACY_STATUS.name, key_condition_expression, filter_expression
         )
 
-        return self.buildTerms(items, index, termRegex)
+        return self.build_terms(items, index, term_regex)
 
-    def queryClaimId(self, claimId):
+    def query_claim_id(self, claim_id):
         """
-        Search for an existing batch claim containing the given claimId.
+        Search for an existing batch claim containing the given claim_id.
         """
-        keyConditionExpression = BotoKey(Key.SK.name).eq(SortKey.CLAIM.value)
-        filterExpression = Attr(ProjectedAttribute.CLAIM_IDS.name).contains(claimId)
+        key_condition_expression = BotoKey(Key.SK.name).eq(SortKey.CLAIM.value)
+        filter_expression = Attr(ProjectedAttribute.CLAIM_IDS.name).contains(claim_id)
 
-        items = self.client.queryIndex(GSI.CLAIM_ID.name, keyConditionExpression, filterExpression)
+        items = self.client.query_index(
+            GSI.CLAIM_ID.name, key_condition_expression, filter_expression
+        )
 
         return [item[Key.PK.name] for item in items]
 
-    def queryNextActivityDate(self, rangeStart, rangeEnd):
+    def query_next_activity_date(self, range_start, range_end):
         """
         Yields the epsRecord keys which match the supplied nextActivity and date range for the nextActivity index.
 
@@ -309,11 +323,11 @@ class PrescriptionsDynamoDbIndex:
         This means NEXT_ACTIVITY_DATE_PARITIONS + 1 queries are performed, one for each partition
         and one for the non-partitioned nextActivityDate index.
         """
-        nextActivity, startDate = rangeStart.split("_")
-        endDate = rangeEnd.split("_")[-1]
+        next_activity, start_date = range_start.split("_")
+        end_date = range_end.split("_")[-1]
 
-        [valid, skExpression] = self._getValidRangeCondition(
-            Attribute.NEXT_ACTIVITY_DATE.name, startDate, endDate
+        [valid, sk_expression] = self._get_valid_range_condition(
+            Attribute.NEXT_ACTIVITY_DATE.name, start_date, end_date
         )
 
         if not valid:
@@ -322,66 +336,72 @@ class PrescriptionsDynamoDbIndex:
         shards = [None] + list(range(1, NEXT_ACTIVITY_DATE_PARTITIONS + 1))
 
         for shard in shards:
-            yield from self._queryNextActivityDateShard(nextActivity, skExpression, shard)
+            yield from self._query_next_activity_date_shard(next_activity, sk_expression, shard)
 
-    def _queryNextActivityDateShard(self, nextActivity, skExpression, shard):
+    def _query_next_activity_date_shard(self, next_activity, sk_expression, shard):
         """
         Return a generator for the epsRecord keys which match the supplied nextActivity and date range
         for a given pk shard.
         """
-        expectedNextActivity = nextActivity if shard is None else f"{nextActivity}.{shard}"
-        pkExpression = BotoKey(Attribute.NEXT_ACTIVITY.name).eq(expectedNextActivity)
+        expected_next_activity = next_activity if shard is None else f"{next_activity}.{shard}"
+        pk_expression = BotoKey(Attribute.NEXT_ACTIVITY.name).eq(expected_next_activity)
 
-        return self.client.queryIndexYield(GSI.NEXT_ACTIVITY_DATE.name, pkExpression & skExpression)
+        return self.client.query_index_yield(
+            GSI.NEXT_ACTIVITY_DATE.name, pk_expression & sk_expression
+        )
 
-    def _getDateRangeForQuery(self, startDatetimeStr, endDatetimeStr):
+    def _get_date_range_for_query(self, start_datetime_str, end_datetime_str):
         """
         Get days included in the given range. For use in claimNotificationStoreTime index query.
         """
-        startDatetime = datetime.strptime(startDatetimeStr, TimeFormats.STANDARD_DATE_TIME_FORMAT)
-        endDatetime = datetime.strptime(endDatetimeStr, TimeFormats.STANDARD_DATE_TIME_FORMAT)
+        start_datetime = datetime.strptime(
+            start_datetime_str, TimeFormats.STANDARD_DATE_TIME_FORMAT
+        )
+        end_datetime = datetime.strptime(end_datetime_str, TimeFormats.STANDARD_DATE_TIME_FORMAT)
 
         return [
-            (startDatetime + timedelta(days=d)).strftime(TimeFormats.STANDARD_DATE_FORMAT)
-            for d in range((endDatetime.date() - startDatetime.date()).days + 1)
+            (start_datetime + timedelta(days=d)).strftime(TimeFormats.STANDARD_DATE_FORMAT)
+            for d in range((end_datetime.date() - start_datetime.date()).days + 1)
         ]
 
-    def queryClaimNotificationStoreTime(self, internalID, startDatetimeStr, endDatetimeStr):
+    def query_claim_notification_store_time(
+        self, internal_id, start_datetime_str, end_datetime_str
+    ):
         """
         Search for claim notification documents whose store times fall within the specified window.
         """
-        [valid, skExpression] = self._getValidRangeCondition(
-            Attribute.STORE_TIME.name, startDatetimeStr, endDatetimeStr
+        [valid, sk_expression] = self._get_valid_range_condition(
+            Attribute.STORE_TIME.name, start_datetime_str, end_datetime_str
         )
 
         if not valid:
             return []
 
-        dates = self._getDateRangeForQuery(startDatetimeStr, endDatetimeStr)
+        dates = self._get_date_range_for_query(start_datetime_str, end_datetime_str)
         generators = []
 
         for date in dates:
-            pkExpression = BotoKey(Attribute.CLAIM_NOTIFICATION_STORE_DATE.name).eq(date)
-            self.logObject.writeLog(
+            pk_expression = BotoKey(Attribute.CLAIM_NOTIFICATION_STORE_DATE.name).eq(date)
+            self.log_object.write_log(
                 "DDB0013",
                 None,
                 {
                     "date": date,
-                    "startTime": startDatetimeStr,
-                    "endTime": endDatetimeStr,
-                    "internalID": internalID,
+                    "startTime": start_datetime_str,
+                    "endTime": end_datetime_str,
+                    "internalID": internal_id,
                 },
             )
             generators.append(
-                self.client.queryIndexYield(
-                    GSI.CLAIM_NOTIFICATION_STORE_TIME.name, pkExpression & skExpression, None
+                self.client.query_index_yield(
+                    GSI.CLAIM_NOTIFICATION_STORE_TIME.name, pk_expression & sk_expression, None
                 )
             )
 
         for generator in generators:
             yield from generator
 
-    def _getValidRangeCondition(self, key, start, end) -> Tuple[bool, object]:
+    def _get_valid_range_condition(self, key, start, end) -> Tuple[bool, object]:
         """
         Returns a range condition if the start < end
         """
@@ -392,18 +412,18 @@ class PrescriptionsDynamoDbIndex:
         else:
             return True, BotoKey(key).between(start, end)
 
-    def queryBatchClaimIdSequenceNumber(self, sequenceNumber, nwssp=False):
+    def query_batch_claim_id_sequence_number(self, sequence_number, nwssp=False):
         """
         Query the claimIdSequenceNumber index for batch claim IDs based on sequence number.
         """
-        indexName = (
+        index_name = (
             GSI.CLAIM_ID_SEQUENCE_NUMBER_NWSSP.name if nwssp else GSI.CLAIM_ID_SEQUENCE_NUMBER.name
         )
-        keyName = Attribute.SEQUENCE_NUMBER_NWSSP.name if nwssp else Attribute.SEQUENCE_NUMBER.name
+        key_name = Attribute.SEQUENCE_NUMBER_NWSSP.name if nwssp else Attribute.SEQUENCE_NUMBER.name
 
-        keyConditionExpression = BotoKey(keyName).eq(sequenceNumber)
+        key_condition_expression = BotoKey(key_name).eq(sequence_number)
 
-        items = self.client.queryIndex(indexName, keyConditionExpression, None)
+        items = self.client.query_index(index_name, key_condition_expression, None)
 
         return [
             item[Key.PK.name]

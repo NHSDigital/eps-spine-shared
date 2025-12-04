@@ -10,7 +10,7 @@ import simplejson
 from moto import mock_aws
 
 from eps_spine_shared.common.dynamodb_common import SortKey
-from eps_spine_shared.common.dynamodb_datastore import PrescriptionsDynamoDbDataStore
+from eps_spine_shared.common.dynamodb_datastore import EpsDynamoDbDataStore
 from eps_spine_shared.common.prescription_record import PrescriptionStatus
 from tests.mock_logger import MockLogObject
 
@@ -44,7 +44,7 @@ class DynamoDbTest(TestCase):
 
         self.logger: MockLogObject = MockLogObject()
 
-        self.datastore: PrescriptionsDynamoDbDataStore = PrescriptionsDynamoDbDataStore(
+        self.datastore: EpsDynamoDbDataStore = EpsDynamoDbDataStore(
             self.logger, None, "spine-eps-datastore"
         )
         self.keys = []

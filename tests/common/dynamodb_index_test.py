@@ -132,7 +132,7 @@ class DynamoDbIndexTest(DynamoDbTest):
             }
         ]
         termRegex = r"\|\d{8,14}\|" + releaseVersion + r"\|" + PrescriptionStatus.TO_BE_DISPENSED
-        terms = self.datastore.indexes.buildTerms(items, indexes.INDEX_NHSNUMBER_DATE, termRegex)
+        terms = self.datastore.indexes.build_terms(items, indexes.INDEX_NHSNUMBER_DATE, termRegex)
 
         self.assertEqual(len(terms), 1)
 
@@ -855,8 +855,8 @@ class DynamoDbIndexTest(DynamoDbTest):
         startDate, endDate = inputDates
         expectedStartDate, expectedEndDate = expectedDates
 
-        actualStartDate = self.datastore.indexes.padOrTrimDate(startDate)
-        actualEndDate = self.datastore.indexes.padOrTrimDate(endDate)
+        actualStartDate = self.datastore.indexes.pad_or_trim_date(startDate)
+        actualEndDate = self.datastore.indexes.pad_or_trim_date(endDate)
 
         self.assertEqual(expectedStartDate, actualStartDate)
         self.assertEqual(expectedEndDate, actualEndDate)

@@ -23,7 +23,7 @@ from eps_spine_shared.common.dynamodb_common import (
     prescription_id_without_check_digit,
     replace_decimals,
 )
-from eps_spine_shared.common.dynamodb_index import PrescriptionsDynamoDbIndex, PrescriptionStatus
+from eps_spine_shared.common.dynamodb_index import EpsDynamoDbIndex, PrescriptionStatus
 from eps_spine_shared.nhsfundamentals.timeutilities import (
     TimeFormats,
     convertSpineDate,
@@ -60,7 +60,7 @@ def timer(func):
     return wrapper_timer
 
 
-class PrescriptionsDynamoDbDataStore:
+class EpsDynamoDbDataStore:
     """
     The prescriptions message store specific DynamoDB client.
     """
@@ -99,7 +99,7 @@ class PrescriptionsDynamoDbDataStore:
             role_session_name,
             sts_endpoint_url,
         )
-        self.indexes = PrescriptionsDynamoDbIndex(self.log_object, self.client)
+        self.indexes = EpsDynamoDbIndex(self.log_object, self.client)
 
     def base64_decode_document_content(self, internal_id, document):
         """
@@ -328,14 +328,14 @@ class PrescriptionsDynamoDbDataStore:
         Return the epsRecord terms which match the supplied range and regex for the supplied index.
         """
         index_map = {
-            indexes.INDEX_NHSNUMBER_PRDSDATE: self.indexes.nhsNumberPrescDispDate,
-            indexes.INDEX_NHSNUMBER_PRDATE: self.indexes.nhsNumberPrescDate,
-            indexes.INDEX_NHSNUMBER_DSDATE: self.indexes.nhsNumberDispDate,
-            indexes.INDEX_NHSNUMBER_DATE: self.indexes.nhsNumberDate,
-            indexes.INDEX_PRESCRIBER_DSDATE: self.indexes.prescDispDate,
-            indexes.INDEX_PRESCRIBER_DATE: self.indexes.prescDate,
-            indexes.INDEX_DISPENSER_DATE: self.indexes.dispDate,
-            indexes.INDEX_NOMPHARM: self.indexes.nomPharmStatus,
+            indexes.INDEX_NHSNUMBER_PRDSDATE: self.indexes.nhs_number_presc_disp_date,
+            indexes.INDEX_NHSNUMBER_PRDATE: self.indexes.nhs_number_presc_date,
+            indexes.INDEX_NHSNUMBER_DSDATE: self.indexes.nhs_number_disp_date,
+            indexes.INDEX_NHSNUMBER_DATE: self.indexes.nhs_number_date,
+            indexes.INDEX_PRESCRIBER_DSDATE: self.indexes.presc_disp_date,
+            indexes.INDEX_PRESCRIBER_DATE: self.indexes.presc_date,
+            indexes.INDEX_DISPENSER_DATE: self.indexes.disp_date,
+            indexes.INDEX_NOMPHARM: self.indexes.nom_pharm_status,
         }
         return index_map[index](range_start, range_end, term_regex)
 
@@ -344,7 +344,7 @@ class PrescriptionsDynamoDbDataStore:
         """
         Return the epsRecord terms which match the supplied NHS number.
         """
-        return self.indexes.queryNhsNumberDate(indexes.INDEX_NHSNUMBER, nhs_number)
+        return self.indexes.query_nhs_number_date(indexes.INDEX_NHSNUMBER, nhs_number)
 
     @timer
     def return_pids_for_nomination_change(self, internal_id, nhs_number):
@@ -374,7 +374,7 @@ class PrescriptionsDynamoDbDataStore:
         """
         Query the nomPharmStatus index to get the unfiltered, to-be-dispensed prescriptions for the given pharmacy.
         """
-        return self.indexes.queryNomPharmStatus(nominated_pharmacy, limit=limit)
+        return self.indexes.query_nom_pharm_status(nominated_pharmacy, limit=limit)
 
     @timer
     def return_record_for_process(self, internal_id, prescription_id, expect_exists=True):
@@ -721,7 +721,7 @@ class PrescriptionsDynamoDbDataStore:
         Returns all the epsRecord keys for prescriptions whose nextActivity is the same as that provided,
         and whose next activity date is within the date range provided.
         """
-        return self.indexes.queryNextActivityDate(next_activity_start, next_activity_end)
+        return self.indexes.query_next_activity_date(next_activity_start, next_activity_end)
 
     @timer
     def return_prescription_ids_for_nom_pharm(self, _internal_id, nominated_pharmacy_index_term):
@@ -729,21 +729,21 @@ class PrescriptionsDynamoDbDataStore:
         Returns the epsRecord keys relating to the given nominated pharmacy term.
         """
         ods_code = nominated_pharmacy_index_term.split("_")[0]
-        return self.indexes.queryNomPharmStatus(ods_code)
+        return self.indexes.query_nom_pharm_status(ods_code)
 
     @timer
     def return_claim_notification_ids_between_store_dates(self, internal_id, start_date, end_date):
         """
         Returns all the epsDocument keys for claim notification documents whose store dates are in the given window.
         """
-        return self.indexes.queryClaimNotificationStoreTime(internal_id, start_date, end_date)
+        return self.indexes.query_claim_notification_store_time(internal_id, start_date, end_date)
 
     @timer
     def get_all_pids_by_nominated_pharmacy(self, _internal_id, nominated_pharmacy):
         """
         Run an index query to get all prescriptions for this nominated pharmacy.
         """
-        return self.indexes.queryNomPharmStatus(nominated_pharmacy, True)
+        return self.indexes.query_nom_pharm_status(nominated_pharmacy, True)
 
     @timer
     def check_item_exists(self, internal_id, pk, sk, expect_exists) -> bool:
@@ -760,4 +760,4 @@ class PrescriptionsDynamoDbDataStore:
         Run a query against the sequence number index looking for the
         batch GUID (key) on the basis of sequence number.
         """
-        return self.indexes.queryBatchClaimIdSequenceNumber(sequence_number, nwssp)
+        return self.indexes.query_batch_claim_id_sequence_number(sequence_number, nwssp)

@@ -22,7 +22,7 @@ from eps_spine_shared.common.dynamodb_common import (
     SortKey,
     replace_decimals,
 )
-from eps_spine_shared.common.dynamodb_datastore import PrescriptionsDynamoDbDataStore
+from eps_spine_shared.common.dynamodb_datastore import EpsDynamoDbDataStore
 from eps_spine_shared.common.prescription_record import PrescriptionStatus
 from eps_spine_shared.nhsfundamentals.timeutilities import TimeFormats
 from tests.dynamodb_test import DynamoDbTest
@@ -209,7 +209,7 @@ class DynamoDbDataStoreTest(DynamoDbTest):
         occurrences = self.logger.getLogOccurrences("DDB0002")
         self.assertEqual(len(occurrences), 1)
         self.assertEqual(occurrences[0]["func"], "insert_eps_record_object")
-        self.assertEqual(occurrences[0]["cls"], "PrescriptionsDynamoDbDataStore")
+        self.assertEqual(occurrences[0]["cls"], "EpsDynamoDbDataStore")
 
     def testInsertAndGetEPSWorkList(self):
         """
@@ -643,7 +643,7 @@ class DynamoDbDataStoreTest(DynamoDbTest):
             logger = MockLogObject()
             loggers.append(logger)
 
-            datastore = PrescriptionsDynamoDbDataStore(logger, None, "spine-eps-datastore")
+            datastore = EpsDynamoDbDataStore(logger, None, "spine-eps-datastore")
 
             process = Thread(
                 target=insertRecord, args=(datastore, (self.internalID, prescriptionId, record))
@@ -706,7 +706,7 @@ class DynamoDbDataStoreTest(DynamoDbTest):
             logger = MockLogObject()
             loggers.append(logger)
 
-            datastore = PrescriptionsDynamoDbDataStore(logger, None, "spine-eps-datastore")
+            datastore = EpsDynamoDbDataStore(logger, None, "spine-eps-datastore")
 
             index = None
             recordType = None
