@@ -45,7 +45,7 @@ def loadTestExampleJson(mockLogObject, filename):
     else:
         raise ValueError("Unknown treatment type %s" % str(treatmentType))
 
-    prescription.createRecordFromStore(prescriptionDict)
+    prescription.create_record_from_store(prescriptionDict)
 
     return prescription
 
@@ -98,7 +98,7 @@ class ReturnChangedIssueListTest(TestCase):
         """
         Execute the test
         """
-        resultSet = self.mockRecord.returnChangedIssueList(
+        resultSet = self.mockRecord.return_changed_issue_list(
             self.preChangeDict, self.postChangeDict, self.maxRepeats
         )
         self.assertEqual(resultSet, self.expectedResult)
@@ -1434,11 +1434,11 @@ class PrescriptionRecordTest(TestCase):
         issue = prescription.getIssue(1)
         claim = issue.claim
 
-        self.assertEqual(claim.receivedDateStr, "20140408")
+        self.assertEqual(claim.received_date_str, "20140408")
 
         # make sure we can also update the received date
-        claim.receivedDateStr = "20131225"
-        self.assertEqual(claim.receivedDateStr, "20131225")
+        claim.received_date_str = "20131225"
+        self.assertEqual(claim.received_date_str, "20131225")
 
     def testFindNextFutureIssueNumber_futureIssueAvailable(self):
         """
@@ -1663,11 +1663,11 @@ class PrescriptionRecordTest(TestCase):
         currentIssue = prescription.currentIssue
 
         cancelledLineItemID = "02ED7776-21CD-4E7B-AC9D-D1DBFEE7B8CF"
-        cancellations = currentIssue.getLineItemCancellations(cancelledLineItemID)
+        cancellations = currentIssue.get_line_item_cancellations(cancelledLineItemID)
         self.assertEqual(len(cancellations), 1)
 
         notCancelledLineItemID = "45D5FB11-D793-4D51-9ADD-95E0F54D2786"
-        cancellations = currentIssue.getLineItemCancellations(notCancelledLineItemID)
+        cancellations = currentIssue.get_line_item_cancellations(notCancelledLineItemID)
         self.assertEqual(len(cancellations), 0)
 
     def testGetLineItemFirstCancellationTime(self):
@@ -1675,11 +1675,13 @@ class PrescriptionRecordTest(TestCase):
         currentIssue = prescription.currentIssue
 
         cancelledLineItemID = "02ED7776-21CD-4E7B-AC9D-D1DBFEE7B8CF"
-        firstCancellationTime = currentIssue.getLineItemFirstCancellationTime(cancelledLineItemID)
+        firstCancellationTime = currentIssue.get_line_item_first_cancellation_time(
+            cancelledLineItemID
+        )
         self.assertEqual(firstCancellationTime, "20240415101553")
 
         notCancelledLineItemID = "45D5FB11-D793-4D51-9ADD-95E0F54D2786"
-        firstCancellationTime = currentIssue.getLineItemFirstCancellationTime(
+        firstCancellationTime = currentIssue.get_line_item_first_cancellation_time(
             notCancelledLineItemID
         )
         self.assertEqual(firstCancellationTime, None)
@@ -1732,7 +1734,7 @@ class PrescriptionRecordChangeLogTest(TestCase):
         self.mockRecord.SCN_MAX = 1
         self.assertRaises(
             EpsSystemError,
-            self.mockRecord.addEventToChangeLog,
+            self.mockRecord.add_event_to_change_log,
             "ce6c4a39-e239-44c5-81e2-adf3612a7391",
             {},
         )

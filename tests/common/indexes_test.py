@@ -55,7 +55,7 @@ def _loadTestPrescription(mockLogObject, prescriptionId):
     else:
         raise ValueError("Unknown treatment type %s" % str(treatmentType))
 
-    prescription.createRecordFromStore(prescriptionDict)
+    prescription.create_record_from_store(prescriptionDict)
 
     return prescription
 

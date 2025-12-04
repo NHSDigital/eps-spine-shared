@@ -242,4 +242,4 @@ class EpsIndexFactory(object):
         """
         See build_indexes
         """
-        index_dict[INDEX_DELTA] = [timeNowAsString() + SEPERATOR + str(eps_record.getSCN())]
+        index_dict[INDEX_DELTA] = [timeNowAsString() + SEPERATOR + str(eps_record.get_scn())]

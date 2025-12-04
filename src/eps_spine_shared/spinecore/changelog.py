@@ -291,7 +291,7 @@ class PrescriptionsChangeLogProcessor(ChangeLogProcessor):
         """
 
         logOfChange = cls.logForGeneralUpdate(
-            updateContext.epsRecord.getSCN(),
+            updateContext.epsRecord.get_scn(),
             internalID,
             updateContext.responseDetails.get(cls.XSLT),
             updateContext.responseDetails.get(cls.RSP_PARAMS),
@@ -341,16 +341,16 @@ class PrescriptionsChangeLogProcessor(ChangeLogProcessor):
         logOfChange[cls.AGENT_PERSON_ORG_CODE] = orgCode
 
         # To help with troubleshooting, the following change entris are added
-        _preChangeIssueStatuses = updateContext.epsRecord.returnPrechangeIssueStatusDict()
-        _postChangeIssueStatuses = updateContext.epsRecord.createIssueCurrentStatusDict()
+        _preChangeIssueStatuses = updateContext.epsRecord.return_prechange_issue_status_dict()
+        _postChangeIssueStatuses = updateContext.epsRecord.create_issue_current_status_dict()
         logOfChange[cls.PRE_CHANGE_STATUS_DICT] = _preChangeIssueStatuses
         logOfChange[cls.POST_CHANGE_STATUS_DICT] = _postChangeIssueStatuses
-        logOfChange[cls.CHANGED_ISSUES_LIST] = updateContext.epsRecord.returnChangedIssueList(
+        logOfChange[cls.CHANGED_ISSUES_LIST] = updateContext.epsRecord.return_changed_issue_list(
             _preChangeIssueStatuses, _postChangeIssueStatuses, None, updateContext.changedIssuesList
         )
         # To help with troubleshooting, the following currentIssue values are added
         logOfChange[cls.PRE_CHANGE_CURRENT_ISSUE] = (
-            updateContext.epsRecord.returnPrechangeCurrentIssue()
+            updateContext.epsRecord.return_prechange_current_issue()
         )
         logOfChange[cls.POST_CHANGE_CURRENT_ISSUE] = updateContext.epsRecord.currentIssueNumber
         if hasattr(updateContext, cls.TOUCHED) and updateContext.touched:
@@ -421,7 +421,7 @@ class ClinicalsChangeLogProcessor(ChangeLogProcessor):
         context object
         """
         logOfChange = cls.logForGeneralUpdate(
-            updateContext.patientRecord.getSCN(),
+            updateContext.patientRecord.get_scn(),
             internalID,
             updateContext.responseDetails.get(cls.XSLT),
             updateContext.responseDetails.get(cls.RSP_PARAMS),
@@ -452,7 +452,7 @@ class ClinicalsChangeLogProcessor(ChangeLogProcessor):
         Create a change log for this expected change from a notification worker - doesn't use
         context and sets a subset of the items used by logForDomainUpdate
         """
-        logOfChange = cls.logForGeneralUpdate(updateContext.patientRecord.getSCN(), internalID)
+        logOfChange = cls.logForGeneralUpdate(updateContext.patientRecord.get_scn(), internalID)
         logOfChange[cls.TIME_PREPARED] = updateContext.handleTime.strftime(
             TimeFormats.STANDARD_DATE_TIME_FORMAT
         )
