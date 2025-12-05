@@ -33,7 +33,7 @@ def getNADReferences():
     }
 
 
-def _loadTestPrescription(mockLogObject, prescriptionId):
+def _loadTestPrescription(mock_log_object, prescriptionId):
     """
     Load prescription data from JSON files in the test resources directory.
     """
@@ -45,11 +45,11 @@ def _loadTestPrescription(mockLogObject, prescriptionId):
 
     treatmentType = prescriptionDict["prescription"]["prescriptionTreatmentType"]
     if treatmentType == PrescriptionTreatmentType.ACUTE_PRESCRIBING:
-        prescription = SinglePrescribeRecord(mockLogObject, "test")
+        prescription = SinglePrescribeRecord(mock_log_object, "test")
     elif treatmentType == PrescriptionTreatmentType.REPEAT_PRESCRIBING:
-        prescription = RepeatPrescribeRecord(mockLogObject, "test")
+        prescription = RepeatPrescribeRecord(mock_log_object, "test")
     elif treatmentType == PrescriptionTreatmentType.REPEAT_DISPENSING:
-        prescription = RepeatDispenseRecord(mockLogObject, "test")
+        prescription = RepeatDispenseRecord(mock_log_object, "test")
     else:
         raise ValueError("Unknown treatment type %s" % str(treatmentType))
 
