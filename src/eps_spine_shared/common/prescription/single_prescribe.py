@@ -8,12 +8,12 @@ class SinglePrescribeRecord(PrescriptionRecord):
     Class defined to handle single instance (acute) prescriptions
     """
 
-    def __init__(self, logObject, internalID):
+    def __init__(self, log_object, internal_id):
         """
-        Allow the recordType attribute to be set
+        Allow the record_type attribute to be set
         """
-        super(SinglePrescribeRecord, self).__init__(logObject, internalID)
-        self.recordType = "Acute"
+        super(SinglePrescribeRecord, self).__init__(log_object, internal_id)
+        self.record_type = "Acute"
 
     def add_line_item_repeat_data(self, release_data, line_item_ref, line_item):
         """
@@ -81,10 +81,10 @@ class SinglePrescribeRecord(PrescriptionRecord):
         last_dispense_date = instance[fields.FIELD_DISPENSE][fields.FIELD_LAST_DISPENSE_DATE]
         return last_dispense_date
 
-    def returnLastDispMsgRef(self, instanceNumberStr):
+    def return_last_disp_msg_ref(self, instance_number_str):
         """
         returns the last dispense Msg Ref for the issue
         """
-        issueNumber = int(instanceNumberStr)
-        issue = self.get_issue(issueNumber)
+        issue_number = int(instance_number_str)
+        issue = self.get_issue(issue_number)
         return issue.last_dispense_notification_msg_ref

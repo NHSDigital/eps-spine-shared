@@ -8,7 +8,7 @@ class RepeatPrescribeRecord(PrescriptionRecord):
 
     def __init__(self, log_object, internal_id):
         """
-        Allow the recordType attribute to be set
+        Allow the record_type attribute to be set
         """
         super(RepeatPrescribeRecord, self).__init__(log_object, internal_id)
-        self.recordType = "RepeatPrescribe"
+        self.record_type = "RepeatPrescribe"

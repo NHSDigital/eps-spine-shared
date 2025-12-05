@@ -1606,12 +1606,12 @@ class PrescriptionRecord(object):
         ]
         return details
 
-    def returnLastDispMsgRef(self, instanceNumberStr):
+    def return_last_disp_msg_ref(self, instance_number_str):
         """
         returns the last dispense Msg Ref for the issue
         """
-        issueNumber = int(instanceNumberStr)
-        issue = self.get_issue(issueNumber)
+        issue_number = int(instance_number_str)
+        issue = self.get_issue(issue_number)
         return issue.last_dispense_notification_msg_ref
 
     def return_details_for_dispense_proposal_return(self):
