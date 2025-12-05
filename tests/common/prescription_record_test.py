@@ -91,7 +91,7 @@ class ReturnChangedIssueListTest(TestCase):
             "issue2": {"lineItems": {"1": "0008", "2": "0008"}, "prescription": "0002"},
             "issue3": {"lineItems": {"1": "0007", "2": "0007"}, "prescription": "9000"},
         }
-        self.maxRepeats = 3
+        self.max_repeats = 3
         self.expectedResult = None
 
     def runReturnChangedIssueListTest(self):
@@ -99,7 +99,7 @@ class ReturnChangedIssueListTest(TestCase):
         Execute the test
         """
         resultSet = self.mockRecord.return_changed_issue_list(
-            self.preChangeDict, self.postChangeDict, self.maxRepeats
+            self.preChangeDict, self.postChangeDict, self.max_repeats
         )
         self.assertEqual(resultSet, self.expectedResult)
 
@@ -189,7 +189,7 @@ class IncludeNextActivityForInstanceTest(TestCase):
         Test that 'True' is returned for acute, current, first and final issue when:
          - currentInstance = 1,
          - instanceNumber = 1,
-         - maxRepeats = 1,
+         - max_repeats = 1,
          - nextActivity = expire
         """
         _activity = self.mockRecord.NEXTACTIVITY_EXPIRE
@@ -200,7 +200,7 @@ class IncludeNextActivityForInstanceTest(TestCase):
         Test that 'True' is returned for acute, current, first and final issue when:
          - currentInstance = 1,
          - instanceNumber = 1,
-         - maxRepeats = 1,
+         - max_repeats = 1,
          - nextActivity = createNoClaim
         """
         _activity = self.mockRecord.NEXTACTIVITY_CREATENOCLAIM
@@ -211,7 +211,7 @@ class IncludeNextActivityForInstanceTest(TestCase):
         Test that 'True' is returned for acute, current, first and final issue when:
          - currentInstance = 1,
          - instanceNumber = 1,
-         - maxRepeats = 1,
+         - max_repeats = 1,
          - nextActivity = ready
         """
         _activity = self.mockRecord.NEXTACTIVITY_READY
@@ -222,7 +222,7 @@ class IncludeNextActivityForInstanceTest(TestCase):
         Test that 'True' is returned for acute, current, first and final issue when:
          - currentInstance = 1,
          - instanceNumber = 1,
-         - maxRepeats = 1,
+         - max_repeats = 1,
          - nextActivity = delete
         """
         _activity = self.mockRecord.NEXTACTIVITY_DELETE
@@ -233,7 +233,7 @@ class IncludeNextActivityForInstanceTest(TestCase):
         Test that 'True' is returned for repeat dispense, current and first issue when:
          - currentInstance = 1,
          - instanceNumber = 1,
-         - maxRepeats = 3,
+         - max_repeats = 3,
          - nextActivity = expire
         """
         _activity = self.mockRecord.NEXTACTIVITY_EXPIRE
@@ -244,7 +244,7 @@ class IncludeNextActivityForInstanceTest(TestCase):
         Test that 'True' is returned for repeat dispense, current but not final issue when:
          - currentInstance = 1,
          - instanceNumber = 1,
-         - maxRepeats = 3,
+         - max_repeats = 3,
          - nextActivity = createNoClaim
         """
         _activity = self.mockRecord.NEXTACTIVITY_CREATENOCLAIM
@@ -255,7 +255,7 @@ class IncludeNextActivityForInstanceTest(TestCase):
         Test that 'True' is returned for repeat dispense, current but not final issue when:
          - currentInstance = 1,
          - instanceNumber = 1,
-         - maxRepeats = 3,
+         - max_repeats = 3,
          - nextActivity = ready
         """
         _activity = self.mockRecord.NEXTACTIVITY_READY
@@ -266,7 +266,7 @@ class IncludeNextActivityForInstanceTest(TestCase):
         Test that 'False' is returned for repeat dispense, current but not final issue when:
          - currentInstance = 1,
          - instanceNumber = 1,
-         - maxRepeats = 3,
+         - max_repeats = 3,
          - nextActivity = delete
         """
         _activity = self.mockRecord.NEXTACTIVITY_DELETE
@@ -277,7 +277,7 @@ class IncludeNextActivityForInstanceTest(TestCase):
         Test that 'False' is returned for repeat dispense, previous issue when:
          - currentInstance = 2,
          - instanceNumber = 1,
-         - maxRepeats = 3,
+         - max_repeats = 3,
          - nextActivity = expire
         """
         _activity = self.mockRecord.NEXTACTIVITY_EXPIRE
@@ -288,7 +288,7 @@ class IncludeNextActivityForInstanceTest(TestCase):
         Test that 'True' is returned for repeat dispense, previous issue when:
          - currentInstance = 2,
          - instanceNumber = 1,
-         - maxRepeats = 3,
+         - max_repeats = 3,
          - nextActivity = createNoClaim
         """
         _activity = self.mockRecord.NEXTACTIVITY_CREATENOCLAIM
@@ -299,7 +299,7 @@ class IncludeNextActivityForInstanceTest(TestCase):
         Test that 'False' is returned for repeat dispense, previous issue when:
          - currentInstance = 2,
          - instanceNumber = 1,
-         - maxRepeats = 3,
+         - max_repeats = 3,
          - nextActivity = ready
         """
         _activity = self.mockRecord.NEXTACTIVITY_READY
@@ -310,7 +310,7 @@ class IncludeNextActivityForInstanceTest(TestCase):
         Test that 'False' is returned for repeat dispense, previous issue when:
          - currentInstance = 2,
          - instanceNumber = 1,
-         - maxRepeats = 3,
+         - max_repeats = 3,
          - nextActivity = delete
         """
         _activity = self.mockRecord.NEXTACTIVITY_DELETE
@@ -321,7 +321,7 @@ class IncludeNextActivityForInstanceTest(TestCase):
         Test that 'True' is returned for repeat dispense, current but not first or final issue when:
          - currentInstance = 2,
          - instanceNumber = 2,
-         - maxRepeats = 3,
+         - max_repeats = 3,
          - nextActivity = expire
         """
         _activity = self.mockRecord.NEXTACTIVITY_EXPIRE
@@ -332,7 +332,7 @@ class IncludeNextActivityForInstanceTest(TestCase):
         Test that 'True' is returned for repeat dispense, current but not first or final issue when:
          - currentInstance = 2,
          - instanceNumber = 2,
-         - maxRepeats = 3,
+         - max_repeats = 3,
          - nextActivity = createNoClaim
         """
         _activity = self.mockRecord.NEXTACTIVITY_CREATENOCLAIM
@@ -343,7 +343,7 @@ class IncludeNextActivityForInstanceTest(TestCase):
         Test that 'True' is returned for repeat dispense, current but not first or final issue when:
          - currentInstance = 2,
          - instanceNumber = 2,
-         - maxRepeats = 3,
+         - max_repeats = 3,
          - nextActivity = ready
         """
         _activity = self.mockRecord.NEXTACTIVITY_READY
@@ -354,7 +354,7 @@ class IncludeNextActivityForInstanceTest(TestCase):
         Test that 'False' is returned for repeat dispense, current but not first or final issue when:
          - currentInstance = 2,
          - instanceNumber = 2,
-         - maxRepeats = 3,
+         - max_repeats = 3,
          - nextActivity = delete
         """
         _activity = self.mockRecord.NEXTACTIVITY_DELETE
@@ -365,7 +365,7 @@ class IncludeNextActivityForInstanceTest(TestCase):
         Test that 'True' is returned for repeat dispense, current and final issue when:
          - currentInstance = 3,
          - instanceNumber = 3,
-         - maxRepeats = 3,
+         - max_repeats = 3,
          - nextActivity = expire
         """
         _activity = self.mockRecord.NEXTACTIVITY_EXPIRE
@@ -376,7 +376,7 @@ class IncludeNextActivityForInstanceTest(TestCase):
         Test that 'True' is returned for repeat dispense, current and final issue when:
          - currentInstance = 3,
          - instanceNumber = 3,
-         - maxRepeats = 3,
+         - max_repeats = 3,
          - nextActivity = createNoClaim
         """
         _activity = self.mockRecord.NEXTACTIVITY_CREATENOCLAIM
@@ -387,7 +387,7 @@ class IncludeNextActivityForInstanceTest(TestCase):
         Test that 'True' is returned for repeat dispense, current and final issue when:
          - currentInstance = 3,
          - instanceNumber = 3,
-         - maxRepeats = 3,
+         - max_repeats = 3,
          - nextActivity = ready
         """
         _activity = self.mockRecord.NEXTACTIVITY_READY
@@ -398,7 +398,7 @@ class IncludeNextActivityForInstanceTest(TestCase):
         Test that 'True' is returned for repeat dispense, current and final issue when:
          - currentInstance = 3,
          - instanceNumber = 3,
-         - maxRepeats = 3,
+         - max_repeats = 3,
          - nextActivity = delete
         """
         _activity = self.mockRecord.NEXTACTIVITY_DELETE
@@ -409,7 +409,7 @@ class IncludeNextActivityForInstanceTest(TestCase):
         Test that 'False' is returned for repeat dispense, future issue when:
          - currentInstance = 1,
          - instanceNumber = 3,
-         - maxRepeats = 3,
+         - max_repeats = 3,
          - nextActivity = expire
         """
         _activity = self.mockRecord.NEXTACTIVITY_EXPIRE
@@ -420,7 +420,7 @@ class IncludeNextActivityForInstanceTest(TestCase):
         Test that 'False' is returned for repeat dispense, future issue when:
          - currentInstance = 1,
          - instanceNumber = 3,
-         - maxRepeats = 3,
+         - max_repeats = 3,
          - nextActivity = createNoClaim
         """
         _activity = self.mockRecord.NEXTACTIVITY_CREATENOCLAIM
@@ -431,7 +431,7 @@ class IncludeNextActivityForInstanceTest(TestCase):
         Test that 'False' is returned for repeat dispense, future issue when:
          - currentInstance = 1,
          - instanceNumber = 3,
-         - maxRepeats = 3,
+         - max_repeats = 3,
          - nextActivity = ready
         """
         _activity = self.mockRecord.NEXTACTIVITY_READY
@@ -442,7 +442,7 @@ class IncludeNextActivityForInstanceTest(TestCase):
         Test that 'False' is returned for repeat dispense, future issue when:
          - currentInstance = 1,
          - instanceNumber = 3,
-         - maxRepeats = 3,
+         - max_repeats = 3,
          - nextActivity = delete
         """
         _activity = self.mockRecord.NEXTACTIVITY_DELETE
@@ -453,7 +453,7 @@ class IncludeNextActivityForInstanceTest(TestCase):
         Test that 'True' is returned for acute, curent, first and final issue when:
          - currentInstance = 1,
          - instanceNumber = 1,
-         - maxRepeats = 1,
+         - max_repeats = 1,
          - nextActivity = purge
         """
         _activity = self.mockRecord.NEXTACTIVITY_PURGE
@@ -464,7 +464,7 @@ class IncludeNextActivityForInstanceTest(TestCase):
         Test that 'False' is returned for repeat dispense, current but not final issue when:
          - currentInstance = 1,
          - instanceNumber = 1,
-         - maxRepeats = 3,
+         - max_repeats = 3,
          - nextActivity = purge
         """
         _activity = self.mockRecord.NEXTACTIVITY_PURGE
@@ -475,7 +475,7 @@ class IncludeNextActivityForInstanceTest(TestCase):
         Test that 'False' is returned for repeat dispense, previous issue when:
          - currentInstance = 2,
          - instanceNumber = 1,
-         - maxRepeats = 3,
+         - max_repeats = 3,
          - nextActivity = purge
         """
         _activity = self.mockRecord.NEXTACTIVITY_PURGE
@@ -486,7 +486,7 @@ class IncludeNextActivityForInstanceTest(TestCase):
         Test that 'False' is returned for repeat dispense, current but not first or final issue when:
          - currentInstance = 2,
          - instanceNumber = 2,
-         - maxRepeats = 3,
+         - max_repeats = 3,
          - nextActivity = purge
         """
         _activity = self.mockRecord.NEXTACTIVITY_PURGE
@@ -497,7 +497,7 @@ class IncludeNextActivityForInstanceTest(TestCase):
         Test that 'True' is returned for repeat dispense, current and final issue when:
          - currentInstance = 3,
          - instanceNumber = 3,
-         - maxRepeats = 3,
+         - max_repeats = 3,
          - nextActivity = purge
         """
         _activity = self.mockRecord.NEXTACTIVITY_PURGE
@@ -508,7 +508,7 @@ class IncludeNextActivityForInstanceTest(TestCase):
         Test that 'False' is returned for repeat dispense, future issue when:
          - currentInstance = 1,
          - instanceNumber = 3,
-         - maxRepeats = 3,
+         - max_repeats = 3,
          - nextActivity = purge
         """
         _activity = self.mockRecord.NEXTACTIVITY_PURGE
@@ -1397,7 +1397,7 @@ class PrescriptionRecordTest(TestCase):
         prescription = loadTestExampleJson(self.mockLogObject, "7D9625-Z72BF2-11E3A.json")
 
         self.assertEqual(prescription.id, "7D9625-Z72BF2-11E3AC")
-        self.assertEqual(prescription.maxRepeats, 3)
+        self.assertEqual(prescription.max_repeats, 3)
 
     def test_current_issue(self):
         """
@@ -1454,7 +1454,7 @@ class PrescriptionRecordTest(TestCase):
         self.assertEqual(prescription._find_next_future_issue_number("1"), "2")
 
         # check that there are no more beyond the last issue
-        self.assertEqual(prescription.maxRepeats, 2)
+        self.assertEqual(prescription.max_repeats, 2)
         self.assertEqual(prescription._find_next_future_issue_number("2"), None)
 
     def testFindNextFutureIssueNumber_issuesAlreadyDispensed(self):
@@ -1468,7 +1468,7 @@ class PrescriptionRecordTest(TestCase):
         self.assertEqual(prescription._find_next_future_issue_number("2"), None)
 
         # check that there are no more beyond the last issue
-        self.assertEqual(prescription.maxRepeats, 3)
+        self.assertEqual(prescription.max_repeats, 3)
         self.assertEqual(prescription._find_next_future_issue_number("3"), None)
 
     def testGetIssueNumbersInRange(self):

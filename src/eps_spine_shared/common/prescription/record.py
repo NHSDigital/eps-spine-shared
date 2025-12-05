@@ -102,7 +102,7 @@ class PrescriptionRecord(object):
             changed_issues_list = []
 
         if not max_repeats:
-            max_repeats = self.maxRepeats
+            max_repeats = self.max_repeats
         for i in range(1, int(max_repeats) + 1):
             issue_ref = self.generate_status_dict_issue_reference(i)
             # The get will handle missing issues from the change log
@@ -471,7 +471,7 @@ class PrescriptionRecord(object):
 
         :rtype: list(int)
         """
-        expected_issue_numbers = range(1, self.maxRepeats + 1)
+        expected_issue_numbers = range(1, self.max_repeats + 1)
         actual_issue_numbers = self.issue_numbers
         missing_issue_numbers = set(expected_issue_numbers) - set(actual_issue_numbers)
 
@@ -1197,12 +1197,12 @@ class PrescriptionRecord(object):
     def determine_if_final_issue(self, issue_number):
         """
         Check if the issue is the final one, this may be because the current issue is
-        already at MaxRepeats, or becuase subsequent issues are missing
+        already at max_repeats, or becuase subsequent issues are missing
         """
-        if issue_number == self.maxRepeats:
+        if issue_number == self.max_repeats:
             return True
 
-        for i in range(int(issue_number) + 1, int(self.maxRepeats + 1)):
+        for i in range(int(issue_number) + 1, int(self.max_repeats + 1)):
             issue_data = self._get_prescription_instance_data(str(i), False)
             if issue_data.get(fields.FIELD_PRESCRIPTION_STATUS):
                 return False
@@ -1250,7 +1250,7 @@ class PrescriptionRecord(object):
                 next_activity,
                 issue.number,
                 self.current_issue_number,
-                self.maxRepeats,
+                self.max_repeats,
                 issue_is_final,
             ):
                 continue
@@ -1410,7 +1410,7 @@ class PrescriptionRecord(object):
         will actually be ignored)
         fields.FIELD_STATUS - A changed status following the dispense of which this is a
         notification
-        fields.FIELD_MAX_REPEATS - to match the maxRepeats of the original record
+        fields.FIELD_MAX_REPEATS - to match the max_repeats of the original record
         fields.FIELD_CURRENT_INSTANCE - to match the instanceNumber of the current record
 
         Note that as per SPII-6085, we should permit a Repeat Prescribe message without a
@@ -1478,10 +1478,10 @@ class PrescriptionRecord(object):
                     )
                     continue
 
-                # SPII-14044 - permit the maxRepeats for line items to be equal to the
-                # prescription maxRepeats as is normal when the line item expires sooner
+                # SPII-14044 - permit the max_repeats for line items to be equal to the
+                # prescription max_repeats as is normal when the line item expires sooner
                 # than the prescription.
-                if line_item.get(fields.FIELD_MAX_REPEATS) is None or self.maxRepeats is None:
+                if line_item.get(fields.FIELD_MAX_REPEATS) is None or self.max_repeats is None:
                     self.log_object.writeLog(
                         "EPS0147d",
                         None,
@@ -1489,7 +1489,9 @@ class PrescriptionRecord(object):
                             "internalID": self.internal_id,
                             "providedRepeatCount": line_item.get(fields.FIELD_MAX_REPEATS),
                             "storedRepeatCount": (
-                                self.maxRepeats if self.maxRepeats is None else str(self.maxRepeats)
+                                self.max_repeats
+                                if self.max_repeats is None
+                                else str(self.max_repeats)
                             ),
                             "lineItemID": line_item.get(fields.FIELD_ID),
                         },
@@ -1497,7 +1499,7 @@ class PrescriptionRecord(object):
                     # Re-raise this as SpineBusinessError with equivalent errorCode from ErrorBase1722.
                     raise EpsBusinessError(EpsErrorBase.MAX_REPEAT_MISMATCH)
 
-                if int(line_item[fields.FIELD_MAX_REPEATS]) == int(self.maxRepeats):
+                if int(line_item[fields.FIELD_MAX_REPEATS]) == int(self.max_repeats):
                     self.log_object.writeLog(
                         "EPS0147c",
                         None,
@@ -2018,7 +2020,7 @@ class PrescriptionRecord(object):
             for issue_to_expire in issues_to_expire:
                 issue_to_expire.expire(context.handleTime, self)
 
-            self.current_issue_number = self.maxRepeats
+            self.current_issue_number = self.max_repeats
 
         elif context.action == fields.NEXTACTIVITY_CREATENOCLAIM:
             self._create_no_claim(issue, context.handleTime)
@@ -2051,7 +2053,7 @@ class PrescriptionRecord(object):
         :type context : ???
         """
         # if this isn't the last issue...
-        if issue_number < self.maxRepeats:
+        if issue_number < self.max_repeats:
             # Note: we know this is a Repeat Dispensing prescription, as it has multiple
             # issues
             context.prescriptionRepeatLow = context.targetInstance
@@ -2276,7 +2278,7 @@ class PrescriptionRecord(object):
         instance.
         """
         recorded_current_instance = self.return_current_instance()
-        recorded_max_instance = str(self.maxRepeats)
+        recorded_max_instance = str(self.max_repeats)
 
         instance_range = False
         end_instance = None
@@ -2978,8 +2980,8 @@ class PrescriptionRecord(object):
         """
         Add line item information (only done for repeat prescriptions)
         Note that due to inconsistency of repeat numbers, it is possible that the
-        current instance for the whole prescription is greater than the line item maxRepeats
-        in which case the line item maxRepeats should be used.
+        current instance for the whole prescription is greater than the line item max_repeats
+        in which case the line item max_repeats should be used.
 
         :type release_data: dict
         :type line_item_ref: str
@@ -2987,10 +2989,10 @@ class PrescriptionRecord(object):
         """
         line_instance = self.current_issue_number
 
-        if line_item.maxRepeats < self.current_issue_number:
-            line_instance = line_item.maxRepeats
+        if line_item.max_repeats < self.current_issue_number:
+            line_instance = line_item.max_repeats
 
-        release_data[line_item_ref + "MaxRepeats"] = quoted(str(line_item.maxRepeats))
+        release_data[line_item_ref + "MaxRepeats"] = quoted(str(line_item.max_repeats))
         release_data[line_item_ref + "CurrentInstance"] = quoted(str(line_instance))
 
     def validate_line_prescription_status(self, prescription_status, line_item_status):
@@ -3019,22 +3021,22 @@ class PrescriptionRecord(object):
         """
         old_current_issue_number = self.current_issue_number
 
-        if self.current_issue_number == self.maxRepeats:
+        if self.current_issue_number == self.max_repeats:
             self.log_object.writeLog(
                 "EPS0625b",
                 None,
                 {
                     "internalID": self.internal_id,
                     "currentIssueNumber": old_current_issue_number,
-                    "reason": "already at maxRepeats",
+                    "reason": "already at max_repeats",
                 },
             )
             return
 
-        # Count upwards from the current issue number to maxRepeats, looking either for
+        # Count upwards from the current issue number to max_repeats, looking either for
         # an issue that exists
         new_current_issue_number = False
-        for i in range(self.current_issue_number, self.maxRepeats + 1):
+        for i in range(self.current_issue_number, self.max_repeats + 1):
             try:
                 new_current_issue_number = i
                 break
@@ -3502,7 +3504,7 @@ class PrescriptionRecord(object):
             first_issue.status = PrescriptionStatus.TO_BE_DISPENSED
 
     @property
-    def maxRepeats(self):
+    def max_repeats(self):
         """
         The maximum number of issues of this prescription.
 
@@ -3516,7 +3518,7 @@ class PrescriptionRecord(object):
         Instance status
         NHS Number
         Dispensing Organisation
-        None (indicating not a repeat prescription so no maxRepeats)
+        None (indicating not a repeat prescription so no max_repeats)
         """
         instance = self._get_prescription_instance_data(instance_number)
         instance_status = instance[fields.FIELD_PRESCRIPTION_STATUS]

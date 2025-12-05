@@ -11,37 +11,37 @@ class RepeatDispenseRecord(PrescriptionRecord):
     Class defined to handle repeat dispense prescriptions
     """
 
-    def __init__(self, logObject, internalID):
+    def __init__(self, log_object, internal_id):
         """
         Allow the recordType attribute to be set
         """
-        super(RepeatDispenseRecord, self).__init__(logObject, internalID)
+        super(RepeatDispenseRecord, self).__init__(log_object, internal_id)
         self.recordType = "RepeatDispense"
 
     def create_instances(self, context, line_items):
         """
         Create all prescription instances
 
-        Expire any lineItems that have a lower maxRepeats number than the instance number
+        Expire any lineItems that have a lower max_repeats number than the instance number
         """
 
         instance_snippets = {}
 
-        _rangeMax = int(context.max_repeats) + 1
-        _futureInstanceStatus = PrescriptionStatus.REPEAT_DISPENSE_FUTURE_INSTANCE
+        range_max = int(context.maxRepeats) + 1
+        future_instance_status = PrescriptionStatus.REPEAT_DISPENSE_FUTURE_INSTANCE
 
-        for instanceNumber in range(1, _rangeMax):
+        for instance_number in range(1, range_max):
             instance_snippet = self.set_all_snippet_details(fields.INSTANCE_DETAILS, context)
             instance_snippet[fields.FIELD_LINE_ITEMS] = []
-            for lineItem in line_items:
-                _lineItemCopy = copy(lineItem)
-                if int(_lineItemCopy[fields.FIELD_MAX_REPEATS]) < instanceNumber:
-                    _lineItemCopy[fields.FIELD_STATUS] = LineItemStatus.EXPIRED
-                instance_snippet[fields.FIELD_LINE_ITEMS].append(_lineItemCopy)
+            for line_item in line_items:
+                line_item_copy = copy(line_item)
+                if int(line_item_copy[fields.FIELD_MAX_REPEATS]) < instance_number:
+                    line_item_copy[fields.FIELD_STATUS] = LineItemStatus.EXPIRED
+                instance_snippet[fields.FIELD_LINE_ITEMS].append(line_item_copy)
 
-            instance_snippet[fields.FIELD_INSTANCE_NUMBER] = str(instanceNumber)
-            if instanceNumber != 1:
-                instance_snippet[fields.FIELD_PRESCRIPTION_STATUS] = _futureInstanceStatus
+            instance_snippet[fields.FIELD_INSTANCE_NUMBER] = str(instance_number)
+            if instance_number != 1:
+                instance_snippet[fields.FIELD_PRESCRIPTION_STATUS] = future_instance_status
             instance_snippet[fields.FIELD_DISPENSE] = self.set_all_snippet_details(
                 fields.DISPENSE_DETAILS, context
             )
@@ -50,7 +50,7 @@ class RepeatDispenseRecord(PrescriptionRecord):
             )
             instance_snippet[fields.FIELD_CANCELLATIONS] = []
             instance_snippet[fields.FIELD_DISPENSE_HISTORY] = {}
-            instance_snippets[str(instanceNumber)] = instance_snippet
+            instance_snippets[str(instance_number)] = instance_snippet
             instance_snippet[fields.FIELD_NEXT_ACTIVITY] = {}
             instance_snippet[fields.FIELD_NEXT_ACTIVITY][fields.FIELD_ACTIVITY] = None
             instance_snippet[fields.FIELD_NEXT_ACTIVITY][fields.FIELD_DATE] = None
@@ -96,14 +96,14 @@ class RepeatDispenseRecord(PrescriptionRecord):
         return passed_status
 
     @property
-    def maxRepeats(self):
+    def max_repeats(self):
         """
         The maximum number of issues of this prescription.
 
         :rtype: int
         """
-        maxRepeats = self.prescription_record[fields.FIELD_PRESCRIPTION][fields.FIELD_MAX_REPEATS]
-        return int(maxRepeats)
+        max_repeats = self.prescription_record[fields.FIELD_PRESCRIPTION][fields.FIELD_MAX_REPEATS]
+        return int(max_repeats)
 
     @property
     def future_issues_available(self):
@@ -113,4 +113,4 @@ class RepeatDispenseRecord(PrescriptionRecord):
 
         :rtype: bool
         """
-        return self.current_issue_number < self.maxRepeats
+        return self.current_issue_number < self.max_repeats

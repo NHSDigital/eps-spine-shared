@@ -20,15 +20,15 @@ class SinglePrescribeRecord(PrescriptionRecord):
         Add line item information (This is not required for Acute prescriptions, but
         will invalidate the signature if provided in the prescription and not returned
         in the release.
-        It the lineItem.maxRepeats is false (not provided inbound), then do not include
+        It the lineItem.max_repeats is false (not provided inbound), then do not include
         it in the response, otherwise, both MaxRepeats and CurrentInstnace will be 1 for Acute.
 
         :type release_data: dict
         :type line_item_ref: str
         :type line_item: PrescriptionLineItem
         """
-        # Handle the missing inbound maxRepeats
-        if not line_item.maxRepeats:
+        # Handle the missing inbound max_repeats
+        if not line_item.max_repeats:
             return
 
         # Acute, so both values may only be '1'
@@ -42,7 +42,7 @@ class SinglePrescribeRecord(PrescriptionRecord):
         - Issue status
         - NHS Number
         - Dispensing Organisation
-        - None (indicating not a repeat prescription so no maxRepeats)
+        - None (indicating not a repeat prescription so no max_repeats)
         """
         current_issue = self.current_issue
         details = [
@@ -60,7 +60,7 @@ class SinglePrescribeRecord(PrescriptionRecord):
         - Issue status
         - NHS Number
         - Dispensing Organisation
-        - None (indicating not a repeat prescription so no maxRepeats)
+        - None (indicating not a repeat prescription so no max_repeats)
         """
         issue_number = int(instance_number_str)
         issue = self.get_issue(issue_number)
