@@ -6,13 +6,13 @@ from unittest.mock import MagicMock, Mock
 
 from dateutil.relativedelta import relativedelta
 
-from eps_spine_shared.common.prescription.records import (
+from eps_spine_shared.common.prescription.record import (
     NextActivityGenerator,
     PrescriptionRecord,
-    RepeatDispenseRecord,
-    RepeatPrescribeRecord,
-    SinglePrescribeRecord,
 )
+from eps_spine_shared.common.prescription.repeat_dispense import RepeatDispenseRecord
+from eps_spine_shared.common.prescription.repeat_prescribe import RepeatPrescribeRecord
+from eps_spine_shared.common.prescription.single_prescribe import SinglePrescribeRecord
 from eps_spine_shared.common.prescription.types import PrescriptionTreatmentType
 from eps_spine_shared.errors import EpsSystemError
 from eps_spine_shared.nhsfundamentals.timeutilities import TimeFormats

@@ -11,7 +11,7 @@ from moto import mock_aws
 
 from eps_spine_shared.common.dynamodb_common import SortKey
 from eps_spine_shared.common.dynamodb_datastore import EpsDynamoDbDataStore
-from eps_spine_shared.common.prescription.records import PrescriptionStatus
+from eps_spine_shared.common.prescription.record import PrescriptionStatus
 from tests.mock_logger import MockLogObject
 
 PRESC_ORG = "X26"
