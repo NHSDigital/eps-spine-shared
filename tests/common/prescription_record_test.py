@@ -193,7 +193,7 @@ class IncludeNextActivityForInstanceTest(TestCase):
          - nextActivity = expire
         """
         _activity = self.mockRecord.NEXTACTIVITY_EXPIRE
-        self.assertTrue(self.mockRecord._includeNextActivityForInstance(_activity, 1, 1, 1))
+        self.assertTrue(self.mockRecord._include_next_activity_for_instance(_activity, 1, 1, 1))
 
     def testincludeNextActivity_2(self):
         """
@@ -204,7 +204,7 @@ class IncludeNextActivityForInstanceTest(TestCase):
          - nextActivity = createNoClaim
         """
         _activity = self.mockRecord.NEXTACTIVITY_CREATENOCLAIM
-        self.assertTrue(self.mockRecord._includeNextActivityForInstance(_activity, 1, 1, 1))
+        self.assertTrue(self.mockRecord._include_next_activity_for_instance(_activity, 1, 1, 1))
 
     def testincludeNextActivity_3(self):
         """
@@ -215,7 +215,7 @@ class IncludeNextActivityForInstanceTest(TestCase):
          - nextActivity = ready
         """
         _activity = self.mockRecord.NEXTACTIVITY_READY
-        self.assertTrue(self.mockRecord._includeNextActivityForInstance(_activity, 1, 1, 1))
+        self.assertTrue(self.mockRecord._include_next_activity_for_instance(_activity, 1, 1, 1))
 
     def testincludeNextActivity_4(self):
         """
@@ -226,7 +226,7 @@ class IncludeNextActivityForInstanceTest(TestCase):
          - nextActivity = delete
         """
         _activity = self.mockRecord.NEXTACTIVITY_DELETE
-        self.assertTrue(self.mockRecord._includeNextActivityForInstance(_activity, 1, 1, 1))
+        self.assertTrue(self.mockRecord._include_next_activity_for_instance(_activity, 1, 1, 1))
 
     def testincludeNextActivity_5(self):
         """
@@ -237,7 +237,7 @@ class IncludeNextActivityForInstanceTest(TestCase):
          - nextActivity = expire
         """
         _activity = self.mockRecord.NEXTACTIVITY_EXPIRE
-        self.assertTrue(self.mockRecord._includeNextActivityForInstance(_activity, 1, 1, 3))
+        self.assertTrue(self.mockRecord._include_next_activity_for_instance(_activity, 1, 1, 3))
 
     def testincludeNextActivity_6(self):
         """
@@ -248,7 +248,7 @@ class IncludeNextActivityForInstanceTest(TestCase):
          - nextActivity = createNoClaim
         """
         _activity = self.mockRecord.NEXTACTIVITY_CREATENOCLAIM
-        self.assertTrue(self.mockRecord._includeNextActivityForInstance(_activity, 1, 1, 3))
+        self.assertTrue(self.mockRecord._include_next_activity_for_instance(_activity, 1, 1, 3))
 
     def testincludeNextActivity_7(self):
         """
@@ -259,7 +259,7 @@ class IncludeNextActivityForInstanceTest(TestCase):
          - nextActivity = ready
         """
         _activity = self.mockRecord.NEXTACTIVITY_READY
-        self.assertTrue(self.mockRecord._includeNextActivityForInstance(_activity, 1, 1, 3))
+        self.assertTrue(self.mockRecord._include_next_activity_for_instance(_activity, 1, 1, 3))
 
     def testincludeNextActivity_8(self):
         """
@@ -270,7 +270,7 @@ class IncludeNextActivityForInstanceTest(TestCase):
          - nextActivity = delete
         """
         _activity = self.mockRecord.NEXTACTIVITY_DELETE
-        self.assertFalse(self.mockRecord._includeNextActivityForInstance(_activity, 1, 1, 3))
+        self.assertFalse(self.mockRecord._include_next_activity_for_instance(_activity, 1, 1, 3))
 
     def testincludeNextActivity_9(self):
         """
@@ -281,7 +281,7 @@ class IncludeNextActivityForInstanceTest(TestCase):
          - nextActivity = expire
         """
         _activity = self.mockRecord.NEXTACTIVITY_EXPIRE
-        self.assertFalse(self.mockRecord._includeNextActivityForInstance(_activity, 1, 2, 3))
+        self.assertFalse(self.mockRecord._include_next_activity_for_instance(_activity, 1, 2, 3))
 
     def testincludeNextActivity_10(self):
         """
@@ -292,7 +292,7 @@ class IncludeNextActivityForInstanceTest(TestCase):
          - nextActivity = createNoClaim
         """
         _activity = self.mockRecord.NEXTACTIVITY_CREATENOCLAIM
-        self.assertTrue(self.mockRecord._includeNextActivityForInstance(_activity, 1, 2, 3))
+        self.assertTrue(self.mockRecord._include_next_activity_for_instance(_activity, 1, 2, 3))
 
     def testincludeNextActivity_11(self):
         """
@@ -303,7 +303,7 @@ class IncludeNextActivityForInstanceTest(TestCase):
          - nextActivity = ready
         """
         _activity = self.mockRecord.NEXTACTIVITY_READY
-        self.assertFalse(self.mockRecord._includeNextActivityForInstance(_activity, 1, 2, 3))
+        self.assertFalse(self.mockRecord._include_next_activity_for_instance(_activity, 1, 2, 3))
 
     def testincludeNextActivity_12(self):
         """
@@ -314,7 +314,7 @@ class IncludeNextActivityForInstanceTest(TestCase):
          - nextActivity = delete
         """
         _activity = self.mockRecord.NEXTACTIVITY_DELETE
-        self.assertFalse(self.mockRecord._includeNextActivityForInstance(_activity, 1, 2, 3))
+        self.assertFalse(self.mockRecord._include_next_activity_for_instance(_activity, 1, 2, 3))
 
     def testincludeNextActivity_13(self):
         """
@@ -325,7 +325,7 @@ class IncludeNextActivityForInstanceTest(TestCase):
          - nextActivity = expire
         """
         _activity = self.mockRecord.NEXTACTIVITY_EXPIRE
-        self.assertTrue(self.mockRecord._includeNextActivityForInstance(_activity, 2, 2, 3))
+        self.assertTrue(self.mockRecord._include_next_activity_for_instance(_activity, 2, 2, 3))
 
     def testincludeNextActivity_14(self):
         """
@@ -336,7 +336,7 @@ class IncludeNextActivityForInstanceTest(TestCase):
          - nextActivity = createNoClaim
         """
         _activity = self.mockRecord.NEXTACTIVITY_CREATENOCLAIM
-        self.assertTrue(self.mockRecord._includeNextActivityForInstance(_activity, 2, 2, 3))
+        self.assertTrue(self.mockRecord._include_next_activity_for_instance(_activity, 2, 2, 3))
 
     def testincludeNextActivity_15(self):
         """
@@ -347,7 +347,7 @@ class IncludeNextActivityForInstanceTest(TestCase):
          - nextActivity = ready
         """
         _activity = self.mockRecord.NEXTACTIVITY_READY
-        self.assertTrue(self.mockRecord._includeNextActivityForInstance(_activity, 2, 2, 3))
+        self.assertTrue(self.mockRecord._include_next_activity_for_instance(_activity, 2, 2, 3))
 
     def testincludeNextActivity_16(self):
         """
@@ -358,7 +358,7 @@ class IncludeNextActivityForInstanceTest(TestCase):
          - nextActivity = delete
         """
         _activity = self.mockRecord.NEXTACTIVITY_DELETE
-        self.assertFalse(self.mockRecord._includeNextActivityForInstance(_activity, 2, 2, 3))
+        self.assertFalse(self.mockRecord._include_next_activity_for_instance(_activity, 2, 2, 3))
 
     def testincludeNextActivity_17(self):
         """
@@ -369,7 +369,7 @@ class IncludeNextActivityForInstanceTest(TestCase):
          - nextActivity = expire
         """
         _activity = self.mockRecord.NEXTACTIVITY_EXPIRE
-        self.assertTrue(self.mockRecord._includeNextActivityForInstance(_activity, 3, 3, 3))
+        self.assertTrue(self.mockRecord._include_next_activity_for_instance(_activity, 3, 3, 3))
 
     def testincludeNextActivity_18(self):
         """
@@ -380,7 +380,7 @@ class IncludeNextActivityForInstanceTest(TestCase):
          - nextActivity = createNoClaim
         """
         _activity = self.mockRecord.NEXTACTIVITY_CREATENOCLAIM
-        self.assertTrue(self.mockRecord._includeNextActivityForInstance(_activity, 3, 3, 3))
+        self.assertTrue(self.mockRecord._include_next_activity_for_instance(_activity, 3, 3, 3))
 
     def testincludeNextActivity_19(self):
         """
@@ -391,7 +391,7 @@ class IncludeNextActivityForInstanceTest(TestCase):
          - nextActivity = ready
         """
         _activity = self.mockRecord.NEXTACTIVITY_READY
-        self.assertTrue(self.mockRecord._includeNextActivityForInstance(_activity, 3, 3, 3))
+        self.assertTrue(self.mockRecord._include_next_activity_for_instance(_activity, 3, 3, 3))
 
     def testincludeNextActivity_20(self):
         """
@@ -402,7 +402,7 @@ class IncludeNextActivityForInstanceTest(TestCase):
          - nextActivity = delete
         """
         _activity = self.mockRecord.NEXTACTIVITY_DELETE
-        self.assertTrue(self.mockRecord._includeNextActivityForInstance(_activity, 3, 3, 3))
+        self.assertTrue(self.mockRecord._include_next_activity_for_instance(_activity, 3, 3, 3))
 
     def testincludeNextActivity_21(self):
         """
@@ -413,7 +413,7 @@ class IncludeNextActivityForInstanceTest(TestCase):
          - nextActivity = expire
         """
         _activity = self.mockRecord.NEXTACTIVITY_EXPIRE
-        self.assertFalse(self.mockRecord._includeNextActivityForInstance(_activity, 3, 1, 3))
+        self.assertFalse(self.mockRecord._include_next_activity_for_instance(_activity, 3, 1, 3))
 
     def testincludeNextActivity_22(self):
         """
@@ -424,7 +424,7 @@ class IncludeNextActivityForInstanceTest(TestCase):
          - nextActivity = createNoClaim
         """
         _activity = self.mockRecord.NEXTACTIVITY_CREATENOCLAIM
-        self.assertFalse(self.mockRecord._includeNextActivityForInstance(_activity, 3, 1, 3))
+        self.assertFalse(self.mockRecord._include_next_activity_for_instance(_activity, 3, 1, 3))
 
     def testincludeNextActivity_23(self):
         """
@@ -435,7 +435,7 @@ class IncludeNextActivityForInstanceTest(TestCase):
          - nextActivity = ready
         """
         _activity = self.mockRecord.NEXTACTIVITY_READY
-        self.assertFalse(self.mockRecord._includeNextActivityForInstance(_activity, 3, 1, 3))
+        self.assertFalse(self.mockRecord._include_next_activity_for_instance(_activity, 3, 1, 3))
 
     def testincludeNextActivity_24(self):
         """
@@ -446,7 +446,7 @@ class IncludeNextActivityForInstanceTest(TestCase):
          - nextActivity = delete
         """
         _activity = self.mockRecord.NEXTACTIVITY_DELETE
-        self.assertFalse(self.mockRecord._includeNextActivityForInstance(_activity, 3, 1, 3))
+        self.assertFalse(self.mockRecord._include_next_activity_for_instance(_activity, 3, 1, 3))
 
     def testincludeNextActivity_25(self):
         """
@@ -457,7 +457,7 @@ class IncludeNextActivityForInstanceTest(TestCase):
          - nextActivity = purge
         """
         _activity = self.mockRecord.NEXTACTIVITY_PURGE
-        self.assertTrue(self.mockRecord._includeNextActivityForInstance(_activity, 1, 1, 1))
+        self.assertTrue(self.mockRecord._include_next_activity_for_instance(_activity, 1, 1, 1))
 
     def testincludeNextActivity_26(self):
         """
@@ -468,7 +468,7 @@ class IncludeNextActivityForInstanceTest(TestCase):
          - nextActivity = purge
         """
         _activity = self.mockRecord.NEXTACTIVITY_PURGE
-        self.assertFalse(self.mockRecord._includeNextActivityForInstance(_activity, 1, 1, 3))
+        self.assertFalse(self.mockRecord._include_next_activity_for_instance(_activity, 1, 1, 3))
 
     def testincludeNextActivity_27(self):
         """
@@ -479,7 +479,7 @@ class IncludeNextActivityForInstanceTest(TestCase):
          - nextActivity = purge
         """
         _activity = self.mockRecord.NEXTACTIVITY_PURGE
-        self.assertFalse(self.mockRecord._includeNextActivityForInstance(_activity, 1, 2, 3))
+        self.assertFalse(self.mockRecord._include_next_activity_for_instance(_activity, 1, 2, 3))
 
     def testincludeNextActivity_28(self):
         """
@@ -490,7 +490,7 @@ class IncludeNextActivityForInstanceTest(TestCase):
          - nextActivity = purge
         """
         _activity = self.mockRecord.NEXTACTIVITY_PURGE
-        self.assertFalse(self.mockRecord._includeNextActivityForInstance(_activity, 2, 2, 3))
+        self.assertFalse(self.mockRecord._include_next_activity_for_instance(_activity, 2, 2, 3))
 
     def testincludeNextActivity_29(self):
         """
@@ -501,7 +501,7 @@ class IncludeNextActivityForInstanceTest(TestCase):
          - nextActivity = purge
         """
         _activity = self.mockRecord.NEXTACTIVITY_PURGE
-        self.assertTrue(self.mockRecord._includeNextActivityForInstance(_activity, 3, 3, 3))
+        self.assertTrue(self.mockRecord._include_next_activity_for_instance(_activity, 3, 3, 3))
 
     def testincludeNextActivity_30(self):
         """
@@ -512,7 +512,7 @@ class IncludeNextActivityForInstanceTest(TestCase):
          - nextActivity = purge
         """
         _activity = self.mockRecord.NEXTACTIVITY_PURGE
-        self.assertFalse(self.mockRecord._includeNextActivityForInstance(_activity, 3, 1, 3))
+        self.assertFalse(self.mockRecord._include_next_activity_for_instance(_activity, 3, 1, 3))
 
 
 class SetUpNadReferences(TestCase):
@@ -1149,48 +1149,48 @@ class BuildIndexesTest(TestCase):
         self.prescription.prescriptionRecord["patient"] = {}
         self.prescription.prescriptionRecord["patient"]["nhsNumber"] = "TESTPatient"
 
-    def testAddReleaseAndStatus_String(self):
+    def test_add_release_and_status_string(self):
         """
         tests that release and status are added to the passed in index.
         """
-        isString = True
-        indexPrefix = "indexPrefix"
+        is_string = True
+        index_prefix = "indexPrefix"
         # set prescription to be 37 characters long ie R1
         temp = "0123456789012345678901234567890123456"
         self.prescription.prescriptionRecord["prescription"]["prescriptionID"] = temp
         self.prescription.prescriptionRecord["instances"]["0"] = {}
         self.prescription.prescriptionRecord["instances"]["0"]["prescriptionStatus"] = "0001"
-        resultSet = self.prescription.addReleaseAndStatus(indexPrefix, isString)
+        resultSet = self.prescription.add_release_and_status(index_prefix, is_string)
         self.assertEqual(
             resultSet,
             ["indexPrefix|R1|0001"],
             "Failed to create expected release and status suffix",
         )
 
-    def testAddReleaseAndStatus_List(self):
+    def test_add_release_and_status_list(self):
         """
         tests that release and status are added to the passed in index where the passed in index is a list of indexes.
         """
-        isString = False
-        indexPrefix = ["indexPrefix1", "indexPrefix2"]
+        is_string = False
+        index_prefix = ["indexPrefix1", "indexPrefix2"]
         # set prescription to be 37 characters long ie R1
         temp = "0123456789012345678901234567890123456"
         self.prescription.prescriptionRecord["prescription"]["prescriptionID"] = temp
         self.prescription.prescriptionRecord["instances"]["0"] = {}
         self.prescription.prescriptionRecord["instances"]["0"]["prescriptionStatus"] = "0001"
-        resultSet = self.prescription.addReleaseAndStatus(indexPrefix, isString)
+        resultSet = self.prescription.add_release_and_status(index_prefix, is_string)
         self.assertEqual(
             resultSet,
             ["indexPrefix1|R1|0001", "indexPrefix2|R1|0001"],
             "Failed to create expected release and status suffix for list of indexes",
         )
 
-    def testAddReleaseAndStatus_StringMultipleStatus(self):
+    def test_add_release_and_status_string_multiple_status(self):
         """
         tests that release and multiple status are added to the passed in index.
         """
-        isString = True
-        indexPrefix = "indexPrefix"
+        is_string = True
+        index_prefix = "indexPrefix"
         # set prescription to be 37 characters long ie R1
         temp = "0123456789012345678901234567890123456"
         self.prescription.prescriptionRecord["prescription"]["prescriptionID"] = temp
@@ -1198,7 +1198,7 @@ class BuildIndexesTest(TestCase):
         self.prescription.prescriptionRecord["instances"]["0"]["prescriptionStatus"] = "0001"
         self.prescription.prescriptionRecord["instances"]["1"] = {}
         self.prescription.prescriptionRecord["instances"]["1"]["prescriptionStatus"] = "0002"
-        resultSet = self.prescription.addReleaseAndStatus(indexPrefix, isString)
+        resultSet = self.prescription.add_release_and_status(index_prefix, is_string)
         self.assertEqual(
             sorted(resultSet),
             sorted(["indexPrefix|R1|0001", "indexPrefix|R1|0002"]),
@@ -1220,7 +1220,9 @@ class BuildIndexesTest(TestCase):
             "dispensingOrganization"
         ] = "TESTdispenser"
 
-        [success, createdIndex] = self.prescription.returnNhsNumberPrescriberDispenserDateIndex()
+        [success, createdIndex] = (
+            self.prescription.return_nhs_number_prescriber_dispenser_date_index()
+        )
         self.assertEqual(success, True, "Failed to successfully create index")
         expectedIndex = set(["TESTPatient|TESTPrescriber|TESTdispenser|TESTtime"])
         self.assertEqual(
@@ -1239,7 +1241,9 @@ class BuildIndexesTest(TestCase):
         ] = "TESTPrescriber"
         self.prescription.prescriptionRecord["prescription"]["prescriptionTime"] = "TESTtime"
 
-        [success, createdIndex] = self.prescription.returnNhsNumberPrescriberDispenserDateIndex()
+        [success, createdIndex] = (
+            self.prescription.return_nhs_number_prescriber_dispenser_date_index()
+        )
         self.assertEqual(success, True, "Failed to successfully create index")
         expectedIndex = set([])
         self.assertEqual(
@@ -1263,7 +1267,7 @@ class BuildIndexesTest(TestCase):
             "dispensingOrganization"
         ] = "TESTdispenser"
 
-        [success, createdIndex] = self.prescription.returnPrescriberDispenserDateIndex()
+        [success, createdIndex] = self.prescription.return_prescriber_dispenser_date_index()
         self.assertEqual(success, True, "Failed to successfully create index")
         expectedIndex = set(["TESTPrescriber|TESTdispenser|TESTtime"])
         self.assertEqual(
@@ -1282,7 +1286,7 @@ class BuildIndexesTest(TestCase):
         ] = "TESTPrescriber"
         self.prescription.prescriptionRecord["prescription"]["prescriptionTime"] = "TESTtime"
 
-        [success, createdIndex] = self.prescription.returnPrescriberDispenserDateIndex()
+        [success, createdIndex] = self.prescription.return_prescriber_dispenser_date_index()
         self.assertEqual(success, True, "Failed to successfully create index")
         expectedIndex = set([])
         self.assertEqual(
@@ -1306,7 +1310,7 @@ class BuildIndexesTest(TestCase):
             "dispensingOrganization"
         ] = "TESTdispenser"
 
-        [success, createdIndex] = self.prescription.returnDispenserDateIndex()
+        [success, createdIndex] = self.prescription.return_dispenser_date_index()
         self.assertEqual(success, True, "Failed to successfully create index")
         expectedIndex = set(["TESTdispenser|TESTtime"])
         self.assertEqual(
@@ -1325,7 +1329,7 @@ class BuildIndexesTest(TestCase):
         ] = "TESTPrescriber"
         self.prescription.prescriptionRecord["prescription"]["prescriptionTime"] = "TESTtime"
 
-        [success, createdIndex] = self.prescription.returnDispenserDateIndex()
+        [success, createdIndex] = self.prescription.return_dispenser_date_index()
         self.assertEqual(success, True, "Failed to successfully create index")
         expectedIndex = set([])
         self.assertEqual(
@@ -1349,7 +1353,7 @@ class BuildIndexesTest(TestCase):
             "dispensingOrganization"
         ] = "TESTdispenser"
 
-        [success, createdIndex] = self.prescription.returnNhsNumberDispenserDateIndex()
+        [success, createdIndex] = self.prescription.return_nhs_number_dispenser_date_index()
         self.assertEqual(success, True, "Failed to successfully create index")
         expectedIndex = set(["TESTPatient|TESTdispenser|TESTtime"])
         self.assertEqual(
@@ -1368,7 +1372,7 @@ class BuildIndexesTest(TestCase):
         ] = "TESTPrescriber"
         self.prescription.prescriptionRecord["prescription"]["prescriptionTime"] = "TESTtime"
 
-        [success, createdIndex] = self.prescription.returnNhsNumberDispenserDateIndex()
+        [success, createdIndex] = self.prescription.return_nhs_number_dispenser_date_index()
         self.assertEqual(success, True, "Failed to successfully create index")
         expectedIndex = set([])
         self.assertEqual(
@@ -1395,21 +1399,21 @@ class PrescriptionRecordTest(TestCase):
         self.assertEqual(prescription.id, "7D9625-Z72BF2-11E3AC")
         self.assertEqual(prescription.maxRepeats, 3)
 
-    def testCurrentIssue(self):
+    def test_current_issue(self):
         """
         Test that we can access the current issue
         """
         prescription = loadTestExampleJson(self.mockLogObject, "7D9625-Z72BF2-11E3A.json")
 
-        self.assertEqual(prescription.currentIssueNumber, 3)
-        self.assertEqual(prescription.currentIssue.number, 3)
-        self.assertEqual(prescription.currentIssue.status, "0006")
+        self.assertEqual(prescription.current_issue_number, 3)
+        self.assertEqual(prescription.current_issue.number, 3)
+        self.assertEqual(prescription.current_issue.status, "0006")
 
         # try changing the current issue number and make sure that this is picked up
-        prescription.currentIssueNumber = 1
-        self.assertEqual(prescription.currentIssueNumber, 1)
-        self.assertEqual(prescription.currentIssue.number, 1)
-        self.assertEqual(prescription.currentIssue.status, "0009")
+        prescription.current_issue_number = 1
+        self.assertEqual(prescription.current_issue_number, 1)
+        self.assertEqual(prescription.current_issue.number, 1)
+        self.assertEqual(prescription.current_issue.status, "0009")
 
     def testIssues(self):
         """
@@ -1447,11 +1451,11 @@ class PrescriptionRecordTest(TestCase):
         prescription = loadTestExampleJson(self.mockLogObject, "DD0180-ZBED5C-11E3A.json")
 
         # check the future issue can be found
-        self.assertEqual(prescription._findNextFutureIssueNumber("1"), "2")
+        self.assertEqual(prescription._find_next_future_issue_number("1"), "2")
 
         # check that there are no more beyond the last issue
         self.assertEqual(prescription.maxRepeats, 2)
-        self.assertEqual(prescription._findNextFutureIssueNumber("2"), None)
+        self.assertEqual(prescription._find_next_future_issue_number("2"), None)
 
     def testFindNextFutureIssueNumber_issuesAlreadyDispensed(self):
         """
@@ -1460,12 +1464,12 @@ class PrescriptionRecordTest(TestCase):
         prescription = loadTestExampleJson(self.mockLogObject, "7D9625-Z72BF2-11E3A.json")
 
         # chekc that dispensed issues can not be found
-        self.assertEqual(prescription._findNextFutureIssueNumber("1"), None)
-        self.assertEqual(prescription._findNextFutureIssueNumber("2"), None)
+        self.assertEqual(prescription._find_next_future_issue_number("1"), None)
+        self.assertEqual(prescription._find_next_future_issue_number("2"), None)
 
         # check that there are no more beyond the last issue
         self.assertEqual(prescription.maxRepeats, 3)
-        self.assertEqual(prescription._findNextFutureIssueNumber("3"), None)
+        self.assertEqual(prescription._find_next_future_issue_number("3"), None)
 
     def testGetIssueNumbersInRange(self):
         """
@@ -1500,7 +1504,7 @@ class PrescriptionRecordTest(TestCase):
         self.assertEqual(prescription.getIssueNumbersInRange(None, None), [1, 2, 3])
         self.assertEqual(prescription.getIssueNumbersInRange(), [1, 2, 3])
 
-    def testMissingIssueNumbers(self):
+    def test_missing_issue_numbers(self):
         """
         Test that we can deal correctly with prescriptions with missing instances.
         """
@@ -1508,7 +1512,7 @@ class PrescriptionRecordTest(TestCase):
         prescription = loadTestExampleJson(self.mockLogObject, "50EE48-B83002-490F7.json")
 
         self.assertEqual(prescription.issueNumbers, [3, 4, 5, 6, 7, 8, 9, 10, 11, 12])
-        self.assertEqual(prescription.missingIssueNumbers, [1, 2])
+        self.assertEqual(prescription.missing_issue_numbers, [1, 2])
 
         # make sure the range fetches work as well
         self.assertEqual(
@@ -1535,19 +1539,19 @@ class PrescriptionRecordTest(TestCase):
         self.assertEqual(prescription.getIssueNumbersInRange(5, 8), [5, 6, 7, 8])
         self.assertEqual(prescription.getIssueNumbersInRange(10, 7), [])
 
-    def _assertFindInstancesToActionUpdate(
+    def _assert_find_instances_to_action_update(
         self, prescription, handleTime, action, expectedIssueNumberStrs
     ):
         """
-        Helper to test that findInstancesToActionUpdate() returns expected instances
+        Helper to test that find_instances_to_action_update() returns expected instances
         """
         mockContext = MagicMock()
         mockContext.handleTime = handleTime
         mockContext.instancesToUpdate = None
-        prescription.findInstancesToActionUpdate(mockContext, action)
+        prescription.find_instances_to_action_update(mockContext, action)
         self.assertEqual(mockContext.instancesToUpdate, expectedIssueNumberStrs)
 
-    def testFindInstancesToActionUpdate(self):
+    def test_find_instances_to_action_update(self):
         """
         Test that we can find instances that need updating at a particular time.
         """
@@ -1557,27 +1561,27 @@ class PrescriptionRecordTest(TestCase):
         handleTime = datetime(year=2050, month=1, day=1)
 
         action = PrescriptionRecord.NEXTACTIVITY_DELETE
-        self._assertFindInstancesToActionUpdate(prescription, handleTime, action, ["1"])
+        self._assert_find_instances_to_action_update(prescription, handleTime, action, ["1"])
 
         action = PrescriptionRecord.NEXTACTIVITY_CREATENOCLAIM
-        self._assertFindInstancesToActionUpdate(prescription, handleTime, action, ["2", "3"])
+        self._assert_find_instances_to_action_update(prescription, handleTime, action, ["2", "3"])
 
         action = PrescriptionRecord.NEXTACTIVITY_EXPIRE
-        self._assertFindInstancesToActionUpdate(prescription, handleTime, action, None)
+        self._assert_find_instances_to_action_update(prescription, handleTime, action, None)
 
         # then try a date in the past that won't pick up actions
         handleTime = datetime(year=2010, month=1, day=1)
         action = PrescriptionRecord.NEXTACTIVITY_CREATENOCLAIM
-        self._assertFindInstancesToActionUpdate(prescription, handleTime, action, None)
+        self._assert_find_instances_to_action_update(prescription, handleTime, action, None)
 
         # first, try a date that will pick up all next actions
         handleTime = datetime(year=2050, month=1, day=1)
         # same as above json but with nextActivityNAD_bin and instance 1 nextActivity set to purge
         prescription = loadTestExampleJson(self.mockLogObject, "7D9625-Z72BF2-11E3B.json")
         action = PrescriptionRecord.NEXTACTIVITY_PURGE
-        self._assertFindInstancesToActionUpdate(prescription, handleTime, action, ["1"])
+        self._assert_find_instances_to_action_update(prescription, handleTime, action, ["1"])
 
-    def testFindInstancesToActionUpdate_missingInstances(self):
+    def test_find_instances_to_action_update_missingInstances(self):
         """
         SPII-10492 - Test that we can find instances that need updating in a migrated
         prescription with missing instances.
@@ -1589,51 +1593,51 @@ class PrescriptionRecordTest(TestCase):
         handleTime = datetime(year=2050, month=1, day=1)
 
         action = PrescriptionRecord.NEXTACTIVITY_DELETE
-        self._assertFindInstancesToActionUpdate(prescription, handleTime, action, ["3"])
+        self._assert_find_instances_to_action_update(prescription, handleTime, action, ["3"])
 
         action = PrescriptionRecord.NEXTACTIVITY_EXPIRE
-        self._assertFindInstancesToActionUpdate(
+        self._assert_find_instances_to_action_update(
             prescription, handleTime, action, ["5", "6", "7", "8", "9", "10", "11", "12"]
         )
 
-    def testResetCurrentInstance(self):
+    def test_reset_current_instance(self):
         """
         Test that resetting the current instance chooses the correct instance.
         """
 
         prescription = loadTestExampleJson(self.mockLogObject, "50EE48-B83002-490F7.json")
-        self.assertEqual(prescription.currentIssueNumber, 4)
-        (old, new) = prescription.resetCurrentInstance()
+        self.assertEqual(prescription.current_issue_number, 4)
+        (old, new) = prescription.reset_current_instance()
         self.assertEqual((old, new), (4, 4))
-        self.assertEqual(prescription.currentIssueNumber, 4)
+        self.assertEqual(prescription.current_issue_number, 4)
 
         prescription = loadTestExampleJson(self.mockLogObject, "DD0180-ZBED5C-11E3A.json")
-        self.assertEqual(prescription.currentIssueNumber, 1)
-        (old, new) = prescription.resetCurrentInstance()
+        self.assertEqual(prescription.current_issue_number, 1)
+        (old, new) = prescription.reset_current_instance()
         self.assertEqual((old, new), (1, 1))
-        self.assertEqual(prescription.currentIssueNumber, 1)
+        self.assertEqual(prescription.current_issue_number, 1)
 
         prescription = loadTestExampleJson(self.mockLogObject, "7D9625-Z72BF2-11E3A.json")
-        self.assertEqual(prescription.currentIssueNumber, 3)
-        (old, new) = prescription.resetCurrentInstance()
+        self.assertEqual(prescription.current_issue_number, 3)
+        (old, new) = prescription.reset_current_instance()
         self.assertEqual((old, new), (3, 3))
-        self.assertEqual(prescription.currentIssueNumber, 3)
+        self.assertEqual(prescription.current_issue_number, 3)
 
-    def testHandleOverdueExpiryNone(self):
+    def test_handle_overdue_expiryNone(self):
         """
         SPII-31379 due to old prescrptions the NAD index is set to None
         """
         nad = [None]
-        self.assertFalse(PrescriptionRecord._isExpiryOverdue(nad))
+        self.assertFalse(PrescriptionRecord._is_expiry_overdue(nad))
 
-    def testHandleOverdueExpiryEmpty(self):
+    def test_handle_overdue_expiryEmpty(self):
         """
         SPII-31379 due to old prescrptions the NAD index is empty
         """
         nad = []
-        self.assertFalse(PrescriptionRecord._isExpiryOverdue(nad))
+        self.assertFalse(PrescriptionRecord._is_expiry_overdue(nad))
 
-    def testHandleOverdueExpiryNotExpired(self):
+    def test_handle_overdue_expiryNotExpired(self):
         """
         Expiry is set to tomorrow
         """
@@ -1642,9 +1646,9 @@ class PrescriptionRecordTest(TestCase):
                 (datetime.now() + timedelta(days=1)).strftime(TimeFormats.STANDARD_DATE_FORMAT)
             )
         ]
-        self.assertFalse(PrescriptionRecord._isExpiryOverdue(nad))
+        self.assertFalse(PrescriptionRecord._is_expiry_overdue(nad))
 
-    def testHandleOverdueExpiryExpired(self):
+    def test_handle_overdue_expiryExpired(self):
         """
         Expiry is set to yesterday
         """
@@ -1653,35 +1657,35 @@ class PrescriptionRecordTest(TestCase):
                 (datetime.now() - timedelta(days=1)).strftime(TimeFormats.STANDARD_DATE_FORMAT)
             )
         ]
-        self.assertTrue(PrescriptionRecord._isExpiryOverdue(nad))
+        self.assertTrue(PrescriptionRecord._is_expiry_overdue(nad))
 
     def testGetLineItemCancellations(self):
         """
         Test that we can get the line item cancellations for a prescription
         """
         prescription = loadTestExampleJson(self.mockLogObject, "23C1BC-Z75FB1-11EE84.json")
-        currentIssue = prescription.currentIssue
+        current_issue = prescription.current_issue
 
         cancelledLineItemID = "02ED7776-21CD-4E7B-AC9D-D1DBFEE7B8CF"
-        cancellations = currentIssue.get_line_item_cancellations(cancelledLineItemID)
+        cancellations = current_issue.get_line_item_cancellations(cancelledLineItemID)
         self.assertEqual(len(cancellations), 1)
 
         notCancelledLineItemID = "45D5FB11-D793-4D51-9ADD-95E0F54D2786"
-        cancellations = currentIssue.get_line_item_cancellations(notCancelledLineItemID)
+        cancellations = current_issue.get_line_item_cancellations(notCancelledLineItemID)
         self.assertEqual(len(cancellations), 0)
 
     def testGetLineItemFirstCancellationTime(self):
         prescription = loadTestExampleJson(self.mockLogObject, "23C1BC-Z75FB1-11EE84.json")
-        currentIssue = prescription.currentIssue
+        current_issue = prescription.current_issue
 
         cancelledLineItemID = "02ED7776-21CD-4E7B-AC9D-D1DBFEE7B8CF"
-        firstCancellationTime = currentIssue.get_line_item_first_cancellation_time(
+        firstCancellationTime = current_issue.get_line_item_first_cancellation_time(
             cancelledLineItemID
         )
         self.assertEqual(firstCancellationTime, "20240415101553")
 
         notCancelledLineItemID = "45D5FB11-D793-4D51-9ADD-95E0F54D2786"
-        firstCancellationTime = currentIssue.get_line_item_first_cancellation_time(
+        firstCancellationTime = current_issue.get_line_item_first_cancellation_time(
             notCancelledLineItemID
         )
         self.assertEqual(firstCancellationTime, None)
@@ -1693,7 +1697,7 @@ class PrescriptionRecordTest(TestCase):
         prescription = loadTestExampleJson(self.mockLogObject, "7D9625-Z72BF2-11E3A.json")
 
         current_time = datetime.now()
-        prescription.setInitialPrescriptionStatus(current_time)
+        prescription.set_initial_prescription_status(current_time)
 
         self.assertEqual(prescription.getIssue(1).status, "0001")
 
@@ -1705,7 +1709,7 @@ class PrescriptionRecordTest(TestCase):
         prescription = loadTestExampleJson(self.mockLogObject, "0DA698-A83008-F50593.json")
 
         future_time = datetime.now() + timedelta(days=10)
-        prescription.setInitialPrescriptionStatus(future_time)
+        prescription.set_initial_prescription_status(future_time)
 
         self.assertEqual(prescription.getIssue(1).status, "9001")
 

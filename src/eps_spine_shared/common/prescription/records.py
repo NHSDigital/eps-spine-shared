@@ -34,8 +34,8 @@ class PrescriptionRecord(object):
         """
         The basic attributes of an epsRecord
         """
-        self.logObject = log_object
-        self.internalID = internal_id
+        self.log_object = log_object
+        self.internal_id = internal_id
         self.nad_generator = NextActivityGenerator(log_object, internal_id)
         self.pending_instance_change = None
         self.prescription_record = None
@@ -156,19 +156,19 @@ class PrescriptionRecord(object):
                 self.prescription_record, event_log, message_id, fields.SCN_MAX
             )
         except Exception as e:  # noqa: BLE001
-            self.logObject.writeLog(
+            self.log_object.writeLog(
                 "EPS0336",
                 sys.exc_info(),
-                {"internalID": self.internalID, "prescriptionID": self.id, "error": str(e)},
+                {"internalID": self.internal_id, "prescriptionID": self.id, "error": str(e)},
             )
             raise EpsSystemError(EpsSystemError.SYSTEM_FAILURE) from e
         length_after = len(self.prescription_record.get(fields.FIELD_CHANGE_LOG, []))
         if length_after != length_before + 1:
-            self.logObject.writeLog(
+            self.log_object.writeLog(
                 "EPS0672",
                 None,
                 {
-                    "internalID": self.internalID,
+                    "internalID": self.internal_id,
                     "lengthBefore": str(length_before),
                     "lengthAfter": str(length_after),
                 },
@@ -392,10 +392,10 @@ class PrescriptionRecord(object):
         Missing instances are a data migration specific issue, and will throw
         a prescription not found error after after being logged
         """
-        self.logObject.writeLog(
+        self.log_object.writeLog(
             "EPS0073c",
             None,
-            {"internalID": self.internalID, "prescriptionID": self.id, "issue": issue_number},
+            {"internalID": self.internal_id, "prescriptionID": self.id, "issue": issue_number},
         )
         # Re-raise this as SpineBusinessError with equivalent errorCode from ErrorBase1722.
         raise EpsBusinessError(EpsErrorBase.PRESCRIPTION_NOT_FOUND)
@@ -456,26 +456,26 @@ class PrescriptionRecord(object):
         issues = [self.get_issue(i) for i in self.get_issue_numbers_in_range(lowest, highest)]
         return issues
 
-    def getIssuesFromCurrentUpwards(self):
+    def get_issues_from_current_upwards(self):
         """
         Sorted list of issues, starting at the current one.
 
         :rtype: list(PrescriptionIssue)
         """
-        return self.get_issues_in_range(self.currentIssueNumber, None)
+        return self.get_issues_in_range(self.current_issue_number, None)
 
     @property
-    def missingIssueNumbers(self):
+    def missing_issue_numbers(self):
         """
         Sorted list of numbers of instances missing from the prescription.
 
         :rtype: list(int)
         """
-        expectedIssueNumbers = range(1, self.maxRepeats + 1)
+        expected_issue_numbers = range(1, self.maxRepeats + 1)
         actual_issue_numbers = self.issue_numbers
-        missingIssueNumbers = set(expectedIssueNumbers) - set(actual_issue_numbers)
+        missing_issue_numbers = set(expected_issue_numbers) - set(actual_issue_numbers)
 
-        return sorted(list(missingIssueNumbers))
+        return sorted(list(missing_issue_numbers))
 
     @property
     def issues(self):
@@ -488,28 +488,28 @@ class PrescriptionRecord(object):
         return issues
 
     @property
-    def _currentInstanceData(self):
+    def _current_instance_data(self):
         """
         Internal property to support record access
         """
-        return self._get_prescription_instance_data(str(self.currentIssueNumber))
+        return self._get_prescription_instance_data(str(self.current_issue_number))
 
     @property
-    def currentIssueNumber(self):
+    def current_issue_number(self):
         """
         The current issue number of this prescription.
 
         :rtype: int
         """
-        currentIssueNumberStr = self.prescription_record[fields.FIELD_PRESCRIPTION].get(
+        current_issue_number_str = self.prescription_record[fields.FIELD_PRESCRIPTION].get(
             fields.FIELD_CURRENT_INSTANCE
         )
-        if not currentIssueNumberStr:
+        if not current_issue_number_str:
             self._handle_missing_issue(fields.FIELD_CURRENT_INSTANCE)
-        return int(currentIssueNumberStr)
+        return int(current_issue_number_str)
 
-    @currentIssueNumber.setter
-    def currentIssueNumber(self, value):
+    @current_issue_number.setter
+    def current_issue_number(self, value):
         """
         The current issue number of this prescription.
 
@@ -519,32 +519,32 @@ class PrescriptionRecord(object):
         if not isinstance(value, int):
             raise TypeError("Issue number must be an int")
 
-        currentIssueNumberStr = str(value)
+        current_issue_number_str = str(value)
         self.prescription_record[fields.FIELD_PRESCRIPTION][
             fields.FIELD_CURRENT_INSTANCE
-        ] = currentIssueNumberStr
+        ] = current_issue_number_str
 
     @property
-    def currentIssue(self):
+    def current_issue(self):
         """
         The current issue of this prescription.
 
         :rtype: PrescriptionIssue
         """
-        return self.get_issue(self.currentIssueNumber)
+        return self.get_issue(self.current_issue_number)
 
     @property
-    def _currentInstanceStatus(self):
+    def _current_instance_status(self):
         """
         Internal property to support record access
 
         ..  deprecated::
-            use "currentIssue.status" instead
+            use "current_issue.status" instead
         """
-        return self._currentInstanceData[fields.FIELD_PRESCRIPTION_STATUS]
+        return self._current_instance_data[fields.FIELD_PRESCRIPTION_STATUS]
 
     @property
-    def _pendingCancellations(self):
+    def _pending_cancellations(self):
         """
         Internal property to support record access
         """
@@ -553,7 +553,7 @@ class PrescriptionRecord(object):
         ]
 
     @property
-    def _pendingCancellationFlag(self):
+    def _pending_cancellation_flag(self):
         """
         Internal property to support record access
         """
@@ -566,8 +566,8 @@ class PrescriptionRecord(object):
             return True
         return False
 
-    @_pendingCancellations.setter
-    def _pendingCancellations(self, value):
+    @_pending_cancellations.setter
+    def _pending_cancellations(self, value):
         """
         Internal property to support record access
         """
@@ -576,14 +576,14 @@ class PrescriptionRecord(object):
         ] = value
 
     @property
-    def _nhsNumber(self):
+    def _nhs_number(self):
         """
         Internal property to support record access
         """
         return self.prescription_record[fields.FIELD_PATIENT][fields.FIELD_NHS_NUMBER]
 
     @property
-    def _prescriptionTime(self):
+    def _prescription_time(self):
         """
         Internal property to support record access
 
@@ -603,57 +603,57 @@ class PrescriptionRecord(object):
 
         :rtype: datetime.datetime
         """
-        prescriptionTimeStr = self.prescription_record[fields.FIELD_PRESCRIPTION][
+        prescription_time_str = self.prescription_record[fields.FIELD_PRESCRIPTION][
             fields.FIELD_PRESCRIPTION_TIME
         ]
-        prescriptionTime = datetime.datetime.strptime(
-            prescriptionTimeStr, TimeFormats.STANDARD_DATE_TIME_FORMAT
+        prescription_time = datetime.datetime.strptime(
+            prescription_time_str, TimeFormats.STANDARD_DATE_TIME_FORMAT
         )
-        return prescriptionTime
+        return prescription_time
 
     @property
-    def _releaseVersion(self):
+    def _release_version(self):
         """
         Internal property to support record access
         """
-        _prescriptionID = str(self.returnPrescriptionID())
-        _idLength = len(_prescriptionID)
-        if _idLength in fields.R1_PRESCRIPTIONID_LENGTHS:
+        prescriptionID = str(self.return_prescription_id())
+        idLength = len(prescriptionID)
+        if idLength in fields.R1_PRESCRIPTIONID_LENGTHS:
             return fields.R1_VERSION
-        if _idLength in fields.R2_PRESCRIPTIONID_LENGTHS:
+        if idLength in fields.R2_PRESCRIPTIONID_LENGTHS:
             return fields.R2_VERSION
 
-    def getReleaseVersion(self):
+    def get_release_version(self):
         """
         Return the prescription release version (R1 or R2)
         """
-        return self._releaseVersion
+        return self._release_version
 
-    def addReleaseAndStatus(self, indexPrefix, isString=True):
+    def add_release_and_status(self, index_prefix, is_string=True):
         """
-        returns a list containing the indexprefix concatenated with all applicable release
+        Returns a list containing the index prefix concatenated with all applicable release
         versions and Prescription Statuses
         """
-        _releaseVersion = self._releaseVersion
-        _statusList = self.returnPrescriptionStatusSet()
-        returnSet = []
-        for eachStatus in _statusList:
-            if not isString:
-                for eachIndex in indexPrefix:
-                    _newValue = eachIndex + "|" + _releaseVersion + "|" + eachStatus
-                    returnSet.append(_newValue)
+        _release_version = self._release_version
+        _status_list = self.return_prescription_status_set()
+        return_set = []
+        for each_status in _status_list:
+            if not is_string:
+                for each_index in index_prefix:
+                    _new_value = each_index + "|" + _release_version + "|" + each_status
+                    return_set.append(_new_value)
             else:
-                _newValue = indexPrefix + "|" + _releaseVersion + "|" + eachStatus
-                returnSet.append(_newValue)
+                _new_value = index_prefix + "|" + _release_version + "|" + each_status
+                return_set.append(_new_value)
 
-        return returnSet
+        return return_set
 
-    def updateNominatedPerformer(self, context):
+    def update_nominated_performer(self, context):
         """
         Update the "nominated performer" field and log the change.
         """
         nomination = self.prescription_record[fields.FIELD_NOMINATION]
-        self.logAttributeChange(
+        self.log_attribute_change(
             fields.FIELD_NOMINATED_PERFORMER,
             nomination[fields.FIELD_NOMINATED_PERFORMER],
             context.nominatedPerformer,
@@ -661,27 +661,27 @@ class PrescriptionRecord(object):
         )
         nomination[fields.FIELD_NOMINATED_PERFORMER] = context.nominatedPerformer
 
-    def returnPrescSiteStatusIndex(self):
+    def return_presc_site_status_index(self):
         """
-        Return the prescribingOrganization and the prescription status
+        Return the prescribing organization and the prescription status
         """
-        _prescSite = self.prescription_record[fields.FIELD_PRESCRIPTION][
+        _presc_site = self.prescription_record[fields.FIELD_PRESCRIPTION][
             fields.FIELD_PRESCRIBING_ORG
         ]
-        _prescStatus = self.returnPrescriptionStatusSet()
-        return [True, _prescSite, _prescStatus]
+        _presc_status = self.return_prescription_status_set()
+        return [True, _presc_site, _presc_status]
 
-    def returnNomPharmStatusIndex(self):
+    def return_nom_pharm_status_index(self):
         """
         Return the Nominated Pharmacy and the prescription status
         """
-        nomPharm = self.returnNomPharm()
-        if not nomPharm:
+        nom_pharm = self.return_nom_pharm()
+        if not nom_pharm:
             return [None, None]
-        prescStatus = self.returnPrescriptionStatusSet()
-        return [nomPharm, prescStatus]
+        presc_status = self.return_prescription_status_set()
+        return [nom_pharm, presc_status]
 
-    def returnNomPharm(self):
+    def return_nom_pharm(self):
         """
         Return the Nominated Pharmacy
         """
@@ -689,194 +689,196 @@ class PrescriptionRecord(object):
             fields.FIELD_NOMINATED_PERFORMER
         )
 
-    def returnDispSiteOrNomPharm(self, instance):
+    def return_disp_site_or_nom_pharm(self, instance):
         """
         Returns the Dispensing Site if available, otherwise, returns the Nominated Pharmacy
         or None if neither exist
         """
-        _dispSite = instance.get(fields.FIELD_DISPENSE, {}).get(
+        _disp_site = instance.get(fields.FIELD_DISPENSE, {}).get(
             fields.FIELD_DISPENSING_ORGANIZATION
         )
-        if not _dispSite:
-            _dispSite = self.returnNomPharm()
-        return _dispSite
+        if not _disp_site:
+            _disp_site = self.return_nom_pharm()
+        return _disp_site
 
-    def returnDispSiteStatusIndex(self):
+    def return_disp_site_status_index(self):
         """
-        Return the dispensingOrganization and the prescription status.
-        If nominated but not yet downloaded, return NomPharm instead of dispensingOrg
+        Return the dispensing organization and the prescription status.
+        If nominated but not yet downloaded, return NomPharm instead of dispensing org
         """
-        dispensingSiteStatuses = set()
-        for instanceKey in self.prescription_record[fields.FIELD_INSTANCES]:
-            instance = self._get_prescription_instance_data(instanceKey)
-            _dispSite = self.returnDispSiteOrNomPharm(instance)
-            if not _dispSite:
+        dispensing_site_statuses = set()
+        for instance_key in self.prescription_record[fields.FIELD_INSTANCES]:
+            instance = self._get_prescription_instance_data(instance_key)
+            _disp_site = self.return_disp_site_or_nom_pharm(instance)
+            if not _disp_site:
                 continue
-            _prescStatus = instance[fields.FIELD_PRESCRIPTION_STATUS]
-            dispensingSiteStatuses.add(_dispSite + "_" + _prescStatus)
+            _presc_status = instance[fields.FIELD_PRESCRIPTION_STATUS]
+            dispensing_site_statuses.add(_disp_site + "_" + _presc_status)
 
-        return [True, dispensingSiteStatuses]
+        return [True, dispensing_site_statuses]
 
-    def returnNhsNumberPrescriberDispenserDateIndex(self):
+    def return_nhs_number_prescriber_dispenser_date_index(self):
         """
         Return the NHS Number Prescribing organization dispensingOrganization and the prescription date
         """
-        nhsNumber = self.returnNHSNumber()
-        prescriber = self.returnPrescribingOrganisation()
-        indexStart = nhsNumber + "|" + prescriber + "|"
-        prescriptionTime = self.returnPrescriptionTime()
-        nhsNumberPrescDispDates = set()
-        for instanceKey in self.prescription_record[fields.FIELD_INSTANCES]:
-            instance = self._get_prescription_instance_data(instanceKey)
-            _dispSite = self.returnDispSiteOrNomPharm(instance)
-            if not _dispSite:
+        nhs_number = self.return_nhs_number()
+        prescriber = self.return_prescribing_organisation()
+        index_start = nhs_number + "|" + prescriber + "|"
+        prescription_time = self.return_prescription_time()
+        nhs_number_presc_disp_dates = set()
+        for instance_key in self.prescription_record[fields.FIELD_INSTANCES]:
+            instance = self._get_prescription_instance_data(instance_key)
+            _disp_site = self.return_disp_site_or_nom_pharm(instance)
+            if not _disp_site:
                 continue
-            nhsNumberPrescDispDates.add(indexStart + _dispSite + "|" + prescriptionTime)
+            nhs_number_presc_disp_dates.add(index_start + _disp_site + "|" + prescription_time)
 
-        return [True, nhsNumberPrescDispDates]
+        return [True, nhs_number_presc_disp_dates]
 
-    def returnPrescriberDispenserDateIndex(self):
+    def return_prescriber_dispenser_date_index(self):
         """
         Return the Prescribing organization dispensingOrganization and the prescription date
         """
-        prescriber = self.returnPrescribingOrganisation()
-        indexStart = prescriber + "|"
-        prescriptionTime = self.returnPrescriptionTime()
-        prescDispDates = set()
-        for instanceKey in self.prescription_record[fields.FIELD_INSTANCES]:
-            instance = self._get_prescription_instance_data(instanceKey)
-            _dispSite = self.returnDispSiteOrNomPharm(instance)
-            if not _dispSite:
+        prescriber = self.return_prescribing_organisation()
+        index_start = prescriber + "|"
+        prescription_time = self.return_prescription_time()
+        presc_disp_dates = set()
+        for instance_key in self.prescription_record[fields.FIELD_INSTANCES]:
+            instance = self._get_prescription_instance_data(instance_key)
+            disp_site = self.return_disp_site_or_nom_pharm(instance)
+            if not disp_site:
                 continue
-            prescDispDates.add(indexStart + _dispSite + "|" + prescriptionTime)
+            presc_disp_dates.add(index_start + disp_site + "|" + prescription_time)
 
-        return [True, prescDispDates]
+        return [True, presc_disp_dates]
 
-    def returnDispenserDateIndex(self):
+    def return_dispenser_date_index(self):
         """
         Return the dispensingOrganization and the prescription date
         """
-        indexStart = ""
-        prescriptionTime = self.returnPrescriptionTime()
-        prescDispDates = set()
-        for instanceKey in self.prescription_record[fields.FIELD_INSTANCES]:
-            instance = self._get_prescription_instance_data(instanceKey)
-            _dispSite = self.returnDispSiteOrNomPharm(instance)
-            if not _dispSite:
+        index_start = ""
+        prescription_time = self.return_prescription_time()
+        presc_disp_dates = set()
+        for instance_key in self.prescription_record[fields.FIELD_INSTANCES]:
+            instance = self._get_prescription_instance_data(instance_key)
+            disp_site = self.return_disp_site_or_nom_pharm(instance)
+            if not disp_site:
                 continue
-            prescDispDates.add(indexStart + _dispSite + "|" + prescriptionTime)
+            presc_disp_dates.add(index_start + disp_site + "|" + prescription_time)
 
-        return [True, prescDispDates]
+        return [True, presc_disp_dates]
 
-    def returnNhsNumberDispenserDateIndex(self):
+    def return_nhs_number_dispenser_date_index(self):
         """
         Return the NHS Number dispensingOrganization and the prescription date
         """
-        nhsNumber = self.returnNHSNumber()
-        indexStart = nhsNumber + "|"
-        prescriptionTime = self.returnPrescriptionTime()
-        nhsNumberDispDates = set()
-        for instanceKey in self.prescription_record[fields.FIELD_INSTANCES]:
-            instance = self._get_prescription_instance_data(instanceKey)
-            _dispSite = self.returnDispSiteOrNomPharm(instance)
-            if not _dispSite:
+        nhs_number = self.return_nhs_number()
+        index_start = nhs_number + "|"
+        prescription_time = self.return_prescription_time()
+        nhs_number_disp_dates = set()
+        for instance_key in self.prescription_record[fields.FIELD_INSTANCES]:
+            instance = self._get_prescription_instance_data(instance_key)
+            _disp_site = self.return_disp_site_or_nom_pharm(instance)
+            if not _disp_site:
                 continue
-            nhsNumberDispDates.add(indexStart + _dispSite + "|" + prescriptionTime)
+            nhs_number_disp_dates.add(index_start + _disp_site + "|" + prescription_time)
 
-        return [True, nhsNumberDispDates]
+        return [True, nhs_number_disp_dates]
 
-    def returnNominatedPerformer(self):
+    def return_nominated_performer(self):
         """
         Return the nominated performer (called when determining routing key extension)
         """
-        nomPerformer = None
+        nom_performer = None
         _nomination = self.prescription_record.get(fields.FIELD_NOMINATION)
         if _nomination:
-            nomPerformer = _nomination.get(fields.FIELD_NOMINATED_PERFORMER)
-        return nomPerformer
+            nom_performer = _nomination.get(fields.FIELD_NOMINATED_PERFORMER)
+        return nom_performer
 
-    def returnNominatedPerformerType(self):
+    def return_nominated_performer_type(self):
         """
         Return the nominated performer type
         """
-        nomPerformerType = None
+        nom_performer_type = None
         _nomination = self.prescription_record.get(fields.FIELD_NOMINATION)
         if _nomination:
-            nomPerformerType = _nomination.get(fields.FIELD_NOMINATED_PERFORMER_TYPE)
-        return nomPerformerType
+            nom_performer_type = _nomination.get(fields.FIELD_NOMINATED_PERFORMER_TYPE)
+        return nom_performer_type
 
-    def returnPrescriptionStatusSet(self):
+    def return_prescription_status_set(self):
         """
         For single instance prescription - the prescription status is always the current
         status of the first (and only) instance
         """
-        statusSet = set()
-        for instanceKey in self.prescription_record[fields.FIELD_INSTANCES]:
-            instance = self._get_prescription_instance_data(instanceKey)
-            statusSet.add(instance[fields.FIELD_PRESCRIPTION_STATUS])
-        return list(statusSet)
+        status_set = set()
+        for instance_key in self.prescription_record[fields.FIELD_INSTANCES]:
+            instance = self._get_prescription_instance_data(instance_key)
+            status_set.add(instance[fields.FIELD_PRESCRIPTION_STATUS])
+        return list(status_set)
 
-    def returnNHSNumber(self):
+    def return_nhs_number(self):
         """
         Return the NHS Number
         """
-        return self._nhsNumber
+        return self._nhs_number
 
-    def returnPrescriptionTime(self):
+    def return_prescription_time(self):
         """
         Return the Prescription Time
         """
-        return self._prescriptionTime
+        return self._prescription_time
 
-    def returnPrescriptionID(self):
+    def return_prescription_id(self):
         """
         Return the Prescription ID
         """
         return self.prescription_record[fields.FIELD_PRESCRIPTION][fields.FIELD_PRESCRIPTION_ID]
 
-    def returnPendingCancellationsFlag(self):
+    def return_pending_cancellations_flag(self):
         """
         Return the pending cancellations flag
         """
         _prescription = self.prescription_record[fields.FIELD_PRESCRIPTION]
-        _maxRepeats = _prescription.get(fields.FIELD_MAX_REPEATS)
+        _max_repeats = _prescription.get(fields.FIELD_MAX_REPEATS)
 
-        if not _maxRepeats:
-            _maxRepeats = 1
+        if not _max_repeats:
+            _max_repeats = 1
 
-        for prescriptionIssue in range(1, int(_maxRepeats) + 1):
-            _prescriptionIssue = self.prescription_record[fields.FIELD_INSTANCES].get(
-                str(prescriptionIssue)
+        for prescription_issue in range(1, int(_max_repeats) + 1):
+            _prescription_issue = self.prescription_record[fields.FIELD_INSTANCES].get(
+                str(prescription_issue)
             )
             # handle missing issues
-            if not _prescriptionIssue:
+            if not _prescription_issue:
                 continue
-            issueSpecificCancellations = {}
-            _appliedCancellationsForIssue = _prescriptionIssue.get(fields.FIELD_CANCELLATIONS, [])
-            _cancellationStatusStringPrefix = ""
-            self._createCancellationSummaryDict(
-                _appliedCancellationsForIssue,
-                issueSpecificCancellations,
-                _cancellationStatusStringPrefix,
+            issue_specific_cancellations = {}
+            _applied_cancellations_for_issue = _prescription_issue.get(
+                fields.FIELD_CANCELLATIONS, []
             )
-            if str(_prescriptionIssue[fields.FIELD_INSTANCE_NUMBER]) == str(
+            _cancellation_status_string_prefix = ""
+            self._create_cancellation_summary_dict(
+                _applied_cancellations_for_issue,
+                issue_specific_cancellations,
+                _cancellation_status_string_prefix,
+            )
+            if str(_prescription_issue[fields.FIELD_INSTANCE_NUMBER]) == str(
                 _prescription[fields.FIELD_CURRENT_INSTANCE]
             ):
-                _pendingCancellations = _prescription[fields.FIELD_PENDING_CANCELLATIONS]
-                _cancellationStatusStringPrefix = "Pending: "
-                self._createCancellationSummaryDict(
-                    _pendingCancellations,
-                    issueSpecificCancellations,
-                    _cancellationStatusStringPrefix,
+                _pending_cancellations = _prescription[fields.FIELD_PENDING_CANCELLATIONS]
+                _cancellation_status_string_prefix = "Pending: "
+                self._create_cancellation_summary_dict(
+                    _pending_cancellations,
+                    issue_specific_cancellations,
+                    _cancellation_status_string_prefix,
                 )
-                for _, val in issueSpecificCancellations.items():
+                for _, val in issue_specific_cancellations.items():
                     if val.get(fields.FIELD_REASONS, "")[:7] == "Pending":
                         return True
 
         return False
 
-    def _createCancellationSummaryDict(
-        self, recordedCancellations, issueCancellationDict, cancellationStatus
+    def _create_cancellation_summary_dict(
+        self, recorded_cancellations, issue_cancellation_dict, cancellation_status
     ):
         """
         Process a list of cancellations, creating a dictionary of cancellation reason text
@@ -885,135 +887,135 @@ class PrescriptionRecord(object):
         cancellationStatus is used to seed the reasons in the pending scenario.
         """
 
-        if not recordedCancellations:
+        if not recorded_cancellations:
             return
 
-        for _cancellation in recordedCancellations:
-            _subsequentReason = False
-            _cancellationReasons = str(cancellationStatus)
+        for _cancellation in recorded_cancellations:
+            _subsequent_reason = False
+            _cancellation_reasons = str(cancellation_status)
 
-            _cancellationID = _cancellation.get(fields.FIELD_CANCELLATION_ID, [])
+            _cancellation_id = _cancellation.get(fields.FIELD_CANCELLATION_ID, [])
             _scn = PrescriptionsChangeLogProcessor.getSCN(
-                self.prescription_record["changeLog"].get(_cancellationID, {})
+                self.prescription_record["changeLog"].get(_cancellation_id, {})
             )
-            for _cancellationReason in _cancellation.get(fields.FIELD_REASONS, []):
-                _cancellationText = _cancellationReason.split(":")[1].strip()
-                if _subsequentReason:
-                    _cancellationReasons += "; "
-                _subsequentReason = True
-                _cancellationReasons += str(handleEncodingOddities(_cancellationText))
+            for _cancellation_reason in _cancellation.get(fields.FIELD_REASONS, []):
+                _cancellation_text = _cancellation_reason.split(":")[1].strip()
+                if _subsequent_reason:
+                    _cancellation_reasons += "; "
+                _subsequent_reason = True
+                _cancellation_reasons += str(handleEncodingOddities(_cancellation_text))
 
             if (
                 _cancellation.get(fields.FIELD_CANCELLATION_TARGET) == "Prescription"
             ):  # noqa: SIM108
-                _cancellationTarget = fields.FIELD_PRESCRIPTION
+                _cancellation_target = fields.FIELD_PRESCRIPTION
             else:
-                _cancellationTarget = _cancellation.get(fields.FIELD_CANCEL_LINE_ITEM_REF)
+                _cancellation_target = _cancellation.get(fields.FIELD_CANCEL_LINE_ITEM_REF)
 
             if (
-                issueCancellationDict.get(_cancellationTarget, {}).get(fields.FIELD_ID)
-                == _cancellationID
+                issue_cancellation_dict.get(_cancellation_target, {}).get(fields.FIELD_ID)
+                == _cancellation_id
             ):
                 # Cancellation has already been added and this is pending as multiple cancellations are not possible
                 return
 
-            issueCancellationDict[_cancellationTarget] = {
+            issue_cancellation_dict[_cancellation_target] = {
                 fields.FIELD_SCN: _scn,
-                fields.FIELD_REASONS: _cancellationReasons,
-                fields.FIELD_ID: _cancellationID,
+                fields.FIELD_REASONS: _cancellation_reasons,
+                fields.FIELD_ID: _cancellation_id,
             }
 
-    def returnCurrentInstance(self):
+    def return_current_instance(self):
         """
         Return the current instance
 
         ..  deprecated::
-            use "currentIssueNumber" instead (which returns int instead of string)
+            use "current_issue_number" instead (which returns int instead of string)
         """
-        return str(self.currentIssueNumber)
+        return str(self.current_issue_number)
 
-    def returnPrescriptionStatus(self, instanceNumber, raiseExceptionOnMissing=True):
+    def return_prescription_status(self, instance_number, raise_exception_on_missing=True):
         """
         For single instance prescription - the prescription status is always the current
         status of the first (and only) instance
         """
         return self._get_prescription_instance_data(
-            str(instanceNumber), raiseExceptionOnMissing
+            str(instance_number), raise_exception_on_missing
         ).get(fields.FIELD_PRESCRIPTION_STATUS)
 
-    def returnPreviousPrescriptionStatus(self, instanceNumber, raiseExceptionOnMissing=True):
+    def return_previous_prescription_status(self, instance_number, raise_exception_on_missing=True):
         """
         For single instance prescription - the previous prescription status is always the
         previous status of the first (and only) instance
         """
         return self._get_prescription_instance_data(
-            str(instanceNumber), raiseExceptionOnMissing
+            str(instance_number), raise_exception_on_missing
         ).get(fields.FIELD_PREVIOUS_STATUS)
 
-    def returnLineItemByRef(self, instanceNumber, lineItemRef):
+    def return_line_item_by_ref(self, instance_number, line_item_ref):
         """
         Return the line item from the instance that matches the reference provided
         """
-        for lineItem in self._get_prescription_instance_data(instanceNumber)[
+        for line_item in self._get_prescription_instance_data(instance_number)[
             fields.FIELD_LINE_ITEMS
         ]:
-            if lineItem[fields.FIELD_ID] == lineItemRef:
-                return lineItem
+            if line_item[fields.FIELD_ID] == line_item_ref:
+                return line_item
         return None
 
-    def returnPrescribingOrganisation(self):
+    def return_prescribing_organisation(self):
         """
         Return the prescribing organisation from the record
         """
         return self.prescription_record[fields.FIELD_PRESCRIPTION][fields.FIELD_PRESCRIBING_ORG]
 
-    def returnLastDnGuid(self, instanceNumber):
+    def return_last_dn_guid(self, instance_number):
         """
         Return references to the last dispense notification messages
         """
-        instance = self._get_prescription_instance_data(instanceNumber)
+        instance = self._get_prescription_instance_data(instance_number)
         try:
-            dispnMsgGuid = instance[fields.FIELD_DISPENSE][
+            dispn_msg_guid = instance[fields.FIELD_DISPENSE][
                 fields.FIELD_LAST_DISPENSE_NOTIFICATION_GUID
             ]
-            return dispnMsgGuid
+            return dispn_msg_guid
         except KeyError:
             return None
 
-    def returnLastDcGuid(self, instanceNumber):
+    def return_last_dc_guid(self, instance_number):
         """
         Return references to the last dispense notification messages
         """
-        instance = self._get_prescription_instance_data(instanceNumber)
+        instance = self._get_prescription_instance_data(instance_number)
         try:
-            claimMsgGuid = instance[fields.FIELD_CLAIM][fields.FIELD_CLAIM_GUID]
-            return claimMsgGuid
+            claim_msg_guid = instance[fields.FIELD_CLAIM][fields.FIELD_CLAIM_GUID]
+            return claim_msg_guid
         except KeyError:
             return None
 
-    def returnDocumentReferencesForClaim(self, instanceNumber):
+    def return_document_references_for_claim(self, instance_number):
         """
         Return references to prescription, dispense notification and claim messages
         """
-        prescMsgRef = self.prescription_record[fields.FIELD_PRESCRIPTION][
+        presc_msg_ref = self.prescription_record[fields.FIELD_PRESCRIPTION][
             fields.FIELD_PRESCRIPTION_MSG_REF
         ]
-        instance = self._get_prescription_instance_data(instanceNumber)
-        dispnMsgRef = instance[fields.FIELD_DISPENSE][
+        instance = self._get_prescription_instance_data(instance_number)
+        dispn_msg_ref = instance[fields.FIELD_DISPENSE][
             fields.FIELD_LAST_DISPENSE_NOTIFICATION_MSG_REF
         ]
-        claimMsgRef = instance[fields.FIELD_CLAIM][fields.FIELD_DISPENSE_CLAIM_MSG_REF]
-        return [prescMsgRef, dispnMsgRef, claimMsgRef]
+        claim_msg_ref = instance[fields.FIELD_CLAIM][fields.FIELD_DISPENSE_CLAIM_MSG_REF]
+        return [presc_msg_ref, dispn_msg_ref, claim_msg_ref]
 
-    def returnClaimDate(self, instanceNumber):
+    def return_claim_date(self, instance_number):
         """
         Returns the claim date recorded for an instance
         """
-        instance = self._get_prescription_instance_data(instanceNumber)
-        claimRcvDate = instance[fields.FIELD_CLAIM][fields.FIELD_CLAIM_RECEIVED_DATE]
-        return claimRcvDate
+        instance = self._get_prescription_instance_data(instance_number)
+        claim_rcv_date = instance[fields.FIELD_CLAIM][fields.FIELD_CLAIM_RECEIVED_DATE]
+        return claim_rcv_date
 
-    def checkReal(self):
+    def check_real(self):
         """
         Check that the prescription object is real (as opposed to an empty one created
         by a pendingCancellation)
@@ -1027,90 +1029,93 @@ class PrescriptionRecord(object):
         except KeyError:
             return True
 
-    def checkReturnedRecordIsReal(self, returnedRecord):
+    def check_returned_record_is_real(self, returned_record):
         """
-        Check that the returnedRecord is real (as opposed to an empty one created
-        by a pendingCancellation). Look for a valid prescriptionTreatmentType
+        Check that the returned_record is real (as opposed to an empty one created
+        by a pending cancellation). Look for a valid prescription treatment type
         """
-        if returnedRecord[fields.FIELD_PRESCRIPTION][fields.FIELD_PRESCRIPTION_TREATMENT_TYPE]:
+        if returned_record[fields.FIELD_PRESCRIPTION][fields.FIELD_PRESCRIPTION_TREATMENT_TYPE]:
             return True
 
         return False
 
-    def _getDispenseListToCheck(self, prescriptionStatus):
+    def _get_dispense_list_to_check(self, prescription_status):
         """
         Consistency check fields
         """
-        if prescriptionStatus == PrescriptionStatus.WITH_DISPENSER:
-            checkList = [fields.FIELD_DISPENSING_ORGANIZATION]
-        elif prescriptionStatus == PrescriptionStatus.WITH_DISPENSER_ACTIVE:
-            checkList = [fields.FIELD_DISPENSING_ORGANIZATION, fields.FIELD_LAST_DISPENSE_DATE]
-        elif prescriptionStatus in [PrescriptionStatus.DISPENSED, PrescriptionStatus.CLAIMED]:
-            checkList = [fields.FIELD_LAST_DISPENSE_DATE]
+        if prescription_status == PrescriptionStatus.WITH_DISPENSER:
+            check_list = [fields.FIELD_DISPENSING_ORGANIZATION]
+        elif prescription_status == PrescriptionStatus.WITH_DISPENSER_ACTIVE:
+            check_list = [fields.FIELD_DISPENSING_ORGANIZATION, fields.FIELD_LAST_DISPENSE_DATE]
+        elif prescription_status in [PrescriptionStatus.DISPENSED, PrescriptionStatus.CLAIMED]:
+            check_list = [fields.FIELD_LAST_DISPENSE_DATE]
         else:
-            checkList = []
+            check_list = []
 
-        return checkList
+        return check_list
 
-    def _getInstanceListToCheck(self, prescriptionStatus):
+    def _get_instance_list_to_check(self, prescription_status):
         """
         Consistency check fields
         """
-        if prescriptionStatus == PrescriptionStatus.EXPIRED:
-            checkList = [fields.FIELD_COMPLETION_DATE, fields.FIELD_EXPIRY_DATE]
-        elif prescriptionStatus in [PrescriptionStatus.CANCELLED, PrescriptionStatus.NOT_DISPENSED]:
-            checkList = [fields.FIELD_COMPLETION_DATE]
-        elif prescriptionStatus in [
+        if prescription_status == PrescriptionStatus.EXPIRED:
+            check_list = [fields.FIELD_COMPLETION_DATE, fields.FIELD_EXPIRY_DATE]
+        elif prescription_status in [
+            PrescriptionStatus.CANCELLED,
+            PrescriptionStatus.NOT_DISPENSED,
+        ]:
+            check_list = [fields.FIELD_COMPLETION_DATE]
+        elif prescription_status in [
             PrescriptionStatus.AWAITING_RELEASE_READY,
             PrescriptionStatus.REPEAT_DISPENSE_FUTURE_INSTANCE,
         ]:
-            checkList = [
+            check_list = [
                 fields.FIELD_DISPENSE_WINDOW_LOW_DATE,
                 fields.FIELD_NOMINATED_DOWNLOAD_DATE,
             ]
         else:
-            checkList = []
+            check_list = []
 
-        return checkList
+        return check_list
 
-    def _getPrescriptionListToCheck(self, prescriptionStatus):
+    def _get_prescription_list_to_check(self, prescription_status):
         """
         Consistency check fields
         """
-        if prescriptionStatus in [
+        if prescription_status in [
             PrescriptionStatus.AWAITING_RELEASE_READY,
             PrescriptionStatus.REPEAT_DISPENSE_FUTURE_INSTANCE,
         ]:
-            checkList = [fields.FIELD_PRESCRIPTION_TIME]
+            check_list = [fields.FIELD_PRESCRIPTION_TIME]
         else:
-            checkList = [fields.FIELD_PRESCRIPTION_TREATMENT_TYPE, fields.FIELD_PRESCRIPTION_TIME]
+            check_list = [fields.FIELD_PRESCRIPTION_TREATMENT_TYPE, fields.FIELD_PRESCRIPTION_TIME]
 
-        return checkList
+        return check_list
 
-    def _getClaimListToCheck(self, prescriptionStatus):
+    def _get_claim_list_to_check(self, prescription_status):
         """
         Consistency check fields
         """
         return (
             [fields.FIELD_CLAIM_RECEIVED_DATE]
-            if prescriptionStatus == PrescriptionStatus.CLAIMED
+            if prescription_status == PrescriptionStatus.CLAIMED
             else []
         )
 
-    def _getNominateListToCheck(self):
+    def _get_nominate_list_to_check(self):
         """
         Consistency check fields
         """
-        pTType = self.prescription_record[fields.FIELD_PRESCRIPTION][
+        p_t_type = self.prescription_record[fields.FIELD_PRESCRIPTION][
             fields.FIELD_PRESCRIPTION_TREATMENT_TYPE
         ]
         return (
             [fields.FIELD_NOMINATED_PERFORMER]
-            if pTType == fields.TREATMENT_TYPE_REPEAT_DISPENSE
+            if p_t_type == fields.TREATMENT_TYPE_REPEAT_DISPENSE
             else []
         )
 
-    def checkRecordConsistency(self, context):
+    def check_record_consistency(self, context):
         """
         Check each line item to ensure consistency with the prescription status for
         this instance - the epsAdminUpdate can only impact a single instance
@@ -1122,84 +1127,88 @@ class PrescriptionRecord(object):
         not be required as a check due to DPR rules)
         """
 
-        testFailures = []
+        test_failures = []
 
-        instanceDict = self._get_prescription_instance_data(context.currentInstance)
+        instance_dict = self._get_prescription_instance_data(context.currentInstance)
 
-        for lineItemDict in instanceDict[fields.FIELD_LINE_ITEMS]:
-            valid = self.validateLinePrescriptionStatus(
-                instanceDict[fields.FIELD_PRESCRIPTION_STATUS], lineItemDict[fields.FIELD_STATUS]
+        for line_item_dict in instance_dict[fields.FIELD_LINE_ITEMS]:
+            valid = self.validate_line_prescription_status(
+                instance_dict[fields.FIELD_PRESCRIPTION_STATUS], line_item_dict[fields.FIELD_STATUS]
             )
             if not valid:
-                testFailures.append("lineItemStatus check for " + lineItemDict[fields.FIELD_ID])
+                test_failures.append("lineItemStatus check for " + line_item_dict[fields.FIELD_ID])
 
-        prescriptionStatus = instanceDict[fields.FIELD_PRESCRIPTION_STATUS]
+        prescription_status = instance_dict[fields.FIELD_PRESCRIPTION_STATUS]
 
         prescription = self.prescription_record[fields.FIELD_PRESCRIPTION]
-        prescriptionList = self._getPrescriptionListToCheck(prescriptionStatus)
-        self.individualConsistencyChecks(prescriptionList, prescription, testFailures)
+        prescription_list = self._get_prescription_list_to_check(prescription_status)
+        self.individual_consistency_checks(prescription_list, prescription, test_failures)
 
-        instanceList = self._getInstanceListToCheck(prescriptionStatus)
-        self.individualConsistencyChecks(instanceList, instanceDict, testFailures)
+        instance_list = self._get_instance_list_to_check(prescription_status)
+        self.individual_consistency_checks(instance_list, instance_dict, test_failures)
 
         nomination = self.prescription_record[fields.FIELD_NOMINATION]
-        nominateList = self._getNominateListToCheck()
-        self.individualConsistencyChecks(nominateList, nomination, testFailures, False)
+        nominate_list = self._get_nominate_list_to_check()
+        self.individual_consistency_checks(nominate_list, nomination, test_failures, False)
 
-        dispenseList = self._getDispenseListToCheck(prescriptionStatus)
-        self.individualConsistencyChecks(
-            dispenseList, instanceDict[fields.FIELD_DISPENSE], testFailures
+        dispense_list = self._get_dispense_list_to_check(prescription_status)
+        self.individual_consistency_checks(
+            dispense_list, instance_dict[fields.FIELD_DISPENSE], test_failures
         )
 
-        claimList = self._getClaimListToCheck(prescriptionStatus)
-        self.individualConsistencyChecks(claimList, instanceDict[fields.FIELD_CLAIM], testFailures)
+        claim_list = self._get_claim_list_to_check(prescription_status)
+        self.individual_consistency_checks(
+            claim_list, instance_dict[fields.FIELD_CLAIM], test_failures
+        )
 
-        if not testFailures:
+        if not test_failures:
             return [True, None]
 
-        for failureReason in testFailures:
-            self.logObject.writeLog(
+        for failure_reason in test_failures:
+            self.log_object.writeLog(
                 "EPS0073",
                 None,
                 {
-                    "internalID": self.internalID,
-                    "failureReason": failureReason,
+                    "internalID": self.internal_id,
+                    "failureReason": failure_reason,
                 },
             )
 
         return [False, "Record consistency check failure"]
 
-    def individualConsistencyChecks(self, listOfChecks, recordPart, testFailures, failOnNone=True):
+    def individual_consistency_checks(
+        self, list_of_checks, record_part, test_failures, fail_on_none=True
+    ):
         """
-        Loop through field names in a list to confirm there is a value on the recordPart
+        Loop through field names in a list to confirm there is a value on the record_part
         for each field
         """
-        for reqField in listOfChecks:
-            if reqField not in recordPart:
-                testFailures.append("Mandatory item " + reqField + " missing")
-            if not recordPart[reqField]:
-                if failOnNone:
-                    testFailures.append("Mandatory item " + reqField + " set to None")
+        for req_field in list_of_checks:
+            if req_field not in record_part:
+                test_failures.append("Mandatory item " + req_field + " missing")
+            if not record_part[req_field]:
+                if fail_on_none:
+                    test_failures.append("Mandatory item " + req_field + " set to None")
                     return
-                self.logObject.writeLog(
-                    "EPS0073b", None, {"internalID": self.internalID, "mandatoryItem": reqField}
+                self.log_object.writeLog(
+                    "EPS0073b", None, {"internalID": self.internal_id, "mandatoryItem": req_field}
                 )
 
-    def determineIfFinalIssue(self, _issueNumber):
+    def determine_if_final_issue(self, issue_number):
         """
         Check if the issue is the final one, this may be because the current issue is
         already at MaxRepeats, or becuase subsequent issues are missing
         """
-        if _issueNumber == self.maxRepeats:
+        if issue_number == self.maxRepeats:
             return True
 
-        for i in range(int(_issueNumber) + 1, int(self.maxRepeats + 1)):
+        for i in range(int(issue_number) + 1, int(self.maxRepeats + 1)):
             issue_data = self._get_prescription_instance_data(str(i), False)
             if issue_data.get(fields.FIELD_PRESCRIPTION_STATUS):
                 return False
         return True
 
-    def returnNextActivityIndex(self, testSites, nadReference, context):
+    def return_next_activity_index(self, test_sites, nad_reference, context):
         """
         Iterate through all prescription instances, determining the Next Activity and Date
         for each, and then set the lowest to the record.
@@ -1208,99 +1217,103 @@ class PrescriptionRecord(object):
         prescription instance 'ready' for download takes precedence over deleting or
         expiring an instance)
         """
-        earliestActivityDate = "99991231"
-        deleteDate = "99991231"
+        earliest_activity_date = "99991231"
+        delete_date = "99991231"
 
-        earliestActivity = None
+        earliest_activity = None
 
-        for instanceKey in self.prescription_record[fields.FIELD_INSTANCES]:
-            instanceDict = self._get_prescription_instance_data(instanceKey, False)
-            if not instanceDict.get(fields.FIELD_PRESCRIPTION_STATUS):
+        for instance_key in self.prescription_record[fields.FIELD_INSTANCES]:
+            instance_dict = self._get_prescription_instance_data(instance_key, False)
+            if not instance_dict.get(fields.FIELD_PRESCRIPTION_STATUS):
                 continue
 
-            issue = PrescriptionIssue(instanceDict)
-            nadStatus = self.setNadStatus(testSites, context, str(issue.number))
-            [nextActivity, nextActivityDate, expiryDate] = self.nad_generator.nextActivityDate(
-                nadStatus, nadReference
+            issue = PrescriptionIssue(instance_dict)
+            nad_status = self.set_nad_status(test_sites, context, str(issue.number))
+            [next_activity, next_activity_date, expiry_date] = self.nad_generator.nextActivityDate(
+                nad_status, nad_reference
             )
 
-            if fields.FIELD_NEXT_ACTIVITY not in instanceDict:
-                instanceDict[fields.FIELD_NEXT_ACTIVITY] = {}
+            if fields.FIELD_NEXT_ACTIVITY not in instance_dict:
+                instance_dict[fields.FIELD_NEXT_ACTIVITY] = {}
 
-            instanceDict[fields.FIELD_NEXT_ACTIVITY][fields.FIELD_ACTIVITY] = nextActivity
-            instanceDict[fields.FIELD_NEXT_ACTIVITY][fields.FIELD_DATE] = nextActivityDate
+            instance_dict[fields.FIELD_NEXT_ACTIVITY][fields.FIELD_ACTIVITY] = next_activity
+            instance_dict[fields.FIELD_NEXT_ACTIVITY][fields.FIELD_DATE] = next_activity_date
 
-            if isinstance(expiryDate, datetime.datetime):
-                expiryDate = expiryDate.strftime(TimeFormats.STANDARD_DATE_FORMAT)
+            if isinstance(expiry_date, datetime.datetime):
+                expiry_date = expiry_date.strftime(TimeFormats.STANDARD_DATE_FORMAT)
 
-            instanceDict[fields.FIELD_EXPIRY_DATE] = expiryDate
+            instance_dict[fields.FIELD_EXPIRY_DATE] = expiry_date
 
-            _issueIsFinal = self.determineIfFinalIssue(issue.number)
+            issue_is_final = self.determine_if_final_issue(issue.number)
 
-            if not self._includeNextActivityForInstance(
-                nextActivity, issue.number, self.currentIssueNumber, self.maxRepeats, _issueIsFinal
+            if not self._include_next_activity_for_instance(
+                next_activity,
+                issue.number,
+                self.current_issue_number,
+                self.maxRepeats,
+                issue_is_final,
             ):
                 continue
 
             # treat deletion separately to next activities
-            if nextActivity == fields.NEXTACTIVITY_DELETE:
-                deleteDate = nextActivityDate
+            if next_activity == fields.NEXTACTIVITY_DELETE:
+                delete_date = next_activity_date
                 continue
 
             # Note: string comparison of dates in YYYYMMDD format
-            if nextActivityDate < earliestActivityDate:
-                earliestActivityDate = nextActivityDate
-                earliestActivity = nextActivity
+            if next_activity_date < earliest_activity_date:
+                earliest_activity_date = next_activity_date
+                earliest_activity = next_activity
 
             # Note: string comparison of dates in YYYYMMDD format
-            if nextActivityDate <= earliestActivityDate:
+            if next_activity_date <= earliest_activity_date:
                 for activity in fields.USER_IMPACTING_ACTIVITY:
-                    if nextActivity == activity or earliestActivity == activity:
-                        earliestActivity = activity
+                    if next_activity == activity or earliest_activity == activity:
+                        earliest_activity = activity
                         break
 
-        if earliestActivity:
-            return [earliestActivity, earliestActivityDate]
+        if earliest_activity:
+            return [earliest_activity, earliest_activity_date]
 
-        return [fields.NEXTACTIVITY_DELETE, deleteDate]
+        return [fields.NEXTACTIVITY_DELETE, delete_date]
 
-    def _includeNextActivityForInstance(
-        self, nextActivity, issueNumber, currentIssueNumber, maxRepeats, issueIsFinal=None
+    def _include_next_activity_for_instance(
+        self, next_activity, issue_number, current_issue_number, max_repeats, issue_is_final=None
     ):
         """
-        Check whether the nextActivity should be included for the issue as a position
+        Check whether the next_activity should be included for the issue as a position
         within the prescription repeat issues.
-         - The final issue (issueNumber == maxRepeats) supports everything
-         - The previous issue(s) (issueNumber < currentInstance) support createNoClaim
+         - The final issue (issue_number == max_repeats) supports everything
+         - The previous issue(s) (issue_number < currentInstance) support createNoClaim
          - The current issue supports everything other than delete and purge
          - Future issues support nothing
 
-        Note: we shouldn't really need to pass in the currentIssueNumber and maxRepeats
+        Note: we shouldn't really need to pass in the current_issue_number and max_repeats
         parameters as these are available from self. However, the unit tests are
         currently written to expect these to be passed in.
 
         Also note that due to missing prescription issues from Spine1, we need to be extra
         cautious and cannot just assume that later issues are present.
 
-        :type nextActivity: str
-        :type issueNumber: int
-        :type currentIssueNumber: int
-        :type maxRepeats: int
+        :type next_activity: str
+        :type issue_number: int
+        :type current_issue_number: int
+        :type max_repeats: int
         :rtype: bool
         """
 
-        issueIsCurrent = issueNumber == currentIssueNumber
-        if not issueIsFinal:
-            issueIsFinal = issueNumber == maxRepeats
-        issueIsBeforeCurrent = issueNumber < currentIssueNumber
-        allRemainingIssuesMissing = (issueNumber < currentIssueNumber) and (issueIsFinal)
+        issue_is_current = issue_number == current_issue_number
+        if not issue_is_final:
+            issue_is_final = issue_number == max_repeats
+        issue_is_before_current = issue_number < current_issue_number
+        all_remaining_issues_missing = (issue_number < current_issue_number) and (issue_is_final)
 
         # default for future issue
-        permittedActivities = []
+        permitted_activities = []
 
-        if (issueIsCurrent and issueIsFinal) or allRemainingIssuesMissing:
+        if (issue_is_current and issue_is_final) or all_remaining_issues_missing:
             # final issue
-            permittedActivities = [
+            permitted_activities = [
                 fields.NEXTACTIVITY_EXPIRE,
                 fields.NEXTACTIVITY_CREATENOCLAIM,
                 fields.NEXTACTIVITY_READY,
@@ -1308,21 +1321,21 @@ class PrescriptionRecord(object):
                 fields.NEXTACTIVITY_PURGE,
             ]
 
-        elif issueIsBeforeCurrent:
+        elif issue_is_before_current:
             # previous issue
-            permittedActivities = [fields.NEXTACTIVITY_CREATENOCLAIM]
+            permitted_activities = [fields.NEXTACTIVITY_CREATENOCLAIM]
 
-        elif issueIsCurrent:
+        elif issue_is_current:
             # current issue
-            permittedActivities = [
+            permitted_activities = [
                 fields.NEXTACTIVITY_EXPIRE,
                 fields.NEXTACTIVITY_READY,
                 fields.NEXTACTIVITY_CREATENOCLAIM,
             ]
 
-        return nextActivity in permittedActivities
+        return next_activity in permitted_activities
 
-    def setNadStatus(self, testPrescribingSites, context, instanceNumberStr):
+    def set_nad_status(self, test_prescribing_sites, context, instance_number_str):
         """
         Create the status fields that are required for the Next Activity Index calculation
 
@@ -1330,65 +1343,67 @@ class PrescriptionRecord(object):
         relationship between standardDate format and standardDateTimeFormat staying
         consistent ***
         """
-        _prescDetails = self.prescription_record[fields.FIELD_PRESCRIPTION]
-        _instDetails = self._get_prescription_instance_data(instanceNumberStr, False)
+        presc_details = self.prescription_record[fields.FIELD_PRESCRIPTION]
+        inst_details = self._get_prescription_instance_data(instance_number_str, False)
 
-        nadStatus = {}
-        nadStatus[fields.FIELD_PRESCRIPTION_TREATMENT_TYPE] = _prescDetails[
+        nad_status = {}
+        nad_status[fields.FIELD_PRESCRIPTION_TREATMENT_TYPE] = presc_details[
             fields.FIELD_PRESCRIPTION_TREATMENT_TYPE
         ]
-        nadStatus[fields.FIELD_PRESCRIPTION_DATE] = _prescDetails[fields.FIELD_PRESCRIPTION_TIME][
+        nad_status[fields.FIELD_PRESCRIPTION_DATE] = presc_details[fields.FIELD_PRESCRIPTION_TIME][
             :8
         ]
-        nadStatus[fields.FIELD_RELEASE_VERSION] = self._releaseVersion
+        nad_status[fields.FIELD_RELEASE_VERSION] = self._release_version
 
-        if _prescDetails[fields.FIELD_PRESCRIBING_ORG] in testPrescribingSites:
-            nadStatus[fields.FIELD_PRESCRIBING_SITE_TEST_STATUS] = True
+        if presc_details[fields.FIELD_PRESCRIBING_ORG] in test_prescribing_sites:
+            nad_status[fields.FIELD_PRESCRIBING_SITE_TEST_STATUS] = True
         else:
-            nadStatus[fields.FIELD_PRESCRIBING_SITE_TEST_STATUS] = False
+            nad_status[fields.FIELD_PRESCRIBING_SITE_TEST_STATUS] = False
 
-        nadStatus[fields.FIELD_DISPENSE_WINDOW_HIGH_DATE] = _instDetails[
+        nad_status[fields.FIELD_DISPENSE_WINDOW_HIGH_DATE] = inst_details[
             fields.FIELD_DISPENSE_WINDOW_HIGH_DATE
         ]
-        nadStatus[fields.FIELD_DISPENSE_WINDOW_LOW_DATE] = _instDetails[
+        nad_status[fields.FIELD_DISPENSE_WINDOW_LOW_DATE] = inst_details[
             fields.FIELD_DISPENSE_WINDOW_LOW_DATE
         ]
-        nadStatus[fields.FIELD_NOMINATED_DOWNLOAD_DATE] = _instDetails[
+        nad_status[fields.FIELD_NOMINATED_DOWNLOAD_DATE] = inst_details[
             fields.FIELD_NOMINATED_DOWNLOAD_DATE
         ]
-        nadStatus[fields.FIELD_LAST_DISPENSE_DATE] = _instDetails[fields.FIELD_DISPENSE][
+        nad_status[fields.FIELD_LAST_DISPENSE_DATE] = inst_details[fields.FIELD_DISPENSE][
             fields.FIELD_LAST_DISPENSE_DATE
         ]
-        nadStatus[fields.FIELD_LAST_DISPENSE_NOTIFICATION_MSG_REF] = _instDetails[
+        nad_status[fields.FIELD_LAST_DISPENSE_NOTIFICATION_MSG_REF] = inst_details[
             fields.FIELD_DISPENSE
         ][fields.FIELD_LAST_DISPENSE_NOTIFICATION_MSG_REF]
-        nadStatus[fields.FIELD_COMPLETION_DATE] = _instDetails[fields.FIELD_COMPLETION_DATE]
-        nadStatus[fields.FIELD_CLAIM_SENT_DATE] = _instDetails[fields.FIELD_CLAIM][
+        nad_status[fields.FIELD_COMPLETION_DATE] = inst_details[fields.FIELD_COMPLETION_DATE]
+        nad_status[fields.FIELD_CLAIM_SENT_DATE] = inst_details[fields.FIELD_CLAIM][
             fields.FIELD_CLAIM_RECEIVED_DATE
         ]
-        nadStatus[fields.FIELD_HANDLE_TIME] = context.handleTime
-        nadStatus[fields.FIELD_PRESCRIPTION_STATUS] = self.returnPrescriptionStatus(
-            instanceNumberStr
+        nad_status[fields.FIELD_HANDLE_TIME] = context.handleTime
+        nad_status[fields.FIELD_PRESCRIPTION_STATUS] = self.return_prescription_status(
+            instance_number_str
         )
-        nadStatus[fields.FIELD_INSTANCE_NUMBER] = instanceNumberStr
+        nad_status[fields.FIELD_INSTANCE_NUMBER] = instance_number_str
 
-        return nadStatus
+        return nad_status
 
-    def rollForwardInstance(self):
+    def roll_forward_instance(self):
         """
         If the currentInstance is changed, it is first stored as a pending_instance_change
         - so that the update can be applied at the end of the process
         """
         if self.pending_instance_change is not None:
-            self.currentIssueNumber = int(self.pending_instance_change)
+            self.current_issue_number = int(self.pending_instance_change)
 
-    def compareLineItemsForDispense(self, passedLineItems, validStatusChanges, instanceNumber):
+    def compare_line_items_for_dispense(
+        self, passed_line_items, valid_status_changes, instance_number
+    ):
         """
         Compare the line items provided on a dispense message with the previous (stored)
         state on the record to determine if this is a valid dispense notification for
         each line items.
 
-        passedLineItems will be a list of lineItem dictionaries - with each lineItem
+        passed_line_items will be a list of line_item dictionaries - with each line_item
         having and:
         fields.FIELD_ID - to match to an ID on the record
         'DN_ID' - a GUID for the dispense notification for that specific line item (this
@@ -1401,64 +1416,64 @@ class PrescriptionRecord(object):
         Note that as per SPII-6085, we should permit a Repeat Prescribe message without a
         repeat number.
         """
-        treatmentType = self.prescription_record[fields.FIELD_PRESCRIPTION][
+        treatment_type = self.prescription_record[fields.FIELD_PRESCRIPTION][
             fields.FIELD_PRESCRIPTION_TREATMENT_TYPE
         ]
-        instance = self._get_prescription_instance_data(instanceNumber)
+        instance = self._get_prescription_instance_data(instance_number)
 
-        storedLineItems = instance[fields.FIELD_LINE_ITEMS]
-        [storedIDs, passedIDs] = [set(), set()]
-        for lineItem in storedLineItems:
-            storedIDs.add(str(lineItem[fields.FIELD_ID]))
-        for lineItem in passedLineItems:
-            passedIDs.add(str(lineItem[fields.FIELD_ID]))
-        if storedIDs != passedIDs:
-            self.logObject.writeLog(
+        stored_line_items = instance[fields.FIELD_LINE_ITEMS]
+        [stored_ids, passed_ids] = [set(), set()]
+        for line_item in stored_line_items:
+            stored_ids.add(str(line_item[fields.FIELD_ID]))
+        for line_item in passed_line_items:
+            passed_ids.add(str(line_item[fields.FIELD_ID]))
+        if stored_ids != passed_ids:
+            self.log_object.writeLog(
                 "EPS0146",
                 None,
                 {
-                    "internalID": self.internalID,
-                    "storedIDs": str(storedIDs),
-                    "passedIDs": str(passedIDs),
+                    "internalID": self.internal_id,
+                    "storedIDs": str(stored_ids),
+                    "passedIDs": str(passed_ids),
                 },
             )
             # Re-raise this as SpineBusinessError with equivalent errorCode from ErrorBase1722.
             raise EpsBusinessError(EpsErrorBase.ITEM_NOT_FOUND)
 
-        for lineItem in passedLineItems:
-            _stored_lineItem = self._returnMatchingLineItem(storedLineItems, lineItem)
-            if not _stored_lineItem:
+        for line_item in passed_line_items:
+            stored_line_item = self._return_matching_line_item(stored_line_items, line_item)
+            if not stored_line_item:
                 continue
 
-            previousStatus = _stored_lineItem[fields.FIELD_STATUS]
-            newStatus = lineItem[fields.FIELD_STATUS]
-            if [previousStatus, newStatus] not in validStatusChanges:
-                self.logObject.writeLog(
+            previous_status = stored_line_item[fields.FIELD_STATUS]
+            new_status = line_item[fields.FIELD_STATUS]
+            if [previous_status, new_status] not in valid_status_changes:
+                self.log_object.writeLog(
                     "EPS0148",
                     None,
                     {
-                        "internalID": self.internalID,
-                        "lineItemID": lineItem[fields.FIELD_ID],
-                        "previousStatus": previousStatus,
-                        "newStatus": newStatus,
+                        "internalID": self.internal_id,
+                        "lineItemID": line_item[fields.FIELD_ID],
+                        "previousStatus": previous_status,
+                        "newStatus": new_status,
                     },
                 )
                 # Re-raise this as SpineBusinessError with equivalent errorCode from ErrorBase1722.
                 raise EpsBusinessError(EpsErrorBase.INVALID_LINE_STATE_TRANSITION)
 
-            if treatmentType == fields.TREATMENT_TYPE_ACUTE:
+            if treatment_type == fields.TREATMENT_TYPE_ACUTE:
                 continue
 
-            if lineItem[fields.FIELD_MAX_REPEATS] != _stored_lineItem[fields.FIELD_MAX_REPEATS]:
-                if treatmentType == fields.TREATMENT_TYPE_REPEAT_PRESCRIBE:
-                    self.logObject.writeLog(
+            if line_item[fields.FIELD_MAX_REPEATS] != stored_line_item[fields.FIELD_MAX_REPEATS]:
+                if treatment_type == fields.TREATMENT_TYPE_REPEAT_PRESCRIBE:
+                    self.log_object.writeLog(
                         "EPS0147b",
                         None,
                         {
-                            "internalID": self.internalID,
-                            "providedRepeatCount": (lineItem[fields.FIELD_MAX_REPEATS]),
-                            "storedRepeatCount": str(_stored_lineItem[fields.FIELD_MAX_REPEATS]),
-                            "lineItemID": lineItem[fields.FIELD_ID],
+                            "internalID": self.internal_id,
+                            "providedRepeatCount": (line_item[fields.FIELD_MAX_REPEATS]),
+                            "storedRepeatCount": str(stored_line_item[fields.FIELD_MAX_REPEATS]),
+                            "lineItemID": line_item[fields.FIELD_ID],
                         },
                     )
                     continue
@@ -1466,71 +1481,71 @@ class PrescriptionRecord(object):
                 # SPII-14044 - permit the maxRepeats for line items to be equal to the
                 # prescription maxRepeats as is normal when the line item expires sooner
                 # than the prescription.
-                if lineItem.get(fields.FIELD_MAX_REPEATS) is None or self.maxRepeats is None:
-                    self.logObject.writeLog(
+                if line_item.get(fields.FIELD_MAX_REPEATS) is None or self.maxRepeats is None:
+                    self.log_object.writeLog(
                         "EPS0147d",
                         None,
                         {
-                            "internalID": self.internalID,
-                            "providedRepeatCount": lineItem.get(fields.FIELD_MAX_REPEATS),
+                            "internalID": self.internal_id,
+                            "providedRepeatCount": line_item.get(fields.FIELD_MAX_REPEATS),
                             "storedRepeatCount": (
                                 self.maxRepeats if self.maxRepeats is None else str(self.maxRepeats)
                             ),
-                            "lineItemID": lineItem.get(fields.FIELD_ID),
+                            "lineItemID": line_item.get(fields.FIELD_ID),
                         },
                     )
                     # Re-raise this as SpineBusinessError with equivalent errorCode from ErrorBase1722.
                     raise EpsBusinessError(EpsErrorBase.MAX_REPEAT_MISMATCH)
 
-                if int(lineItem[fields.FIELD_MAX_REPEATS]) == int(self.maxRepeats):
-                    self.logObject.writeLog(
+                if int(line_item[fields.FIELD_MAX_REPEATS]) == int(self.maxRepeats):
+                    self.log_object.writeLog(
                         "EPS0147c",
                         None,
                         {
-                            "internalID": self.internalID,
-                            "providedRepeatCount": (lineItem[fields.FIELD_MAX_REPEATS]),
-                            "storedRepeatCount": str(_stored_lineItem[fields.FIELD_MAX_REPEATS]),
-                            "lineItemID": lineItem[fields.FIELD_ID],
+                            "internalID": self.internal_id,
+                            "providedRepeatCount": (line_item[fields.FIELD_MAX_REPEATS]),
+                            "storedRepeatCount": str(stored_line_item[fields.FIELD_MAX_REPEATS]),
+                            "lineItemID": line_item[fields.FIELD_ID],
                         },
                     )
                     continue
 
-                self.logObject.writeLog(
+                self.log_object.writeLog(
                     "EPS0147",
                     None,
                     {
-                        "internalID": self.internalID,
-                        "providedRepeatCount": (lineItem[fields.FIELD_MAX_REPEATS]),
-                        "storedRepeatCount": str(_stored_lineItem[fields.FIELD_MAX_REPEATS]),
-                        "lineItemID": lineItem[fields.FIELD_ID],
+                        "internalID": self.internal_id,
+                        "providedRepeatCount": (line_item[fields.FIELD_MAX_REPEATS]),
+                        "storedRepeatCount": str(stored_line_item[fields.FIELD_MAX_REPEATS]),
+                        "lineItemID": line_item[fields.FIELD_ID],
                     },
                 )
                 # Re-raise this as SpineBusinessError with equivalent errorCode from ErrorBase1722.
                 raise EpsBusinessError(EpsErrorBase.MAX_REPEAT_MISMATCH)
 
-    def _returnMatchingLineItem(self, storedLineItems, lineItem):
+    def _return_matching_line_item(self, stored_line_items, line_item):
         """
         Match on line item ID
         """
-        for _stored_lineItem in storedLineItems:
-            if _stored_lineItem[fields.FIELD_ID] == lineItem[fields.FIELD_ID]:
-                return _stored_lineItem
+        for stored_line_item in stored_line_items:
+            if stored_line_item[fields.FIELD_ID] == line_item[fields.FIELD_ID]:
+                return stored_line_item
         return None
 
-    def returnDetailsForRelease(self):
+    def return_details_for_release(self):
         """
         Need to return the status and expiryDate of the current instance - which can then
         be used in validity checks for release request messages
         """
-        currentIssue = self.currentIssue
+        current_issue = self.current_issue
         details = [
-            currentIssue.status,
-            currentIssue.expiry_date_str,
-            self.returnNominatedPerformer(),
+            current_issue.status,
+            current_issue.expiry_date_str,
+            self.return_nominated_performer(),
         ]
         return details
 
-    def returnDetailsForDispense(self):
+    def return_details_for_dispense(self):
         """
         For dispense messages the following details are required:
         - Instance status
@@ -1538,36 +1553,36 @@ class PrescriptionRecord(object):
         - Dispensing Organisation
         - Max repeats (if repeat type, otherwise return None)
         """
-        currentIssue = self.currentIssue
-        maxRepeats = str(
-            self.prescriptionRecord[fields.FIELD_PRESCRIPTION][fields.FIELD_MAX_REPEATS]
+        current_issue = self.current_issue
+        max_repeats = str(
+            self.prescription_record[fields.FIELD_PRESCRIPTION][fields.FIELD_MAX_REPEATS]
         )
         details = [
-            str(currentIssue.number),
-            currentIssue.status,
-            self._nhsNumber,
-            currentIssue.dispensing_organization,
-            maxRepeats,
+            str(current_issue.number),
+            current_issue.status,
+            self._nhs_number,
+            current_issue.dispensing_organization,
+            max_repeats,
         ]
         return details
 
-    def returnLastDispenseStatus(self, instanceNumber):
+    def return_last_dispense_status(self, instance_number):
         """
-        Return the lastDispenseStatus for the requested instance
+        Return the last_dispense_status for the requested instance
         """
-        instance = self._get_prescription_instance_data(instanceNumber)
-        lastDispenseStatus = instance[fields.FIELD_LAST_DISPENSE_STATUS]
-        return lastDispenseStatus
+        instance = self._get_prescription_instance_data(instance_number)
+        last_dispense_status = instance[fields.FIELD_LAST_DISPENSE_STATUS]
+        return last_dispense_status
 
-    def returnLastDispenseDate(self, instanceNumber):
+    def return_last_dispense_date(self, instance_number):
         """
-        Return the lastDispenseDate for the requested instance
+        Return the last_dispense_date for the requested instance
         """
-        instance = self._get_prescription_instance_data(instanceNumber)
-        lastDispenseDate = instance[fields.FIELD_DISPENSE][fields.FIELD_LAST_DISPENSE_DATE]
-        return lastDispenseDate
+        instance = self._get_prescription_instance_data(instance_number)
+        last_dispense_date = instance[fields.FIELD_DISPENSE][fields.FIELD_LAST_DISPENSE_DATE]
+        return last_dispense_date
 
-    def returnDetailsForClaim(self, instanceNumberStr):
+    def return_details_for_claim(self, instance_number_str):
         """
         For claim messages the following details are required:
         - Instance status
@@ -1575,17 +1590,17 @@ class PrescriptionRecord(object):
         - Dispensing Organisation
         - Max repeats (if repeat type, otherwise return None)
         """
-        issueNumber = int(instanceNumberStr)
-        issue = self.get_issue(issueNumber)
-        maxRepeats = str(
-            self.prescriptionRecord[fields.FIELD_PRESCRIPTION][fields.FIELD_MAX_REPEATS]
+        issue_number = int(instance_number_str)
+        issue = self.get_issue(issue_number)
+        max_repeats = str(
+            self.prescription_record[fields.FIELD_PRESCRIPTION][fields.FIELD_MAX_REPEATS]
         )
         details = [
             issue.claim,
             issue.status,
-            self._nhsNumber,
-            issue.dispensingOrganization,
-            maxRepeats,
+            self._nhs_number,
+            issue.dispensing_organization,
+            max_repeats,
         ]
         return details
 
@@ -1595,38 +1610,45 @@ class PrescriptionRecord(object):
         """
         issueNumber = int(instanceNumberStr)
         issue = self.get_issue(issueNumber)
-        return issue.lastDispenseNotificationMsgRef
+        return issue.last_dispense_notification_msg_ref
 
-    def returnDetailsForDispenseProposalReturn(self):
+    def return_details_for_dispense_proposal_return(self):
         """
-        For DPR changes currentInstance, instanceStatus and dispensingOrg required
+        For DPR changes currentInstance, instanceStatus and dispensing_org required
         """
-        dispensingOrg = self._currentInstanceData[fields.FIELD_DISPENSE][
+        dispensing_org = self._current_instance_data[fields.FIELD_DISPENSE][
             fields.FIELD_DISPENSING_ORGANIZATION
         ]
-        return (self.currentIssueNumber, self._currentInstanceStatus, dispensingOrg)
+        return (self.current_issue_number, self._current_instance_status, dispensing_org)
 
-    def updateForRelease(self, context):
+    def update_for_release(self, context):
         """
         Update a prescription to indicate valid release request:
         prescription instance to be changed to with-dispenser
         add dispense section onto the instance - with dispensingOrganization
         update status of individual line items
         """
-        self.updateInstanceStatus(self._currentInstanceData, PrescriptionStatus.WITH_DISPENSER)
-        self._currentInstanceData[fields.FIELD_DISPENSE][
+        self.update_instance_status(self._current_instance_data, PrescriptionStatus.WITH_DISPENSER)
+        self._current_instance_data[fields.FIELD_DISPENSE][
             fields.FIELD_DISPENSING_ORGANIZATION
         ] = context.agentOrganization
-        _releaseDate = context.handleTime.strftime(TimeFormats.STANDARD_DATE_FORMAT)
-        self._currentInstanceData[fields.FIELD_RELEASE_DATE] = _releaseDate
+        release_date = context.handleTime.strftime(TimeFormats.STANDARD_DATE_FORMAT)
+        self._current_instance_data[fields.FIELD_RELEASE_DATE] = release_date
 
-        self.updateLineItemStatus(
-            self._currentInstanceData, LineItemStatus.TO_BE_DISPENSED, LineItemStatus.WITH_DISPENSER
+        self.update_line_item_status(
+            self._current_instance_data,
+            LineItemStatus.TO_BE_DISPENSED,
+            LineItemStatus.WITH_DISPENSER,
         )
-        self.setExemptionDates()
+        self.set_exemption_dates()
 
-    def updateForDispense(
-        self, context, daysSupply, nomDownLeadDays, nomDownloadDateEnabled, maintainInstance=False
+    def update_for_dispense(
+        self,
+        context,
+        days_supply,
+        nom_down_lead_days,
+        nom_download_date_enabled,
+        maintain_instance=False,
     ):
         """
         Update a prescription to indicate valid dispense notification:
@@ -1635,71 +1657,77 @@ class PrescriptionRecord(object):
 
         """
         if context.isAmendment:  # noqa: SIM108 - More readable as is
-            _instance = self._get_prescription_instance_data(context.targetInstance)
+            instance = self._get_prescription_instance_data(context.targetInstance)
         else:
-            _instance = self._currentInstanceData
+            instance = self._current_instance_data
 
-        _instance[fields.FIELD_DISPENSE][fields.FIELD_LAST_DISPENSE_DATE] = context.dispenseDate
-        _instance[fields.FIELD_LAST_DISPENSE_STATUS] = context.prescriptionStatus
+        instance[fields.FIELD_DISPENSE][fields.FIELD_LAST_DISPENSE_DATE] = context.dispenseDate
+        instance[fields.FIELD_LAST_DISPENSE_STATUS] = context.prescriptionStatus
 
         if hasattr(context, "agentOrganization"):
             if context.agentOrganization:
-                _instance[fields.FIELD_DISPENSE][
+                instance[fields.FIELD_DISPENSE][
                     fields.FIELD_DISPENSING_ORGANIZATION
                 ] = context.agentOrganization
 
         if context.prescriptionStatus in PrescriptionStatus.COMPLETED_STATES:
-            _instance[fields.FIELD_COMPLETION_DATE] = context.dispenseDate
-            self.setNextInstancePriorIssueDate(context)
-            self.releaseNextInstance(context, daysSupply, nomDownLeadDays, nomDownloadDateEnabled)
-        self.updateLineItemStatusFromDispense(_instance, context.lineItems)
+            instance[fields.FIELD_COMPLETION_DATE] = context.dispenseDate
+            self.set_next_instance_prior_issue_date(context)
+            self.release_next_instance(
+                context, days_supply, nom_down_lead_days, nom_download_date_enabled
+            )
+        self.update_line_item_status_from_dispense(instance, context.lineItems)
 
-        if maintainInstance:
+        if maintain_instance:
             return
 
-        self.updateInstanceStatus(_instance, context.prescriptionStatus)
+        self.update_instance_status(instance, context.prescriptionStatus)
 
-    def updateForRebuild(
-        self, context, daysSupply, nomDownLeadDays, dispenseDict, nomDownloadDateEnabled
+    def update_for_rebuild(
+        self, context, days_supply, nom_down_lead_days, dispense_dict, nom_download_date_enabled
     ):
         """
         Complete the actions required to update the prescription instance with the changes
         made in the interaction worker
         """
 
-        _instance = self._get_prescription_instance_data(context.targetInstance)
-        _instance[fields.FIELD_DISPENSE][fields.FIELD_LAST_DISPENSE_DATE] = dispenseDict[
+        instance = self._get_prescription_instance_data(context.targetInstance)
+        instance[fields.FIELD_DISPENSE][fields.FIELD_LAST_DISPENSE_DATE] = dispense_dict[
             fields.FIELD_DISPENSE_DATE
         ]
-        _instance[fields.FIELD_LAST_DISPENSE_STATUS] = dispenseDict[
+        instance[fields.FIELD_LAST_DISPENSE_STATUS] = dispense_dict[
             fields.FIELD_PRESCRIPTION_STATUS
         ]
-        if dispenseDict[fields.FIELD_PRESCRIPTION_STATUS] in PrescriptionStatus.COMPLETED_STATES:
-            _instance[fields.FIELD_COMPLETION_DATE] = dispenseDict[fields.FIELD_DISPENSE_DATE]
-            self.setNextInstancePriorIssueDate(context, context.targetInstance)
-            self.releaseNextInstance(
-                context, daysSupply, nomDownLeadDays, nomDownloadDateEnabled, context.targetInstance
+        if dispense_dict[fields.FIELD_PRESCRIPTION_STATUS] in PrescriptionStatus.COMPLETED_STATES:
+            instance[fields.FIELD_COMPLETION_DATE] = dispense_dict[fields.FIELD_DISPENSE_DATE]
+            self.set_next_instance_prior_issue_date(context, context.targetInstance)
+            self.release_next_instance(
+                context,
+                days_supply,
+                nom_down_lead_days,
+                nom_download_date_enabled,
+                context.targetInstance,
             )
-        self.updateLineItemStatusFromDispense(_instance, dispenseDict[fields.FIELD_LINE_ITEMS])
-        self.updateInstanceStatus(_instance, dispenseDict[fields.FIELD_PRESCRIPTION_STATUS])
+        self.update_line_item_status_from_dispense(instance, dispense_dict[fields.FIELD_LINE_ITEMS])
+        self.update_instance_status(instance, dispense_dict[fields.FIELD_PRESCRIPTION_STATUS])
 
-    def updateForClaim(self, context, instanceNumber):
+    def update_for_claim(self, context, instance_number):
         """
         Update a prescription to indicate valid dispense claim received:
         prescription instance to be changed to reflect passed-in status
         Do not update status of individual line items
         Add Claim details to record
         """
-        instance = self._get_prescription_instance_data(instanceNumber)
-        self.updateInstanceStatus(instance, PrescriptionStatus.CLAIMED)
+        instance = self._get_prescription_instance_data(instance_number)
+        self.update_instance_status(instance, PrescriptionStatus.CLAIMED)
         instance[fields.FIELD_CLAIM][fields.FIELD_CLAIM_RECEIVED_DATE] = context.claimDate
         instance[fields.FIELD_CLAIM][fields.FIELD_CLAIM_STATUS] = fields.FIELD_CLAIMED_DISPLAY_NAME
         instance[fields.FIELD_CLAIM][fields.FIELD_CLAIM_REBUILD] = False
         instance[fields.FIELD_CLAIM][fields.FIELD_CLAIM_GUID] = context.dispenseClaimID
 
-    def updateForClaimAmend(self, context, instanceNumber):
+    def update_for_claim_amend(self, context, instance_number):
         """
-        Modification of updateForClaim for use when the claim is an amendment.
+        Modification of update_for_claim for use when the claim is an amendment.
         - Do not change the claimReceivedDate from the original value
         - Change claimRebuild to True
         Update a prescription to indicate valid dispense claim received:
@@ -1708,18 +1736,18 @@ class PrescriptionRecord(object):
         Append the existing claimGUID into the historicClaimGUID List
         Add Claim details to record
         """
-        instance = self._get_prescription_instance_data(instanceNumber)
-        self.updateInstanceStatus(instance, PrescriptionStatus.CLAIMED)
+        instance = self._get_prescription_instance_data(instance_number)
+        self.update_instance_status(instance, PrescriptionStatus.CLAIMED)
         instance[fields.FIELD_CLAIM][fields.FIELD_CLAIM_RECEIVED_DATE] = context.claimDate
         instance[fields.FIELD_CLAIM][fields.FIELD_CLAIM_STATUS] = fields.FIELD_CLAIMED_DISPLAY_NAME
         instance[fields.FIELD_CLAIM][fields.FIELD_CLAIM_REBUILD] = True
         if fields.FIELD_HISTORIC_CLAIMS not in instance[fields.FIELD_CLAIM]:
             instance[fields.FIELD_CLAIM][fields.FIELD_HISTORIC_CLAIM_GUIDS] = []
-        _claimGUID = instance[fields.FIELD_CLAIM][fields.FIELD_CLAIM_GUID]
-        instance[fields.FIELD_CLAIM][fields.FIELD_HISTORIC_CLAIM_GUIDS].append(_claimGUID)
+        claim_guid = instance[fields.FIELD_CLAIM][fields.FIELD_CLAIM_GUID]
+        instance[fields.FIELD_CLAIM][fields.FIELD_HISTORIC_CLAIM_GUIDS].append(claim_guid)
         instance[fields.FIELD_CLAIM][fields.FIELD_CLAIM_GUID] = context.dispenseClaimID
 
-    def updateForReturn(self, _, _retainNomination=False):
+    def update_for_return(self, _, retain_nomination=False):
         """
         If this is a nominated prescription then check that the nominated performer is in
         the nomination history and clear the current value.
@@ -1727,131 +1755,133 @@ class PrescriptionRecord(object):
         The status then needs to be changed for the prescription and the line items
         """
 
-        self.clearDispensingOrganisation(self._currentInstanceData)
+        self.clear_dispensing_organisation(self._current_instance_data)
 
-        self.updateInstanceStatus(self._currentInstanceData, PrescriptionStatus.TO_BE_DISPENSED)
-        self.updateLineItemStatus(
-            self._currentInstanceData, LineItemStatus.WITH_DISPENSER, LineItemStatus.TO_BE_DISPENSED
+        self.update_instance_status(self._current_instance_data, PrescriptionStatus.TO_BE_DISPENSED)
+        self.update_line_item_status(
+            self._current_instance_data,
+            LineItemStatus.WITH_DISPENSER,
+            LineItemStatus.TO_BE_DISPENSED,
         )
-        if _retainNomination:
+        if retain_nomination:
             return
 
-        _nomDetails = self.prescriptionRecord[fields.FIELD_NOMINATION]
-        if _nomDetails[fields.FIELD_NOMINATED]:
+        nom_details = self.prescription_record[fields.FIELD_NOMINATION]
+        if nom_details[fields.FIELD_NOMINATED]:
             if (
-                _nomDetails[fields.FIELD_NOMINATED_PERFORMER]
-                not in _nomDetails[fields.FIELD_NOMINATION_HISTORY]
+                nom_details[fields.FIELD_NOMINATED_PERFORMER]
+                not in nom_details[fields.FIELD_NOMINATION_HISTORY]
             ):
-                _nomDetails[fields.FIELD_NOMINATION_HISTORY].append(
-                    _nomDetails[fields.FIELD_NOMINATED_PERFORMER]
+                nom_details[fields.FIELD_NOMINATION_HISTORY].append(
+                    nom_details[fields.FIELD_NOMINATED_PERFORMER]
                 )
-            _nomDetails[fields.FIELD_NOMINATED_PERFORMER] = None
+            nom_details[fields.FIELD_NOMINATED_PERFORMER] = None
 
-    def clearDispensingOrganisation(self, _instance):
+    def clear_dispensing_organisation(self, instance):
         """
         Clear the dispensing organisation from the instance
         """
-        _instance[fields.FIELD_DISPENSE][fields.FIELD_DISPENSING_ORGANIZATION] = None
+        instance[fields.FIELD_DISPENSE][fields.FIELD_DISPENSING_ORGANIZATION] = None
 
-    def checkActionApplicability(self, targetInstance, action, context):
+    def check_action_applicability(self, target_instance, action, context):
         """
         The batch worker will always use 'Available' as the target reference, if this isn't
         the target instance then the update has come from a test or admin system that needs
         to take action on a specific instance, so skip the applicability test.
         """
 
-        if targetInstance != fields.BATCH_STATUS_AVAILABLE:
-            self.setInstanceToActionUpdate(targetInstance, context, action)
+        if target_instance != fields.BATCH_STATUS_AVAILABLE:
+            self.set_instance_to_action_update(target_instance, context, action)
         else:
-            self.findInstancesToActionUpdate(context, action)
+            self.find_instances_to_action_update(context, action)
 
-    def setInstanceToActionUpdate(self, targetInstance, context, action):
+    def set_instance_to_action_update(self, target_instance, context, action):
         """
         Set the instance to action update based on the value passed in the request
         """
-        context.instancesToUpdate = str(targetInstance)
-        self.logObject.writeLog(
+        context.instancesToUpdate = str(target_instance)
+        self.log_object.writeLog(
             "EPS0407b",
             None,
             {
-                "internalID": self.internalID,
+                "internalID": self.internal_id,
                 "passedAction": str(action),
-                "instancesToUpdate": str(targetInstance),
+                "instancesToUpdate": str(target_instance),
             },
         )
 
-    def findInstancesToActionUpdate(self, context, action):
+    def find_instances_to_action_update(self, context, action):
         """
         Check all available instances for any that match the activity and have passed the
         next activity date. This date check is important, as all instances of a prescription
         will have 'expire' as the NAD status to start with.
         """
-        issuesToUpdate = []
-        rejectedList = []
+        issues_to_update = []
+        rejected_list = []
 
-        activityToLookFor = fields.ACTIVITY_LOOKUP[action]
-        handleDate = context.handleTime.strftime(TimeFormats.STANDARD_DATE_FORMAT)
+        activity_to_look_for = fields.ACTIVITY_LOOKUP[action]
+        handle_date = context.handleTime.strftime(TimeFormats.STANDARD_DATE_FORMAT)
 
         for issue in self.issues:
             # Special case to reset the NextActivityDate for prescriptions that were migrated without a NAD
             if (issue.status == PrescriptionStatus.AWAITING_RELEASE_READY) and (
                 action == fields.ADMIN_ACTION_RESET_NAD
             ):
-                issuesToUpdate.append(issue)
+                issues_to_update.append(issue)
             # Special case to allow the reset of the current instance
             if action == fields.SPECIAL_RESET_CURRENT_INSTANCE:
-                issuesToUpdate.append(issue)
+                issues_to_update.append(issue)
                 # break the loop once at least one issue has been identified.
-                if issuesToUpdate:
+                if issues_to_update:
                     break
             # Special case to return the dispense notification to Spine in the case that it is 'hung'
             if action == fields.SPECIAL_DISPENSE_RESET:
-                self._confirmDispenseResetOnIssue(issuesToUpdate, issue)
+                self._confirm_dispense_reset_on_issue(issues_to_update, issue)
             # Special case to apply cancellations to those that weren't set post migration - issue 110898
             if action == fields.SPECIAL_APPLY_PENDING_CANCELLATIONS:
-                self._confirmCancellationsToApply(issuesToUpdate, issue)
+                self._confirm_cancellations_to_apply(issues_to_update, issue)
                 # break the loop once the first issue has been identified.
-                if issuesToUpdate:
+                if issues_to_update:
                     break
             # NOTE: SPII-10495 some migrated prescriptions don't have the 'activity' field
             # populated, so guard against this to avoid killing process.
             if issue.next_activity is not None:
                 # Note: string comparison of dates in YYYYMMDD format
-                actionIsDue = issue.next_activity_date_str <= handleDate
+                action_is_due = issue.next_activity_date_str <= handle_date
 
-                if (activityToLookFor == issue.next_activity) and actionIsDue:
-                    issuesToUpdate.append(issue)
+                if (activity_to_look_for == issue.next_activity) and action_is_due:
+                    issues_to_update.append(issue)
                 else:
-                    rejectionRef = str(issue.number)
-                    rejectionRef += "|" + issue.next_activity
-                    rejectionRef += "|" + issue.next_activity_date_str
-                    rejectedList.append(rejectionRef)
+                    rejection_ref = str(issue.number)
+                    rejection_ref += "|" + issue.next_activity
+                    rejection_ref += "|" + issue.next_activity_date_str
+                    rejected_list.append(rejection_ref)
 
-        if issuesToUpdate:
+        if issues_to_update:
             # Note: calling code currently expects issue numbers as strings
-            context.instancesToUpdate = [str(issue.number) for issue in issuesToUpdate]
-            self.logObject.writeLog(
+            context.instancesToUpdate = [str(issue.number) for issue in issues_to_update]
+            self.log_object.writeLog(
                 "EPS0407",
                 None,
                 {
-                    "internalID": self.internalID,
+                    "internalID": self.internal_id,
                     "passedAction": str(action),
                     "instancesToUpdate": context.instancesToUpdate,
                 },
             )
         else:
-            self.logObject.writeLog(
+            self.log_object.writeLog(
                 "EPS0405",
                 None,
                 {
-                    "internalID": self.internalID,
-                    "handleDate": handleDate,
-                    "passedAction": activityToLookFor,
-                    "recordAction": str(rejectedList),
+                    "internalID": self.internal_id,
+                    "handleDate": handle_date,
+                    "passedAction": activity_to_look_for,
+                    "recordAction": str(rejected_list),
                 },
             )
 
-    def _confirmCancellationsToApply(self, issuesToUpdate, issue):
+    def _confirm_cancellations_to_apply(self, issues_to_update, issue):
         """
         Only apply pending cancellations to those issuse that are safe to cancel. It is
         fine to reapply cancellations that have already been successful, and cancellation
@@ -1862,9 +1892,9 @@ class PrescriptionRecord(object):
         be cancellable if issue n is cancellable). So only need to identify the first issue
         """
         if issue.status in PrescriptionStatus.CANCELLABLE_STATES:
-            issuesToUpdate.append(issue)
+            issues_to_update.append(issue)
 
-    def _confirmDispenseResetOnIssue(self, issuesToUpdate, issue):
+    def _confirm_dispense_reset_on_issue(self, issues_to_update, issue):
         """
         This code is to handle an exception that happened at go-live whereby some
         prescriptions could not be read and need to be reset in bulk. The conditions for
@@ -1879,7 +1909,7 @@ class PrescriptionRecord(object):
         not have a release date within the target window.
         """
         # declared here as this whole method should be removed post clean-up
-        _specialDispenseResetDates = [
+        special_dispense_reset_dates = [
             "20140824",
             "20140825",
             "20140826",
@@ -1901,11 +1931,11 @@ class PrescriptionRecord(object):
         if issue.status != PrescriptionStatus.WITH_DISPENSER:
             return
 
-        _releaseDate = issue.release_date
-        if _releaseDate and str(_releaseDate) in _specialDispenseResetDates:
-            issuesToUpdate.append(issue)
+        release_date = issue.release_date
+        if release_date and str(release_date) in special_dispense_reset_dates:
+            issues_to_update.append(issue)
 
-    def updateByAction(self, context, nomDownloadDateEnabled=True):
+    def update_by_action(self, context, nom_download_date_enabled=True):
         """
         Update the record by performing the necessary logic to carry out the specified
         action.
@@ -1921,18 +1951,20 @@ class PrescriptionRecord(object):
 
         # prescription-wide actions
         if action == fields.NEXTACTIVITY_DELETE:
-            self._updateDelete(context)
+            self._update_delete(context)
         else:
             # instance-specific actions
             if context.instancesToUpdate:
-                for issueNumber in context.instancesToUpdate:
+                for issue_number in context.instancesToUpdate:
                     # make sure this is really an int, and not a str
-                    issueNumberInt = int(issueNumber)
-                    self.performInstanceSpecificUpdates(
-                        issueNumberInt, context, nomDownloadDateEnabled
+                    issue_number_int = int(issue_number)
+                    self.perform_instance_specific_updates(
+                        issue_number_int, context, nom_download_date_enabled
                     )
 
-    def performInstanceSpecificUpdates(self, targetIssueNumber, context, nomDownloadDateEnabled):
+    def perform_instance_specific_updates(
+        self, target_issue_number, context, nom_download_date_enabled
+    ):
         """
         Perform the actions that would be specific to an instance and could apply to more
         than one instance.
@@ -1941,38 +1973,38 @@ class PrescriptionRecord(object):
         Release next instance and roll forward instance are both safe to re-apply as they
         check first for the correct instance state (awaiting release ready).
 
-        :type targetIssueNumber: int
+        :type target_issue_number: int
         :type context: ???
         """
-        issue = self.get_issue(targetIssueNumber)
+        issue = self.get_issue(target_issue_number)
 
         # dispatch based on action
 
         if context.action == fields.ACTIVITY_NOMINATED_DOWNLOAD:
             # make an issue available for download
-            self._updateMakeAvailableForNominatedDownload(issue)
+            self._update_make_available_for_nominated_download(issue)
 
         elif context.action == fields.SPECIAL_RESET_CURRENT_INSTANCE:
-            _oldCurrentIssueNumber, _newCurrentIssueNumber = self.resetCurrentInstance()
-            if _oldCurrentIssueNumber != _newCurrentIssueNumber:
-                self.logObject.writeLog(
+            old_current_issue_number, new_current_issue_number = self.reset_current_instance()
+            if old_current_issue_number != new_current_issue_number:
+                self.log_object.writeLog(
                     "EPS0401c",
                     None,
                     {
-                        "internalID": self.internalID,
-                        "oldCurrentIssue": _oldCurrentIssueNumber,
-                        "newCurrentIssue": _newCurrentIssueNumber,
+                        "internalID": self.internal_id,
+                        "oldCurrentIssue": old_current_issue_number,
+                        "newCurrentIssue": new_current_issue_number,
                         "prescriptionID": context.prescriptionID,
                     },
                 )
-                self.currentIssueNumber = _newCurrentIssueNumber
+                self.current_issue_number = new_current_issue_number
             else:
                 context.updatesToApply = False
 
         elif context.action == fields.SPECIAL_DISPENSE_RESET:
             # Special case to reset the dispense status. This needs to perform a dispense
             # proposal return and then re-set the nominated performer
-            self.updateForReturn(None, True)
+            self.update_for_return(None, True)
 
         elif context.action == fields.SPECIAL_APPLY_PENDING_CANCELLATIONS:
             # No action to be taken at this level, just pass.
@@ -1982,152 +2014,152 @@ class PrescriptionRecord(object):
             # NOTE (SPII-10316): when requested to expire an issue, we must expire all
             # subsequent issues as well, and set the current issue indicator to point at
             # the last issue
-            issuesToExpire = self.get_issues_in_range(issue.number, None)
-            for issueToExpire in issuesToExpire:
-                issueToExpire.expire(context.handleTime, self)
+            issues_to_expire = self.get_issues_in_range(issue.number, None)
+            for issue_to_expire in issues_to_expire:
+                issue_to_expire.expire(context.handleTime, self)
 
-            self.currentIssueNumber = self.maxRepeats
+            self.current_issue_number = self.maxRepeats
 
         elif context.action == fields.NEXTACTIVITY_CREATENOCLAIM:
-            self._createNoClaim(issue, context.handleTime)
+            self._create_no_claim(issue, context.handleTime)
             issue.mark_completed(context.handleTime, self)
-            self._moveToNextIssueIfPossible(issue.number, context, nomDownloadDateEnabled)
+            self._move_to_next_issue_if_possible(issue.number, context, nom_download_date_enabled)
 
         elif context.action == fields.ADMIN_ACTION_RESET_NAD:
             # Log that the prescription has been touched, but no change should be made
-            self.logObject.writeLog(
+            self.log_object.writeLog(
                 "EPS0401b",
                 None,
-                {"internalID": self.internalID, "prescriptionID": context.prescriptionID},
+                {"internalID": self.internal_id, "prescriptionID": context.prescriptionID},
             )
         else:
             # invalid action
-            self.logObject.writeLog(
+            self.log_object.writeLog(
                 "EPS0401",
                 None,
                 {
-                    "internalID": self.internalID,
+                    "internalID": self.internal_id,
                     "action": str(context.action),
                 },
             )
 
-    def _moveToNextIssueIfPossible(self, issueNumber, context, nomDownloadDateEnabled):
+    def _move_to_next_issue_if_possible(self, issue_number, context, nom_download_date_enabled):
         """
         Release the next issue, if possible, and mark it as the current issue
 
-        :type issueNumber: int
+        :type issue_number: int
         :type context : ???
         """
         # if this isn't the last issue...
-        if issueNumber < self.maxRepeats:
+        if issue_number < self.maxRepeats:
             # Note: we know this is a Repeat Dispensing prescription, as it has multiple
             # issues
             context.prescriptionRepeatLow = context.targetInstance
-            self.releaseNextInstance(
+            self.release_next_instance(
                 context,
-                self.getDaysSupply(),
+                self.get_days_supply(),
                 fields.NOMINATED_DOWNLOAD_LEAD_DAYS,
-                nomDownloadDateEnabled,
-                str(issueNumber),
+                nom_download_date_enabled,
+                str(issue_number),
             )
-            self.rollForwardInstance()
+            self.roll_forward_instance()
 
-    def getDaysSupply(self):
+    def get_days_supply(self):
         """
         Return the days supply from the prescription record, this will have been set to the
         value passed in the original prescription, or the default 28 days
         """
-        _daysSupply = self.prescriptionRecord[fields.FIELD_PRESCRIPTION][fields.FIELD_DAYS_SUPPLY]
+        days_supply = self.prescription_record[fields.FIELD_PRESCRIPTION][fields.FIELD_DAYS_SUPPLY]
         # Habdle records that were migrated with null daysSupply rather than 0.
-        if not _daysSupply:
+        if not days_supply:
             return 0
-        if isinstance(_daysSupply, int):
-            return _daysSupply
+        if isinstance(days_supply, int):
+            return days_supply
         # Habdle records that were migrated with blank space in the daysSupply rather than 0.
-        if not _daysSupply.strip():
+        if not days_supply.strip():
             return 0
-        return int(_daysSupply)
+        return int(days_supply)
 
-    def _createNoClaim(self, issue, _handleTime):
+    def _create_no_claim(self, issue, handle_time):
         """
         Update the prescription status to No Claimed.
 
         :type issue: PrescriptionIssue
-        :type _handleTime: datetime.datetime
+        :type handle_time: datetime.datetime
         """
-        issue.updateStatus(PrescriptionStatus.NO_CLAIMED, self)
+        issue.update_status(PrescriptionStatus.NO_CLAIMED, self)
 
-        _handleTimeStr = _handleTime.strftime(TimeFormats.STANDARD_DATE_FORMAT)
-        issue.claim.received_date_str = _handleTimeStr
-        self.logAttributeChange(fields.FIELD_CLAIM_RECEIVED_DATE, "", _handleTimeStr, None)
+        handle_time_str = handle_time.strftime(TimeFormats.STANDARD_DATE_FORMAT)
+        issue.claim.received_date_str = handle_time_str
+        self.log_attribute_change(fields.FIELD_CLAIM_RECEIVED_DATE, "", handle_time_str, None)
 
-        self.logObject.writeLog("EPS0406", None, {"internalID": self.internalID})
+        self.log_object.writeLog("EPS0406", None, {"internalID": self.internal_id})
 
-    def _updateMakeAvailableForNominatedDownload(self, issue):
+    def _update_make_available_for_nominated_download(self, issue):
         """
         Update the prescription state to make it available for nominated download
 
         :type issue: PrescriptionIssue
         """
-        issue.updateStatus(PrescriptionStatus.TO_BE_DISPENSED, self)
+        issue.update_status(PrescriptionStatus.TO_BE_DISPENSED, self)
 
-        self.logObject.writeLog("EPS0402", None, {"internalID": self.internalID})
+        self.log_object.writeLog("EPS0402", None, {"internalID": self.internal_id})
 
-    def _verifyRecordDeletion(self):
+    def _verify_record_deletion(self):
         """
         Confirm that it is ok to delete the record by checking through the next activities
         of each of the prescription issues, if not then log and return false
         """
-        for _issueKey in self.prescriptionRecord[fields.FIELD_INSTANCES]:
-            _issue = self._get_prescription_instance_data(_issueKey)
-            _nextActivityforIssue = _issue.get(fields.FIELD_NEXT_ACTIVITY, {}).get(
+        for issue_key in self.prescription_record[fields.FIELD_INSTANCES]:
+            issue = self._get_prescription_instance_data(issue_key)
+            next_activity_for_issue = issue.get(fields.FIELD_NEXT_ACTIVITY, {}).get(
                 fields.FIELD_ACTIVITY
             )
-            if _nextActivityforIssue == fields.NEXTACTIVITY_DELETE:
+            if next_activity_for_issue == fields.NEXTACTIVITY_DELETE:
                 continue
 
-            self.logObject.writeLog(
+            self.log_object.writeLog(
                 "EPS0404b",
                 None,
                 {
-                    "internalID": self.internalID,
+                    "internalID": self.internal_id,
                     "prescriptionID": self.id,
-                    "nextActivity": _nextActivityforIssue,
-                    "issue": _issueKey,
+                    "nextActivity": next_activity_for_issue,
+                    "issue": issue_key,
                 },
             )
             return False
         return True
 
-    def _updateDelete(self, context):
+    def _update_delete(self, context):
         """
         Update the entire prescription to delete it
         """
-        if not self._verifyRecordDeletion():
+        if not self._verify_record_deletion():
             return
 
-        _docList = []
-        if self.prescriptionRecord.get(fields.FIELDS_DOCUMENTS) is not None:
-            for _document in self.prescriptionRecord[fields.FIELDS_DOCUMENTS]:
-                _docList.append(_document)
-        if _docList:
-            context.documentsToDelete = _docList
+        doc_list = []
+        if self.prescription_record.get(fields.FIELDS_DOCUMENTS) is not None:
+            for document in self.prescription_record[fields.FIELDS_DOCUMENTS]:
+                doc_list.append(document)
+        if doc_list:
+            context.documentsToDelete = doc_list
 
         context.recordToDelete = context.prescriptionID[:-1]
 
         context.updatesToApply = False
 
-        self.logObject.writeLog(
+        self.log_object.writeLog(
             "EPS0404",
             None,
             {
-                "internalID": self.internalID,
+                "internalID": self.internal_id,
                 "recordRef": context.recordToDelete,
                 "documentRefs": context.documentsToDelete,
             },
         )
 
-    def updateByAdmin(self, context):
+    def update_by_admin(self, context):
         """
         Set values from admin message straight into record
         Log each change
@@ -2142,47 +2174,47 @@ class PrescriptionRecord(object):
         Reset the context.currentInstance as this is used later in the validation
         Run the instance update(s)
         """
-        currentInstance = context.currentInstance
+        current_instance = context.currentInstance
 
         if context.handleOverdueExpiry:
-            self.handleOverdueExpiry(context)
+            self.handle_overdue_expiry(context)
         # nominatedPerformer will be None in the removal scenario so check for nominatedPerformerType too
         if context.nominatedPerformerType or context.nominatedPerformer:
-            self.updateNominatedPerformer(context)
+            self.update_nominated_performer(context)
 
-        [_range, _startInstance, _endInstance] = self.instancesToUpdate(currentInstance)
-        context.currentInstance = self.returnCurrentInstance()
+        [range_flag, start_instance, end_instance] = self.instances_to_update(current_instance)
+        context.currentInstance = self.return_current_instance()
 
         # find out which issues need updating
-        lowest = int(_startInstance)
-        highest = int(_endInstance) if _range else lowest
+        lowest = int(start_instance)
+        highest = int(end_instance) if range_flag else lowest
         issue_numbers_to_update = self.get_issue_numbers_in_range(lowest, highest)
 
         # update the issues
-        for issueNumber in issue_numbers_to_update:
-            self._makeAdminInstanceUpdates(context, issueNumber)
+        for issue_number in issue_numbers_to_update:
+            self._make_admin_instance_updates(context, issue_number)
 
         return [True, None, None]
 
-    def isExpiryOverdue(self):
+    def is_expiry_overdue(self):
         """
         Check the expected Expiry date on the record, if in the past return True
         """
         nad = self.return_next_activity_nad_bin()
-        return self._isExpiryOverdue(nad)
+        return self._is_expiry_overdue(nad)
 
-    def isNextActivityPurge(self):
+    def is_next_activity_purge(self):
         """
         Check if records next activity is purge
         """
-        nextActivity = self.return_next_activity_nad_bin()
-        if nextActivity:
-            if nextActivity[0].startswith(fields.NEXTACTIVITY_PURGE):
+        next_activity = self.return_next_activity_nad_bin()
+        if next_activity:
+            if next_activity[0].startswith(fields.NEXTACTIVITY_PURGE):
                 return True
         return False
 
     @staticmethod
-    def _isExpiryOverdue(nad):
+    def _is_expiry_overdue(nad):
         """
         return True if Expiry is overdue or index isn't set
         """
@@ -2196,16 +2228,16 @@ class PrescriptionRecord(object):
             return False
         return True
 
-    def handleOverdueExpiry(self, context):
+    def handle_overdue_expiry(self, context):
         """
         Check the expected Expiry date on the record, if in the past, expire the line
         and prescription.
         """
         nad = context.epsRecord.return_next_activity_nad_bin()
-        if not self._isExpiryOverdue(nad):
+        if not self._is_expiry_overdue(nad):
             return
 
-        self.logObject.writeLog("EPS0335", None, {"internalID": self.internalID})
+        self.log_object.writeLog("EPS0335", None, {"internalID": self.internal_id})
         context.overdueExpiry = True
 
         # Only set the status to Expired if not already part of the admin update
@@ -2224,289 +2256,291 @@ class PrescriptionRecord(object):
         # Create a LineDict if one does not already exist and ensure that all LineItems are included
         if not context.lineDict:
             context.lineDict = {}
-        for _lineItem in context.epsRecord.currentIssue.line_items:
-            if _lineItem.id in context.lineDict:
+        for line_item in context.epsRecord.current_issue.line_items:
+            if line_item.id in context.lineDict:
                 continue
-            context.lineDict[_lineItem.id] = LineItemStatus.EXPIRED
+            context.lineDict[line_item.id] = LineItemStatus.EXPIRED
 
-    def instancesToUpdate(self, targetInstance):
+    def instances_to_update(self, target_instance):
         """
-        Check the targetInstance value passed in the admin update request and set a
+        Check the target_instance value passed in the admin update request and set a
         range or single instance target accordingly.
 
-        The targetInstance will be provided as either a integer or 'All', 'Available'
+        The target_instance will be provided as either a integer or 'All', 'Available'
         or 'Current', where the behaviour is:
         All = all instances, including any past (complete) instances
         Available = current through to final instance, not including any past instances
         Current = the recorded current instance only, not a range
 
-        Otherwise, the targetInstance passed is an integer identifying the target
+        Otherwise, the target_instance passed is an integer identifying the target
         instance.
         """
-        recordedCurrentInstance = self.returnCurrentInstance()
-        recordedMaxInstance = str(self.maxRepeats)
+        recorded_current_instance = self.return_current_instance()
+        recorded_max_instance = str(self.maxRepeats)
 
-        _instanceRange = False
-        _endInstance = None
+        instance_range = False
+        end_instance = None
 
-        if targetInstance == fields.BATCH_STATUS_ALL:
-            _instanceRange = True
-            _startInstance = "1"
-            _endInstance = recordedMaxInstance
-        elif targetInstance == fields.BATCH_STATUS_AVAILABLE:
-            _instanceRange = True
-            _startInstance = recordedCurrentInstance
-            _endInstance = recordedMaxInstance
-        elif targetInstance == fields.BATCH_STATUS_CURRENT:
-            _startInstance = recordedCurrentInstance
+        if target_instance == fields.BATCH_STATUS_ALL:
+            instance_range = True
+            start_instance = "1"
+            end_instance = recorded_max_instance
+        elif target_instance == fields.BATCH_STATUS_AVAILABLE:
+            instance_range = True
+            start_instance = recorded_current_instance
+            end_instance = recorded_max_instance
+        elif target_instance == fields.BATCH_STATUS_CURRENT:
+            start_instance = recorded_current_instance
         else:
-            _startInstance = targetInstance
+            start_instance = target_instance
 
-        if _instanceRange:
-            self.logObject.writeLog(
+        if instance_range:
+            self.log_object.writeLog(
                 "EPS0297a",
                 None,
                 dict(
                     {
-                        "internalID": self.internalID,
-                        "startInstance": _startInstance,
-                        "endInstance": _endInstance,
+                        "internalID": self.internal_id,
+                        "startInstance": start_instance,
+                        "endInstance": end_instance,
                     }
                 ),
             )
         else:
-            self.logObject.writeLog(
+            self.log_object.writeLog(
                 "EPS0297b",
                 None,
-                dict({"internalID": self.internalID, "startInstance": _startInstance}),
+                dict({"internalID": self.internal_id, "startInstance": start_instance}),
             )
 
-        return [_instanceRange, _startInstance, _endInstance]
+        return [instance_range, start_instance, end_instance]
 
-    def makeWithdrawalUpdates(self, context):
+    def make_withdrawal_updates(self, context):
         """
         Apply instance specific updates into record
         """
 
-        _targetInstance = context.targetInstance
-        _prescription = self.prescriptionRecord
-        _instance = _prescription[fields.FIELD_INSTANCES][_targetInstance]
-        _instance[fields.FIELD_DISPENSE] = context.dispenseElement
-        _instance[fields.FIELD_LINE_ITEMS] = context.lineItems
-        _instance[fields.FIELD_PREVIOUS_STATUS] = _instance[fields.FIELD_PRESCRIPTION_STATUS]
-        _instance[fields.FIELD_PRESCRIPTION_STATUS] = context.prescriptionStatus
-        _instance[fields.FIELD_LAST_DISPENSE_STATUS] = context.lastDispenseStatus
-        _instance[fields.FIELD_COMPLETION_DATE] = context.completionDate
+        target_instance = context.targetInstance
+        prescription = self.prescription_record
+        instance = prescription[fields.FIELD_INSTANCES][target_instance]
+        instance[fields.FIELD_DISPENSE] = context.dispenseElement
+        instance[fields.FIELD_LINE_ITEMS] = context.lineItems
+        instance[fields.FIELD_PREVIOUS_STATUS] = instance[fields.FIELD_PRESCRIPTION_STATUS]
+        instance[fields.FIELD_PRESCRIPTION_STATUS] = context.prescriptionStatus
+        instance[fields.FIELD_LAST_DISPENSE_STATUS] = context.lastDispenseStatus
+        instance[fields.FIELD_COMPLETION_DATE] = context.completionDate
 
-    def _makeAdminInstanceUpdates(self, context, instanceNumber):
+    def _make_admin_instance_updates(self, context, instance_number):
         """
         Apply instance specific updates into record
         """
 
-        currentInstance = str(instanceNumber)
-        context.updateInstance = instanceNumber
-        _prescription = self.prescriptionRecord
-        _instance = _prescription[fields.FIELD_INSTANCES][currentInstance]
-        _dispense = _instance[fields.FIELD_DISPENSE]
-        _claim = _instance[fields.FIELD_CLAIM]
+        current_instance = str(instance_number)
+        context.updateInstance = instance_number
+        prescription = self.prescription_record
+        instance = prescription[fields.FIELD_INSTANCES][current_instance]
+        dispense = instance[fields.FIELD_DISPENSE]
+        claim = instance[fields.FIELD_CLAIM]
 
         if context.prescriptionStatus:
-            self.logAttributeChange(
+            self.log_attribute_change(
                 fields.FIELD_PRESCRIPTION_STATUS,
-                _instance[fields.FIELD_PRESCRIPTION_STATUS],
+                instance[fields.FIELD_PRESCRIPTION_STATUS],
                 context.prescriptionStatus,
                 context.fieldsToUpdate,
             )
-            _instance[fields.FIELD_PREVIOUS_STATUS] = _instance[fields.FIELD_PRESCRIPTION_STATUS]
-            _instance[fields.FIELD_PRESCRIPTION_STATUS] = context.prescriptionStatus
+            instance[fields.FIELD_PREVIOUS_STATUS] = instance[fields.FIELD_PRESCRIPTION_STATUS]
+            instance[fields.FIELD_PRESCRIPTION_STATUS] = context.prescriptionStatus
 
         if context.completionDate:
-            self.logAttributeChange(
+            self.log_attribute_change(
                 fields.FIELD_COMPLETION_DATE,
-                _instance[fields.FIELD_COMPLETION_DATE],
+                instance[fields.FIELD_COMPLETION_DATE],
                 context.completionDate,
                 context.fieldsToUpdate,
             )
-            _instance[fields.FIELD_COMPLETION_DATE] = context.completionDate
+            instance[fields.FIELD_COMPLETION_DATE] = context.completionDate
 
         if context.dispenseWindowLowDate:
-            self.logAttributeChange(
+            self.log_attribute_change(
                 fields.FIELD_DISPENSE_WINDOW_LOW_DATE,
-                _instance[fields.FIELD_DISPENSE_WINDOW_LOW_DATE],
+                instance[fields.FIELD_DISPENSE_WINDOW_LOW_DATE],
                 context.dispenseWindowLowDate,
                 context.fieldsToUpdate,
             )
-            _instance[fields.FIELD_DISPENSE_WINDOW_LOW_DATE] = context.dispenseWindowLowDate
+            instance[fields.FIELD_DISPENSE_WINDOW_LOW_DATE] = context.dispenseWindowLowDate
 
         if context.nominatedDownloadDate:
-            self.logAttributeChange(
+            self.log_attribute_change(
                 fields.FIELD_NOMINATED_DOWNLOAD_DATE,
-                _instance[fields.FIELD_NOMINATED_DOWNLOAD_DATE],
+                instance[fields.FIELD_NOMINATED_DOWNLOAD_DATE],
                 context.nominatedDownloadDate,
                 context.fieldsToUpdate,
             )
-            _instance[fields.FIELD_NOMINATED_DOWNLOAD_DATE] = context.nominatedDownloadDate
+            instance[fields.FIELD_NOMINATED_DOWNLOAD_DATE] = context.nominatedDownloadDate
 
         if context.releaseDate:
-            self.logAttributeChange(
+            self.log_attribute_change(
                 fields.FIELD_RELEASE_DATE,
-                _instance[fields.FIELD_RELEASE_DATE],
+                instance[fields.FIELD_RELEASE_DATE],
                 context.releaseDate,
                 context.fieldsToUpdate,
             )
-            _instance[fields.FIELD_RELEASE_DATE] = context.releaseDate
+            instance[fields.FIELD_RELEASE_DATE] = context.releaseDate
 
         if context.dispensingOrganization:
-            self.logAttributeChange(
+            self.log_attribute_change(
                 fields.FIELD_DISPENSING_ORGANIZATION,
-                _dispense[fields.FIELD_DISPENSING_ORGANIZATION],
+                dispense[fields.FIELD_DISPENSING_ORGANIZATION],
                 context.dispensingOrganization,
                 context.fieldsToUpdate,
             )
-            _dispense[fields.FIELD_DISPENSING_ORGANIZATION] = context.dispensingOrganization
+            dispense[fields.FIELD_DISPENSING_ORGANIZATION] = context.dispensingOrganization
 
         # This is to reset the dispensing org
         if context.dispensingOrgNullFlavor:
-            self.logAttributeChange(
+            self.log_attribute_change(
                 fields.FIELD_DISPENSING_ORGANIZATION,
-                _dispense[fields.FIELD_DISPENSING_ORGANIZATION],
+                dispense[fields.FIELD_DISPENSING_ORGANIZATION],
                 "None",
                 context.fieldsToUpdate,
             )
-            _dispense[fields.FIELD_DISPENSING_ORGANIZATION] = None
+            dispense[fields.FIELD_DISPENSING_ORGANIZATION] = None
 
         if context.lastDispenseDate:
-            self.logAttributeChange(
+            self.log_attribute_change(
                 fields.FIELD_LAST_DISPENSE_DATE,
-                _dispense[fields.FIELD_LAST_DISPENSE_DATE],
+                dispense[fields.FIELD_LAST_DISPENSE_DATE],
                 context.lastDispenseDate,
                 context.fieldsToUpdate,
             )
-            _dispense[fields.FIELD_LAST_DISPENSE_DATE] = context.lastDispenseDate
+            dispense[fields.FIELD_LAST_DISPENSE_DATE] = context.lastDispenseDate
 
         if context.claimSentDate:
-            self.logAttributeChange(
+            self.log_attribute_change(
                 fields.FIELD_CLAIM_SENT_DATE,
-                _claim[fields.FIELD_CLAIM_RECEIVED_DATE],
+                claim[fields.FIELD_CLAIM_RECEIVED_DATE],
                 context.claimSentDate,
                 context.fieldsToUpdate,
             )
-            _claim[fields.FIELD_CLAIM_RECEIVED_DATE] = context.claimSentDate
+            claim[fields.FIELD_CLAIM_RECEIVED_DATE] = context.claimSentDate
 
-        for lineItemID in context.lineDict:
-            for currentLineItem in _instance[fields.FIELD_LINE_ITEMS]:
-                if currentLineItem[fields.FIELD_ID] != lineItemID:
+        for line_item_id in context.lineDict:
+            for current_line_item in instance[fields.FIELD_LINE_ITEMS]:
+                if current_line_item[fields.FIELD_ID] != line_item_id:
                     continue
-                _currentLineStatus = currentLineItem[fields.FIELD_STATUS]
+                current_line_status = current_line_item[fields.FIELD_STATUS]
                 if context.overdueExpiry:
-                    if _currentLineStatus in LineItemStatus.EXPIRY_IMMUTABLE_STATES:
+                    if current_line_status in LineItemStatus.EXPIRY_IMMUTABLE_STATES:
                         continue
-                    _changedLineStatus = LineItemStatus.EXPIRED
+                    changed_line_status = LineItemStatus.EXPIRED
                 else:
-                    _changedLineStatus = context.lineDict[lineItemID]
-                self.logObject.writeLog(
+                    changed_line_status = context.lineDict[line_item_id]
+                self.log_object.writeLog(
                     "EPS0072",
                     None,
                     {
-                        "internalID": self.internalID,
+                        "internalID": self.internal_id,
                         "prescriptionID": context.prescriptionID,
-                        "lineItemChanged": lineItemID,
-                        "previousStatus": _currentLineStatus,
-                        "newStatus": _changedLineStatus,
+                        "lineItemChanged": line_item_id,
+                        "previousStatus": current_line_status,
+                        "newStatus": changed_line_status,
                     },
                 )
-                currentLineItem[fields.FIELD_STATUS] = _changedLineStatus
+                current_line_item[fields.FIELD_STATUS] = changed_line_status
 
-    def logAttributeChange(self, itemChanged, previousValue, newValue, fieldsToUpdate):
+    def log_attribute_change(self, item_changed, previous_value, new_value, fields_to_update):
         """
         Used by the update record function to change an existing attribute on the record
         Both old and new values as well as the field name are logged
         """
-        if fieldsToUpdate is not None:
-            fieldsToUpdate.append(itemChanged)
+        if fields_to_update is not None:
+            fields_to_update.append(item_changed)
 
-        self.logObject.writeLog(
+        self.log_object.writeLog(
             "EPS0071",
             None,
             {
-                "internalID": self.internalID,
-                "itemChanged": itemChanged,
-                "previousValue": previousValue,
-                "newValue": newValue,
+                "internalID": self.internal_id,
+                "itemChanged": item_changed,
+                "previousValue": previous_value,
+                "newValue": new_value,
             },
         )
 
-    def _extractDispenseDateFromContext(self, context):
+    def _extract_dispense_date_from_context(self, context):
         """
         Get the Dispense date from context, or use handleTime if not available.
 
         :type context: ???
         :rtype: str
         """
-        dispenseDate = context.handleTime.strftime(TimeFormats.STANDARD_DATE_FORMAT)
+        dispense_date = context.handleTime.strftime(TimeFormats.STANDARD_DATE_FORMAT)
         if hasattr(context, fields.FIELD_DISPENSE_DATE):
             if context.dispenseDate is not None:
-                dispenseDate = context.dispenseDate
-        return dispenseDate
+                dispense_date = context.dispenseDate
+        return dispense_date
 
-    def _extractDispenseDatetimeFromContext(self, context):
+    def _extract_dispense_datetime_from_context(self, context):
         """
         Get the Dispense datetime from context, or use handleTime if not available.
 
         :type context: ???
         :rtype: str
         """
-        dispenseTime = context.handleTime.strftime(TimeFormats.STANDARD_DATE_TIME_FORMAT)
+        dispense_time = context.handleTime.strftime(TimeFormats.STANDARD_DATE_TIME_FORMAT)
         if hasattr(context, fields.FIELD_DISPENSE_TIME):
             if context.dispenseTime is not None:
-                dispenseTime = context.dispenseTime
-        return dispenseTime
+                dispense_time = context.dispenseTime
+        return dispense_time
 
-    def _calculateNominatedDownloadDate(self, prescribeDate, daysSupply, leadDays, nextIssueNumber):
+    def _calculate_nominated_download_date(
+        self, prescribe_date, days_supply, lead_days, next_issue_number
+    ):
         """
         Calculate the date for nominated download, taking into account lead time and supply length.
 
-        :type prescribeDate: str
-        :type daysSupply: int
-        :type leadDays: int
+        :type prescribe_date: str
+        :type days_supply: int
+        :type lead_days: int
         :rtype: datetime.datetime
-        :type nextIssueNumber: str
+        :type next_issue_number: str
         """
-        nominatedDownloadDate = datetime.datetime.strptime(
-            prescribeDate, TimeFormats.STANDARD_DATE_FORMAT
+        nominated_download_date = datetime.datetime.strptime(
+            prescribe_date, TimeFormats.STANDARD_DATE_FORMAT
         )
-        duration = daysSupply * (int(nextIssueNumber) - 1)
-        nominatedDownloadDate += relativedelta(days=+duration)
-        nominatedDownloadDate += relativedelta(days=-leadDays)
-        return nominatedDownloadDate
+        duration = days_supply * (int(next_issue_number) - 1)
+        nominated_download_date += relativedelta(days=+duration)
+        nominated_download_date += relativedelta(days=-lead_days)
+        return nominated_download_date
 
-    def _calculateNominatedDownloadDateOld(self, dispenseDate, daysSupply, leadDays):
+    def _calculate_nominated_download_date_old(self, dispense_date, days_supply, lead_days):
         """
         Calculate the date for nominated download, taking into account lead time and supply length.
 
-        :type dispenseDate: str
-        :type daysSupply: int
-        :type leadDays: int
+        :type dispense_date: str
+        :type days_supply: int
+        :type lead_days: int
         :rtype: datetime.datetime
         """
-        nominatedDownloadDate = datetime.datetime.strptime(
-            dispenseDate, TimeFormats.STANDARD_DATE_FORMAT
+        nominated_download_date = datetime.datetime.strptime(
+            dispense_date, TimeFormats.STANDARD_DATE_FORMAT
         )
-        nominatedDownloadDate += relativedelta(days=+daysSupply)
-        nominatedDownloadDate += relativedelta(days=-leadDays)
-        return nominatedDownloadDate
+        nominated_download_date += relativedelta(days=+days_supply)
+        nominated_download_date += relativedelta(days=-lead_days)
+        return nominated_download_date
 
-    def returnNextIssueNumber(self, _issueNumber=None):
+    def return_next_issue_number(self, issue_number=None):
         """
-        Wrapper for _findNextFutureIssueNumber, allows an optional start issue to be passed in
+        Wrapper for _find_next_future_issue_number, allows an optional start issue to be passed in
         otherwise will use the current issue number
         """
-        if not _issueNumber:
-            _issueNumber = self.currentIssueNumber
+        if not issue_number:
+            issue_number = self.current_issue_number
 
-        return self._findNextFutureIssueNumber(str(_issueNumber))
+        return self._find_next_future_issue_number(str(issue_number))
 
-    def _findNextFutureIssueNumber(self, issue_number_str, skipCheckForCorrectStatus=False):
+    def _find_next_future_issue_number(self, issue_number_str, skip_check_for_correct_status=False):
         """
         Find the next issue number after the specified one, if valid.
 
@@ -2516,53 +2550,53 @@ class PrescriptionRecord(object):
         if not issue_number_str:
             return None
 
-        nextIssueNumber = int(issue_number_str) + 1
+        next_issue_number = int(issue_number_str) + 1
 
         # make sure the prescription actually has this issue
-        if nextIssueNumber not in self.issue_numbers:
+        if next_issue_number not in self.issue_numbers:
             return None
 
-        if skipCheckForCorrectStatus:
-            return str(nextIssueNumber)
+        if skip_check_for_correct_status:
+            return str(next_issue_number)
 
         # examine the issue to make sure it's in the correct state
-        nextIssue = self.get_issue(nextIssueNumber)
-        if not nextIssue.status == PrescriptionStatus.REPEAT_DISPENSE_FUTURE_INSTANCE:
+        next_issue = self.get_issue(next_issue_number)
+        if not next_issue.status == PrescriptionStatus.REPEAT_DISPENSE_FUTURE_INSTANCE:
             return None
 
         # if we get this far, then we have a valid next issue, so return its number
         # Note: calling code is currently expecting a str, so convert,until we've had
         # a chance to refactor properly
-        return str(nextIssueNumber)
+        return str(next_issue_number)
 
-    def setNextInstancePriorIssueDate(self, context, currentIssueNumberStr=None):
+    def set_next_instance_prior_issue_date(self, context, current_issue_number_str=None):
         """
         Set the prior issue date for the next instance, this is done as part of the
         dispense notification process, but may form part of a standard dispense, a
         dispense amendment or a rebuild dispense history.
         """
-        if not currentIssueNumberStr:
-            currentIssueNumberStr = context.prescriptionRepeatLow
+        if not current_issue_number_str:
+            current_issue_number_str = context.prescriptionRepeatLow
 
         # find the number of the next issue, if there is a valid one. Don't check for
         # valid status of the next instance as this could be a rebuild or amendment
         # and the next issue may already be active.
-        nextIssueNumberStr = self._findNextFutureIssueNumber(
-            currentIssueNumberStr, skipCheckForCorrectStatus=True
+        next_issue_number_str = self._find_next_future_issue_number(
+            current_issue_number_str, skip_check_for_correct_status=True
         )
-        if nextIssueNumberStr:
-            instance = self._get_prescription_instance_data(nextIssueNumberStr)
-            instance[fields.FIELD_PREVIOUS_ISSUE_DATE] = self._extractDispenseDatetimeFromContext(
-                context
+        if next_issue_number_str:
+            instance = self._get_prescription_instance_data(next_issue_number_str)
+            instance[fields.FIELD_PREVIOUS_ISSUE_DATE] = (
+                self._extract_dispense_datetime_from_context(context)
             )
 
-    def releaseNextInstance(
+    def release_next_instance(
         self,
         context,
-        daysSupply,
-        nomDownLeadDays,
-        nomDownloadDateEnabled,
-        currentIssueNumberStr=None,
+        days_supply,
+        nom_down_lead_days,
+        nom_download_date_enabled,
+        current_issue_number_str=None,
     ):
         """
         If not a repeat prescription (and no prescriptionRepeatLow provided),
@@ -2572,114 +2606,116 @@ class PrescriptionRecord(object):
 
         Note that it is possible that this will be invoked as part of an amendment.
         """
-        if not currentIssueNumberStr:
-            currentIssueNumberStr = context.prescriptionRepeatLow
+        if not current_issue_number_str:
+            current_issue_number_str = context.prescriptionRepeatLow
 
         # find the number of the next issue, if there is a valid one
-        nextIssueNumberStr = self._findNextFutureIssueNumber(currentIssueNumberStr)
-        if nextIssueNumberStr is None:
+        next_issue_number_str = self._find_next_future_issue_number(current_issue_number_str)
+        if next_issue_number_str is None:
             # give up if there is no next issue
             self.pendingInstanceChange = None
             return
 
         # update the issue
-        _dispenseDate = self._extractDispenseDateFromContext(context)
-        _prescribeDate = context.epsRecord.returnPrescriptionTime()
-        if nomDownloadDateEnabled:
-            if _prescribeDate is None:
-                self.logObject.writeLog(
+        dispense_date = self._extract_dispense_date_from_context(context)
+        prescribe_date = context.epsRecord.return_prescription_time()
+        if nom_download_date_enabled:
+            if prescribe_date is None:
+                self.log_object.writeLog(
                     "EPS0676",
                     None,
-                    dict({"internalID": self.internalID, "prescriptionID": context.prescriptionID}),
+                    dict(
+                        {"internalID": self.internal_id, "prescriptionID": context.prescriptionID}
+                    ),
                 )
-            nominatedDownloadDate = self._calculateNominatedDownloadDate(
-                _prescribeDate[:8], daysSupply, nomDownLeadDays, nextIssueNumberStr
+            nominated_download_date = self._calculate_nominated_download_date(
+                prescribe_date[:8], days_supply, nom_down_lead_days, next_issue_number_str
             )
-            self.logObject.writeLog(
+            self.log_object.writeLog(
                 "EPS0675",
                 None,
                 dict(
                     {
-                        "internalID": self.internalID,
+                        "internalID": self.internal_id,
                         "prescriptionID": context.prescriptionID,
-                        "nominatedDownloadDate": nominatedDownloadDate.strftime(
+                        "nominatedDownloadDate": nominated_download_date.strftime(
                             TimeFormats.STANDARD_DATE_FORMAT
                         ),
-                        "prescribeDate": _prescribeDate,
-                        "daysSupply": str(daysSupply),
-                        "leadDays": str(nomDownLeadDays),
-                        "issueNumber": nextIssueNumberStr,
+                        "prescribeDate": prescribe_date,
+                        "daysSupply": str(days_supply),
+                        "leadDays": str(nom_down_lead_days),
+                        "issueNumber": next_issue_number_str,
                     }
                 ),
             )
         else:
-            nominatedDownloadDate = self._calculateNominatedDownloadDateOld(
-                _dispenseDate, daysSupply, nomDownLeadDays
+            nominated_download_date = self._calculate_nominated_download_date_old(
+                dispense_date, days_supply, nom_down_lead_days
             )
 
-        if nominatedDownloadDate >= datetime.datetime(
+        if nominated_download_date >= datetime.datetime(
             context.handleTime.year, context.handleTime.month, context.handleTime.day
         ):
-            _newPrescriptionStatus = PrescriptionStatus.AWAITING_RELEASE_READY
+            new_prescription_status = PrescriptionStatus.AWAITING_RELEASE_READY
         else:
-            _newPrescriptionStatus = PrescriptionStatus.TO_BE_DISPENSED
+            new_prescription_status = PrescriptionStatus.TO_BE_DISPENSED
 
-        instance = self._get_prescription_instance_data(nextIssueNumberStr)
+        instance = self._get_prescription_instance_data(next_issue_number_str)
         instance[fields.FIELD_PREVIOUS_STATUS] = instance[fields.FIELD_PRESCRIPTION_STATUS]
-        instance[fields.FIELD_PRESCRIPTION_STATUS] = _newPrescriptionStatus
-        instance[fields.FIELD_DISPENSE_WINDOW_LOW_DATE] = _dispenseDate
-        instance[fields.FIELD_NOMINATED_DOWNLOAD_DATE] = nominatedDownloadDate.strftime(
+        instance[fields.FIELD_PRESCRIPTION_STATUS] = new_prescription_status
+        instance[fields.FIELD_DISPENSE_WINDOW_LOW_DATE] = dispense_date
+        instance[fields.FIELD_NOMINATED_DOWNLOAD_DATE] = nominated_download_date.strftime(
             TimeFormats.STANDARD_DATE_FORMAT
         )
 
         # mark so that we know to update the prescription's current issue number
-        self.pendingInstanceChange = nextIssueNumberStr
+        self.pendingInstanceChange = next_issue_number_str
 
-    def addReleaseDocumentRef(self, relReqDocumentRef):
+    def add_release_document_ref(self, rel_req_document_ref):
         """
         Add the reference to the release request document to the instance.
         """
-        self._currentInstanceData[fields.FIELD_RELEASE_REQUEST_MGS_REF] = relReqDocumentRef
+        self._current_instance_data[fields.FIELD_RELEASE_REQUEST_MGS_REF] = rel_req_document_ref
 
-    def addReleaseDispenserDetails(self, relDispenserDetails):
+    def add_release_dispenser_details(self, rel_dispenser_details):
         """
         Add the dispenser details from the release request document to the instance.
         """
-        self._currentInstanceData[fields.FIELD_RELEASE_DISPENSER_DETAILS] = relDispenserDetails
+        self._current_instance_data[fields.FIELD_RELEASE_DISPENSER_DETAILS] = rel_dispenser_details
 
-    def addDispenseDocumentRef(self, dnDocumentRef, _targetInstance=None):
+    def add_dispense_document_ref(self, dn_document_ref, target_instance=None):
         """
         Add the reference to the dispense notification document to the instance.
         """
-        _instance = (
-            self._get_prescription_instance_data(_targetInstance)
-            if _targetInstance
-            else self._currentInstanceData
+        instance = (
+            self._get_prescription_instance_data(target_instance)
+            if target_instance
+            else self._current_instance_data
         )
-        _instance[fields.FIELD_DISPENSE][
+        instance[fields.FIELD_DISPENSE][
             fields.FIELD_LAST_DISPENSE_NOTIFICATION_MSG_REF
-        ] = dnDocumentRef
+        ] = dn_document_ref
 
-    def checkStatusComplete(self, _prescriptionStatus):
+    def check_status_complete(self, prescription_status):
         """
         Check if the passed prescription status is in a complete state and return the
         appropriate boolean
         """
-        return _prescriptionStatus in PrescriptionStatus.COMPLETED_STATES
+        return prescription_status in PrescriptionStatus.COMPLETED_STATES
 
-    def clearDispenseNotificationsFromHistory(self, _targetInstance):
+    def clear_dispense_notifications_from_history(self, target_instance):
         """
         Clear all but the release from the dispense history
         """
 
-        _instance = self._get_prescription_instance_data(_targetInstance)
-        _newDispenseHistory = {}
-        if fields.FIELD_RELEASE in _instance[fields.FIELD_DISPENSE_HISTORY]:
-            _releaseSnippet = copy(_instance[fields.FIELD_DISPENSE_HISTORY][fields.FIELD_RELEASE])
-            _newDispenseHistory[fields.FIELD_RELEASE] = _releaseSnippet
-        _instance[fields.FIELD_DISPENSE_HISTORY] = copy(_newDispenseHistory)
+        instance = self._get_prescription_instance_data(target_instance)
+        new_dispense_history = {}
+        if fields.FIELD_RELEASE in instance[fields.FIELD_DISPENSE_HISTORY]:
+            release_snippet = copy(instance[fields.FIELD_DISPENSE_HISTORY][fields.FIELD_RELEASE])
+            new_dispense_history[fields.FIELD_RELEASE] = release_snippet
+        instance[fields.FIELD_DISPENSE_HISTORY] = copy(new_dispense_history)
 
-    def createDispenseHistoryEntry(self, dnDocumentGuid, _targetInstance=None):
+    def create_dispense_history_entry(self, dn_document_guid, target_instance=None):
         """
         Create a dispense history entry to be used in future if the dispense notification
         is withdrawn. Also need to include the current prescription status
@@ -2690,39 +2726,39 @@ class PrescriptionRecord(object):
         Use the last dispense date from the record unless the last dispense time is passed
         in (used for release only).
         """
-        _instance = (
-            self._get_prescription_instance_data(_targetInstance)
-            if _targetInstance
-            else self._currentInstanceData
+        instance = (
+            self._get_prescription_instance_data(target_instance)
+            if target_instance
+            else self._current_instance_data
         )
-        _instance[fields.FIELD_DISPENSE_HISTORY][dnDocumentGuid] = {}
-        _dispenseEntry = _instance[fields.FIELD_DISPENSE_HISTORY][dnDocumentGuid]
-        _dispenseEntry[fields.FIELD_DISPENSE] = copy(_instance[fields.FIELD_DISPENSE])
-        _dispenseEntry[fields.FIELD_PRESCRIPTION_STATUS] = copy(
-            _instance[fields.FIELD_PRESCRIPTION_STATUS]
+        instance[fields.FIELD_DISPENSE_HISTORY][dn_document_guid] = {}
+        dispense_entry = instance[fields.FIELD_DISPENSE_HISTORY][dn_document_guid]
+        dispense_entry[fields.FIELD_DISPENSE] = copy(instance[fields.FIELD_DISPENSE])
+        dispense_entry[fields.FIELD_PRESCRIPTION_STATUS] = copy(
+            instance[fields.FIELD_PRESCRIPTION_STATUS]
         )
-        _dispenseEntry[fields.FIELD_LAST_DISPENSE_STATUS] = copy(
-            _instance[fields.FIELD_LAST_DISPENSE_STATUS]
+        dispense_entry[fields.FIELD_LAST_DISPENSE_STATUS] = copy(
+            instance[fields.FIELD_LAST_DISPENSE_STATUS]
         )
-        _lineItems = []
-        for lineItem in _instance[fields.FIELD_LINE_ITEMS]:
-            _lineItem = copy(lineItem)
-            _lineItems.append(_lineItem)
-        _dispenseEntry[fields.FIELD_LINE_ITEMS] = copy(_lineItems)
-        _dispenseEntry[fields.FIELD_COMPLETION_DATE] = copy(_instance[fields.FIELD_COMPLETION_DATE])
+        line_items = []
+        for line_item in instance[fields.FIELD_LINE_ITEMS]:
+            line_item_copy = copy(line_item)
+            line_items.append(line_item_copy)
+        dispense_entry[fields.FIELD_LINE_ITEMS] = copy(line_items)
+        dispense_entry[fields.FIELD_COMPLETION_DATE] = copy(instance[fields.FIELD_COMPLETION_DATE])
 
-        _instanceLastDispense = copy(
-            _instance[fields.FIELD_DISPENSE][fields.FIELD_LAST_DISPENSE_DATE]
+        instance_last_dispense = copy(
+            instance[fields.FIELD_DISPENSE][fields.FIELD_LAST_DISPENSE_DATE]
         )
-        if not _instanceLastDispense:
-            _releaseDate = copy(_instance[fields.FIELD_RELEASE_DATE])
-            _dispenseEntry[fields.FIELD_DISPENSE][fields.FIELD_LAST_DISPENSE_DATE] = _releaseDate
+        if not instance_last_dispense:
+            release_date = copy(instance[fields.FIELD_RELEASE_DATE])
+            dispense_entry[fields.FIELD_DISPENSE][fields.FIELD_LAST_DISPENSE_DATE] = release_date
         else:
-            _dispenseEntry[fields.FIELD_DISPENSE][
+            dispense_entry[fields.FIELD_DISPENSE][
                 fields.FIELD_LAST_DISPENSE_DATE
-            ] = _instanceLastDispense
+            ] = instance_last_dispense
 
-    def createReleaseHistoryEntry(self, releaseTime, _dispensingOrg):
+    def create_release_history_entry(self, release_time, dispensing_org):
         """
         Create a dispense history entry specific to the release action
 
@@ -2736,77 +2772,77 @@ class PrescriptionRecord(object):
         calculation if the dispense history is withdrawn.
         """
 
-        _instance = self._currentInstanceData
+        instance = self._current_instance_data
 
-        _instance[fields.FIELD_DISPENSE_HISTORY][fields.FIELD_RELEASE] = {}
-        _dispenseEntry = _instance[fields.FIELD_DISPENSE_HISTORY][fields.FIELD_RELEASE]
-        _dispenseEntry[fields.FIELD_DISPENSE] = copy(_instance[fields.FIELD_DISPENSE])
-        _dispenseEntry[fields.FIELD_PRESCRIPTION_STATUS] = copy(
-            _instance[fields.FIELD_PRESCRIPTION_STATUS]
+        instance[fields.FIELD_DISPENSE_HISTORY][fields.FIELD_RELEASE] = {}
+        dispense_entry = instance[fields.FIELD_DISPENSE_HISTORY][fields.FIELD_RELEASE]
+        dispense_entry[fields.FIELD_DISPENSE] = copy(instance[fields.FIELD_DISPENSE])
+        dispense_entry[fields.FIELD_PRESCRIPTION_STATUS] = copy(
+            instance[fields.FIELD_PRESCRIPTION_STATUS]
         )
-        _dispenseEntry[fields.FIELD_LAST_DISPENSE_STATUS] = copy(
-            _instance[fields.FIELD_LAST_DISPENSE_STATUS]
+        dispense_entry[fields.FIELD_LAST_DISPENSE_STATUS] = copy(
+            instance[fields.FIELD_LAST_DISPENSE_STATUS]
         )
-        _lineItems = []
-        for lineItem in _instance[fields.FIELD_LINE_ITEMS]:
-            _lineItem = copy(lineItem)
+        line_items = []
+        for line_item in instance[fields.FIELD_LINE_ITEMS]:
+            line_item_copy = copy(line_item)
             if (
-                _lineItem[fields.FIELD_STATUS] != LineItemStatus.CANCELLED
-                and _lineItem[fields.FIELD_STATUS] != LineItemStatus.EXPIRED
+                line_item_copy[fields.FIELD_STATUS] != LineItemStatus.CANCELLED
+                and line_item_copy[fields.FIELD_STATUS] != LineItemStatus.EXPIRED
             ):
-                _lineItem[fields.FIELD_STATUS] = LineItemStatus.WITH_DISPENSER
-            _lineItems.append(_lineItem)
-        _dispenseEntry[fields.FIELD_LINE_ITEMS] = _lineItems
-        _dispenseEntry[fields.FIELD_COMPLETION_DATE] = copy(_instance[fields.FIELD_COMPLETION_DATE])
-        _releaseTimeStr = releaseTime.strftime(TimeFormats.STANDARD_DATE_FORMAT)
-        _dispenseEntry[fields.FIELD_DISPENSE][fields.FIELD_LAST_DISPENSE_DATE] = _releaseTimeStr
-        _dispenseEntry[fields.FIELD_DISPENSE][fields.FIELD_DISPENSING_ORGANIZATION] = _dispensingOrg
+                line_item_copy[fields.FIELD_STATUS] = LineItemStatus.WITH_DISPENSER
+            line_items.append(line_item_copy)
+        dispense_entry[fields.FIELD_LINE_ITEMS] = line_items
+        dispense_entry[fields.FIELD_COMPLETION_DATE] = copy(instance[fields.FIELD_COMPLETION_DATE])
+        release_time_str = release_time.strftime(TimeFormats.STANDARD_DATE_FORMAT)
+        dispense_entry[fields.FIELD_DISPENSE][fields.FIELD_LAST_DISPENSE_DATE] = release_time_str
+        dispense_entry[fields.FIELD_DISPENSE][fields.FIELD_DISPENSING_ORGANIZATION] = dispensing_org
 
-    def addDispenseDocumentGuid(self, dnDocumentGuid, _targetInstance=None):
+    def add_dispense_document_guid(self, dn_document_guid, target_instance=None):
         """
         Add the reference to the dispense notification document to the instance.
         """
-        _instance = (
-            self._get_prescription_instance_data(_targetInstance)
-            if _targetInstance
-            else self._currentInstanceData
+        instance = (
+            self._get_prescription_instance_data(target_instance)
+            if target_instance
+            else self._current_instance_data
         )
-        _instance[fields.FIELD_DISPENSE][
+        instance[fields.FIELD_DISPENSE][
             fields.FIELD_LAST_DISPENSE_NOTIFICATION_GUID
-        ] = dnDocumentGuid
+        ] = dn_document_guid
 
-    def addClaimDocumentRef(self, dnClaimRef, instanceNumber):
+    def add_claim_document_ref(self, dn_claim_ref, instance_number):
         """
         Add the reference to the dispense claim document to the instance.
         """
-        instance = self._get_prescription_instance_data(instanceNumber)
-        instance[fields.FIELD_CLAIM][fields.FIELD_DISPENSE_CLAIM_MSG_REF] = dnClaimRef
+        instance = self._get_prescription_instance_data(instance_number)
+        instance[fields.FIELD_CLAIM][fields.FIELD_DISPENSE_CLAIM_MSG_REF] = dn_claim_ref
 
-    def returnCompletionDate(self, instanceNumber):
+    def return_completion_date(self, instance_number):
         """
         Return the completion date for the requested instance
         """
-        instance = self._get_prescription_instance_data(instanceNumber)
+        instance = self._get_prescription_instance_data(instance_number)
         return instance[fields.FIELD_COMPLETION_DATE]
 
-    def addClaimAmendDocumentRef(self, dnClaimRef, instanceNumber):
+    def add_claim_amend_document_ref(self, dn_claim_ref, instance_number):
         """
         Add the old claim reference to the dispense claim MsgRef history and add the new
         document to the instance.
         """
-        instance = self._get_prescription_instance_data(instanceNumber)
+        instance = self._get_prescription_instance_data(instance_number)
 
         if not instance[fields.FIELD_CLAIM][fields.FIELD_HISTORIC_DISPENSE_CLAIM_MSG_REF]:
             instance[fields.FIELD_CLAIM][fields.FIELD_HISTORIC_DISPENSE_CLAIM_MSG_REF] = []
 
-        _historicClaimMsgRef = instance[fields.FIELD_CLAIM][fields.FIELD_DISPENSE_CLAIM_MSG_REF]
+        historic_claim_msg_ref = instance[fields.FIELD_CLAIM][fields.FIELD_DISPENSE_CLAIM_MSG_REF]
 
         instance[fields.FIELD_CLAIM][fields.FIELD_HISTORIC_DISPENSE_CLAIM_MSG_REF].append(
-            _historicClaimMsgRef
+            historic_claim_msg_ref
         )
-        instance[fields.FIELD_CLAIM][fields.FIELD_DISPENSE_CLAIM_MSG_REF] = dnClaimRef
+        instance[fields.FIELD_CLAIM][fields.FIELD_DISPENSE_CLAIM_MSG_REF] = dn_claim_ref
 
-    def updateInstanceStatus(self, instance, newStatus):
+    def update_instance_status(self, instance, new_status):
         """
         Method for updating the status of the current instance
         """
@@ -2814,180 +2850,182 @@ class PrescriptionRecord(object):
             instance[fields.FIELD_PREVIOUS_STATUS] = instance[fields.FIELD_PRESCRIPTION_STATUS]
         else:
             instance[fields.FIELD_PREVIOUS_STATUS] = False
-        instance[fields.FIELD_PRESCRIPTION_STATUS] = newStatus
+        instance[fields.FIELD_PRESCRIPTION_STATUS] = new_status
 
-    def updateLineItemStatus(self, issueDict, statusToCheck, newStatus):
+    def update_line_item_status(self, issue_dict, status_to_check, new_status):
         """
         Roll through the line items checking for those who have current status of
-        statusToCheck, then update to newStatus and change the previous status.
+        status_to_check, then update to new_status and change the previous status.
         Note that this is safe for cancelled and expired line items as it will only update
-        if the 'statusToCheck' matches.
+        if the 'status_to_check' matches.
 
-        :type issueDict: dict
-        :type statusToCheck: str
-        :type newStatus: str
+        :type issue_dict: dict
+        :type status_to_check: str
+        :type new_status: str
         """
-        issue = PrescriptionIssue(issueDict)
-        for lineItem in issue.line_items:
-            if lineItem.status == statusToCheck:
-                lineItem.update_status(newStatus)
+        issue = PrescriptionIssue(issue_dict)
+        for line_item in issue.line_items:
+            if line_item.status == status_to_check:
+                line_item.update_status(new_status)
 
-    def updateLineItemStatusFromDispense(self, instance, dn_lineItems):
+    def update_line_item_status_from_dispense(self, instance, dn_line_items):
         """
         Roll through the line itesm on the dispense notification, and update the
         prescription record line items to the revised previousStatus and status
         """
-        for dn_lineItem in dn_lineItems:
-            for lineItem in instance[fields.FIELD_LINE_ITEMS]:
-                if lineItem[fields.FIELD_ID] == dn_lineItem[fields.FIELD_ID]:
-                    lineItem[fields.FIELD_PREVIOUS_STATUS] = lineItem[fields.FIELD_STATUS]
-                    lineItem[fields.FIELD_STATUS] = dn_lineItem[fields.FIELD_STATUS]
+        for dn_line_item in dn_line_items:
+            for line_item in instance[fields.FIELD_LINE_ITEMS]:
+                if line_item[fields.FIELD_ID] == dn_line_item[fields.FIELD_ID]:
+                    line_item[fields.FIELD_PREVIOUS_STATUS] = line_item[fields.FIELD_STATUS]
+                    line_item[fields.FIELD_STATUS] = dn_line_item[fields.FIELD_STATUS]
 
-    def setExemptionDates(self):
+    def set_exemption_dates(self):
         """
         Set the exemption dates
         """
-        _patientDetails = self.prescriptionRecord[fields.FIELD_PATIENT]
-        _birthTime = _patientDetails[fields.FIELD_BIRTH_TIME]
+        patient_details = self.prescription_record[fields.FIELD_PATIENT]
+        birth_time = patient_details[fields.FIELD_BIRTH_TIME]
 
-        lowerAgeLimit = datetime.datetime.strptime(_birthTime, TimeFormats.STANDARD_DATE_FORMAT)
-        lowerAgeLimit += relativedelta(years=fields._YOUNG_AGE_EXEMPTION, days=-1)
-        lowerAgeLimit = lowerAgeLimit.isoformat()[0:10].replace("-", "")
-        higherAgeLimit = datetime.datetime.strptime(_birthTime, TimeFormats.STANDARD_DATE_FORMAT)
-        higherAgeLimit += relativedelta(years=fields._OLD_AGE_EXEMPTION)
-        higherAgeLimit = higherAgeLimit.isoformat()[0:10].replace("-", "")
-        _patientDetails[fields.FIELD_LOWER_AGE_LIMIT] = lowerAgeLimit
-        _patientDetails[fields.FIELD_HIGHER_AGE_LIMIT] = higherAgeLimit
+        lower_age_limit = datetime.datetime.strptime(birth_time, TimeFormats.STANDARD_DATE_FORMAT)
+        lower_age_limit += relativedelta(years=fields._YOUNG_AGE_EXEMPTION, days=-1)
+        lower_age_limit = lower_age_limit.isoformat()[0:10].replace("-", "")
+        higher_age_limit = datetime.datetime.strptime(birth_time, TimeFormats.STANDARD_DATE_FORMAT)
+        higher_age_limit += relativedelta(years=fields._OLD_AGE_EXEMPTION)
+        higher_age_limit = higher_age_limit.isoformat()[0:10].replace("-", "")
+        patient_details[fields.FIELD_LOWER_AGE_LIMIT] = lower_age_limit
+        patient_details[fields.FIELD_HIGHER_AGE_LIMIT] = higher_age_limit
 
-    def returnMessageRef(self, docType):
+    def return_message_ref(self, doc_type):
         """
         Return message references for different document types
         """
-        if docType == "Prescription":
-            return self.prescriptionRecord[fields.FIELD_PRESCRIPTION][
+        if doc_type == "Prescription":
+            return self.prescription_record[fields.FIELD_PRESCRIPTION][
                 fields.FIELD_PRESCRIPTION_MSG_REF
             ]
-        if docType == "ReleaseRequest":
-            return self._currentInstanceData[fields.FIELD_RELEASE_REQUEST_MGS_REF]
+        if doc_type == "ReleaseRequest":
+            return self._current_instance_data[fields.FIELD_RELEASE_REQUEST_MGS_REF]
         else:
             raise EpsSystemError("developmentFailure")
 
-    def returnReleaseDispenserDetails(self, _targetInstance):
+    def return_release_dispenser_details(self, target_instance):
         """
         Return release dispenser details of the target instance
         """
-        _instance = self._get_prescription_instance_data(_targetInstance)
-        return _instance.get(fields.FIELD_RELEASE_DISPENSER_DETAILS)
+        instance = self._get_prescription_instance_data(target_instance)
+        return instance.get(fields.FIELD_RELEASE_DISPENSER_DETAILS)
 
-    def fetchReleaseResponseParameters(self):
+    def fetch_release_response_parameters(self):
         """
         A dictionary of response parameters is required for generating the response
         message to the release request - these are parameters which will be used to
         translate and update the original prescription message
         """
-        releaseData = {}
-        _patientDetails = self.prescriptionRecord[fields.FIELD_PATIENT]
-        _prescDetails = self.prescriptionRecord[fields.FIELD_PRESCRIPTION]
+        release_data = {}
+        patient_details = self.prescription_record[fields.FIELD_PATIENT]
+        presc_details = self.prescription_record[fields.FIELD_PRESCRIPTION]
 
-        releaseData[fields.FIELD_LOWER_AGE_LIMIT] = quoted(
-            _patientDetails[fields.FIELD_LOWER_AGE_LIMIT]
+        release_data[fields.FIELD_LOWER_AGE_LIMIT] = quoted(
+            patient_details[fields.FIELD_LOWER_AGE_LIMIT]
         )
-        releaseData[fields.FIELD_HIGHER_AGE_LIMIT] = quoted(
-            _patientDetails[fields.FIELD_HIGHER_AGE_LIMIT]
+        release_data[fields.FIELD_HIGHER_AGE_LIMIT] = quoted(
+            patient_details[fields.FIELD_HIGHER_AGE_LIMIT]
         )
 
-        if self._currentInstanceData.get(fields.FIELD_PREVIOUS_ISSUE_DATE):
+        if self._current_instance_data.get(fields.FIELD_PREVIOUS_ISSUE_DATE):
             # SPII-10490 - handle this date not being present
-            _previousIssueData = quoted(self._currentInstanceData[fields.FIELD_PREVIOUS_ISSUE_DATE])
-            releaseData[fields.FIELD_PREVIOUS_ISSUE_DATE] = _previousIssueData
+            previous_issue_data = quoted(
+                self._current_instance_data[fields.FIELD_PREVIOUS_ISSUE_DATE]
+            )
+            release_data[fields.FIELD_PREVIOUS_ISSUE_DATE] = previous_issue_data
 
         # !!! This is for backwards compatibility - does not make sense, should really be
         # the current status.  However Spine 1 returns previous status !!!
         # Note that we also have to remap the prescription status here if this is a GUID
         # release for a '0000' (internal only) prescription status.
-        _previousPrescStatus = self._currentInstanceData[fields.FIELD_PREVIOUS_STATUS]
-        if _previousPrescStatus == PrescriptionStatus.AWAITING_RELEASE_READY:
-            _previousPrescStatus = PrescriptionStatus.TO_BE_DISPENSED
+        previous_presc_status = self._current_instance_data[fields.FIELD_PREVIOUS_STATUS]
+        if previous_presc_status == PrescriptionStatus.AWAITING_RELEASE_READY:
+            previous_presc_status = PrescriptionStatus.TO_BE_DISPENSED
 
-        releaseData[fields.FIELD_PRESCRIPTION_STATUS] = quoted(_previousPrescStatus)
+        release_data[fields.FIELD_PRESCRIPTION_STATUS] = quoted(previous_presc_status)
 
-        _displayName = PrescriptionStatus.PRESCRIPTION_DISPLAY_LOOKUP[_previousPrescStatus]
-        releaseData[fields.FIELD_PRESCRIPTION_STATUS_DISPLAY_NAME] = quoted(_displayName)
-        releaseData[fields.FIELD_PRESCRIPTION_CURRENT_INSTANCE] = quoted(
-            str(self.currentIssueNumber)
+        display_name = PrescriptionStatus.PRESCRIPTION_DISPLAY_LOOKUP[previous_presc_status]
+        release_data[fields.FIELD_PRESCRIPTION_STATUS_DISPLAY_NAME] = quoted(display_name)
+        release_data[fields.FIELD_PRESCRIPTION_CURRENT_INSTANCE] = quoted(
+            str(self.current_issue_number)
         )
-        releaseData[fields.FIELD_PRESCRIPTION_MAX_REPEATS] = quoted(
-            _prescDetails[fields.FIELD_MAX_REPEATS]
+        release_data[fields.FIELD_PRESCRIPTION_MAX_REPEATS] = quoted(
+            presc_details[fields.FIELD_MAX_REPEATS]
         )
 
-        for lineItem in self.currentIssue.line_items:
-            _lineItemRef = "lineItem" + str(lineItem.order)
-            _itemStatus = (
-                lineItem.previousStatus
-                if lineItem.status == LineItemStatus.WITH_DISPENSER
-                else lineItem.status
+        for line_item in self.current_issue.line_items:
+            line_item_ref = "lineItem" + str(line_item.order)
+            item_status = (
+                line_item.previousStatus
+                if line_item.status == LineItemStatus.WITH_DISPENSER
+                else line_item.status
             )
 
-            releaseData[_lineItemRef + "Status"] = quoted(_itemStatus)
-            _itemDisplayName = LineItemStatus.ITEM_DISPLAY_LOOKUP[_itemStatus]
-            releaseData[_lineItemRef + "StatusDisplayName"] = quoted(_itemDisplayName)
+            release_data[line_item_ref + "Status"] = quoted(item_status)
+            item_display_name = LineItemStatus.ITEM_DISPLAY_LOOKUP[item_status]
+            release_data[line_item_ref + "StatusDisplayName"] = quoted(item_display_name)
 
-            self.addLineItemRepeatData(releaseData, _lineItemRef, lineItem)
+            self.add_line_item_repeat_data(release_data, line_item_ref, line_item)
 
-        return releaseData
+        return release_data
 
-    def addLineItemRepeatData(self, releaseData, lineItemRef, lineItem):
+    def add_line_item_repeat_data(self, release_data, line_item_ref, line_item):
         """
         Add line item information (only done for repeat prescriptions)
         Note that due to inconsistency of repeat numbers, it is possible that the
         current instance for the whole prescription is greater than the line item maxRepeats
         in which case the line item maxRepeats should be used.
 
-        :type releaseData: dict
-        :type lineItemRef: str
-        :type lineItem: PrescriptionLineItem
+        :type release_data: dict
+        :type line_item_ref: str
+        :type line_item: PrescriptionLineItem
         """
-        _lineInstance = self.currentIssueNumber
+        line_instance = self.current_issue_number
 
-        if lineItem.maxRepeats < self.currentIssueNumber:
-            _lineInstance = lineItem.maxRepeats
+        if line_item.maxRepeats < self.current_issue_number:
+            line_instance = line_item.maxRepeats
 
-        releaseData[lineItemRef + "MaxRepeats"] = quoted(str(lineItem.maxRepeats))
-        releaseData[lineItemRef + "CurrentInstance"] = quoted(str(_lineInstance))
+        release_data[line_item_ref + "MaxRepeats"] = quoted(str(line_item.maxRepeats))
+        release_data[line_item_ref + "CurrentInstance"] = quoted(str(line_instance))
 
-    def validateLinePrescriptionStatus(self, prescriptionStatus, lineItemStatus):
+    def validate_line_prescription_status(self, prescription_status, line_item_status):
         """
         Compare lineItem status with the prescription status and confirm that the combination is valid
         """
-        if lineItemStatus in LineItemStatus.VALID_STATES[prescriptionStatus]:
+        if line_item_status in LineItemStatus.VALID_STATES[prescription_status]:
             return True
 
-        self.logObject.writeLog(
+        self.log_object.writeLog(
             "EPS0259",
             None,
             {
-                "internalID": self.internalID,
-                "lineItemStatus": lineItemStatus,
-                "prescriptionStatus": prescriptionStatus,
+                "internalID": self.internal_id,
+                "lineItemStatus": line_item_status,
+                "prescriptionStatus": prescription_status,
             },
         )
 
         return False
 
-    def forceCurrentInstanceIncrement(self):
+    def force_current_instance_increment(self):
         """
         Force the current instance number to be incremented.
         This is a serious undertaking, but is required where an issue is missing.
         """
-        oldCurrentIssueNumber = self.currentIssueNumber
+        old_current_issue_number = self.current_issue_number
 
-        if self.currentIssueNumber == self.maxRepeats:
-            self.logObject.writeLog(
+        if self.current_issue_number == self.maxRepeats:
+            self.log_object.writeLog(
                 "EPS0625b",
                 None,
                 {
-                    "internalID": self.internalID,
-                    "currentIssueNumber": oldCurrentIssueNumber,
+                    "internalID": self.internal_id,
+                    "currentIssueNumber": old_current_issue_number,
                     "reason": "already at maxRepeats",
                 },
             )
@@ -2995,39 +3033,39 @@ class PrescriptionRecord(object):
 
         # Count upwards from the current issue number to maxRepeats, looking either for
         # an issue that exists
-        newCurrentIssueNumber = False
-        for i in range(self.currentIssueNumber, self.maxRepeats + 1):
+        new_current_issue_number = False
+        for i in range(self.current_issue_number, self.maxRepeats + 1):
             try:
-                newCurrentIssueNumber = i
+                new_current_issue_number = i
                 break
             except KeyError:
                 continue
 
-        if not newCurrentIssueNumber:
-            self.logObject.writeLog(
+        if not new_current_issue_number:
+            self.log_object.writeLog(
                 "EPS0625b",
                 None,
                 {
-                    "internalID": self.internalID,
-                    "currentIssueNumber": oldCurrentIssueNumber,
+                    "internalID": self.internal_id,
+                    "currentIssueNumber": old_current_issue_number,
                     "reason": "no issues available",
                 },
             )
             return
 
-        self.logObject.writeLog(
+        self.log_object.writeLog(
             "EPS0625",
             None,
             {
-                "internalID": self.internalID,
-                "oldCurrentIssueNumber": oldCurrentIssueNumber,
-                "newCurrentIssueNumber": newCurrentIssueNumber,
+                "internalID": self.internal_id,
+                "oldCurrentIssueNumber": old_current_issue_number,
+                "newCurrentIssueNumber": new_current_issue_number,
             },
         )
 
-        self.currentIssueNumber = newCurrentIssueNumber
+        self.current_issue_number = new_current_issue_number
 
-    def resetCurrentInstance(self):
+    def reset_current_instance(self):
         """
         Rotate through the instances to find the first instance which is either in a
         future or active state.  Then reset the currentInstance to be this instance.
@@ -3039,238 +3077,238 @@ class PrescriptionRecord(object):
         """
 
         # see if we can find an issue from the current one upwards in an active or future state
-        newCurrentIssueNumber = None
-        acceptableStates = PrescriptionStatus.ACTIVE_STATES + PrescriptionStatus.FUTURE_STATES
-        for issue in self.getIssuesFromCurrentUpwards():
-            if issue.status in acceptableStates:
-                newCurrentIssueNumber = issue.number
+        new_current_issue_number = None
+        acceptable_states = PrescriptionStatus.ACTIVE_STATES + PrescriptionStatus.FUTURE_STATES
+        for issue in self.get_issues_from_current_upwards():
+            if issue.status in acceptable_states:
+                new_current_issue_number = issue.number
                 break
 
         # if we didn't find one, then just set to the last issue
-        if newCurrentIssueNumber is None:
-            newCurrentIssueNumber = self.issue_numbers[-1]
+        if new_current_issue_number is None:
+            new_current_issue_number = self.issue_numbers[-1]
 
         # update the current instance number
-        oldCurrentIssueNumber = self.currentIssueNumber
-        self.currentIssueNumber = newCurrentIssueNumber
+        old_current_issue_number = self.current_issue_number
+        self.current_issue_number = new_current_issue_number
 
-        return (oldCurrentIssueNumber, newCurrentIssueNumber)
+        return (old_current_issue_number, new_current_issue_number)
 
-    def checkCurrentInstanceToCancelByPR_ID(self):
+    def check_current_instance_to_cancel_by_pr_id(self):
         """
         Check for the prescription being in a cancellable status
         """
-        return self._currentInstanceStatus in PrescriptionStatus.CANCELLABLE_STATES
+        return self._current_instance_status in PrescriptionStatus.CANCELLABLE_STATES
 
-    def checkCurrentInstanceWDispenserByPR_ID(self):
+    def check_current_instance_w_dispenser_by_pr_id(self):
         """
         Check for the prescription being in a with dispenser status
         """
-        return self._currentInstanceStatus in PrescriptionStatus.WITH_DISPENSER_STATES
+        return self._current_instance_status in PrescriptionStatus.WITH_DISPENSER_STATES
 
-    def checkIncludePerformerDetailByPR_ID(self):
+    def check_include_performer_detail_by_pr_id(self):
         """
         Check whether the prescription status is such that the performer node should be
         included in the cancellation response message.
         """
-        return self._currentInstanceStatus in PrescriptionStatus.INCLUDE_PERFORMER_STATES
+        return self._current_instance_status in PrescriptionStatus.INCLUDE_PERFORMER_STATES
 
-    def checkCurrentInstanceToCancelByLI_ID(self, lineItemRef):
+    def check_current_instance_to_cancel_by_li_id(self, line_item_ref):
         """
         Check for the line item being in a cancellable status
         """
-        return self._checkCurrentInstanceByLineItem(
-            lineItemRef, LineItemStatus.ITEM_CANCELLABLE_STATES
+        return self._check_current_instance_by_line_item(
+            line_item_ref, LineItemStatus.ITEM_CANCELLABLE_STATES
         )
 
-    def checkCurrentInstanceWDispenserByLI_ID(self, lineItemRef):
+    def check_current_instance_w_dispenser_by_li_id(self, line_item_ref):
         """
         Check for the line item being in a with dispenser status
         """
-        return self._checkCurrentInstanceByLineItem(
-            lineItemRef, LineItemStatus.ITEM_WITH_DISPENSER_STATES
+        return self._check_current_instance_by_line_item(
+            line_item_ref, LineItemStatus.ITEM_WITH_DISPENSER_STATES
         )
 
-    def checkIncludePerformerDetailByLI_ID(self, lineItemRef):
+    def check_include_performer_detail_by_li_id(self, line_item_ref):
         """
         Check whether the line item status is such that the performer node should be
         included in the cancellation response message.
         """
-        return self._checkCurrentInstanceByLineItem(
-            lineItemRef, LineItemStatus.INCLUDE_PERFORMER_STATES
+        return self._check_current_instance_by_line_item(
+            line_item_ref, LineItemStatus.INCLUDE_PERFORMER_STATES
         )
 
-    def _checkCurrentInstanceByLineItem(self, lineItemRef, lineItemStates):
+    def _check_current_instance_by_line_item(self, line_item_ref, line_item_states):
         """
         Check for the line item being in one of the specified states
         """
-        for lineItem in self._currentInstanceData[
+        for line_item in self._current_instance_data[
             fields.FIELD_LINE_ITEMS
         ]:  # noqa: SIM110 - More readable as is
-            if (lineItemRef == lineItem[fields.FIELD_ID]) and (
-                lineItem[fields.FIELD_STATUS] in lineItemStates
+            if (line_item_ref == line_item[fields.FIELD_ID]) and (
+                line_item[fields.FIELD_STATUS] in line_item_states
             ):
                 return True
         return False
 
-    def checkNhsNumberMatch(self, context):
+    def check_nhs_number_match(self, context):
         """
         Check if the nhsNumber on the prescription record matches the nhsNumber in the
         cancellation. Return True or False.
         """
-        return self._nhsNumber == context.nhsNumber
+        return self._nhs_number == context.nhsNumber
 
-    def returnErrorForInvalidCancelByPR_ID(self):
+    def return_error_for_invalid_cancel_by_pr_id(self):
         """
         Raise the correct cancellation code matching the status of the current
         instance
         """
-        prescStatus = self._currentInstanceStatus
+        presc_status = self._current_instance_status
 
-        self.logObject.writeLog(
+        self.log_object.writeLog(
             "EPS0262",
             None,
             {
-                "internalID": self.internalID,
-                "currentInstance": str(self.currentIssueNumber),
+                "internalID": self.internal_id,
+                "currentInstance": str(self.current_issue_number),
                 "cancellationType": fields.FIELD_PRESCRIPTION,
-                "currentStatus": prescStatus,
+                "currentStatus": presc_status,
             },
         )
 
         # return values below are to be mapped to equivalent ErrorBase1719 in Spine.
-        if prescStatus in PrescriptionStatus.COMPLETED_STATES:
-            if prescStatus == PrescriptionStatus.EXPIRED:
+        if presc_status in PrescriptionStatus.COMPLETED_STATES:
+            if presc_status == PrescriptionStatus.EXPIRED:
                 return EpsErrorBase.NOT_CANCELLED_EXPIRED
-            elif prescStatus == PrescriptionStatus.CANCELLED:
+            elif presc_status == PrescriptionStatus.CANCELLED:
                 return EpsErrorBase.NOT_CANCELLED_CANCELLED
-            elif prescStatus == PrescriptionStatus.NOT_DISPENSED:
+            elif presc_status == PrescriptionStatus.NOT_DISPENSED:
                 return EpsErrorBase.NOT_CANCELLED_NOT_DISPENSED
             else:
                 return EpsErrorBase.NOT_CANCELLED_DISPENSED
 
-        if prescStatus == PrescriptionStatus.WITH_DISPENSER:
+        if presc_status == PrescriptionStatus.WITH_DISPENSER:
             return EpsErrorBase.NOT_CANCELLED_WITH_DISPENSER
-        if prescStatus == PrescriptionStatus.WITH_DISPENSER_ACTIVE:
+        if presc_status == PrescriptionStatus.WITH_DISPENSER_ACTIVE:
             return EpsErrorBase.NOT_CANCELLED_WITH_DISPENSER_ACTIVE
 
-    def returnErrorForInvalidCancelByLI_ID(self, context):
+    def return_error_for_invalid_cancel_by_li_id(self, context):
         """
         Confirm if line item exists.  If it does raise the error associated with the
         line item status
         """
-        _lineItemStatus = None
-        for lineItem in self._currentInstanceData[fields.FIELD_LINE_ITEMS]:
-            if context.cancelLineItemRef != lineItem[fields.FIELD_ID]:
+        line_item_status = None
+        for line_item in self._current_instance_data[fields.FIELD_LINE_ITEMS]:
+            if context.cancelLineItemRef != line_item[fields.FIELD_ID]:
                 continue
-            _lineItemStatus = lineItem[fields.FIELD_STATUS]
+            line_item_status = line_item[fields.FIELD_STATUS]
 
-        self.logObject.writeLog(
+        self.log_object.writeLog(
             "EPS0262",
             None,
             {
-                "internalID": self.internalID,
-                "currentInstance": str(self.currentIssueNumber),
+                "internalID": self.internal_id,
+                "currentInstance": str(self.current_issue_number),
                 "cancellationType": "lineItem",
-                "currentStatus": _lineItemStatus,
+                "currentStatus": line_item_status,
             },
         )
 
         # return values below are to be mapped to equivalent ErrorBase1719 in Spine.
-        if not _lineItemStatus:
+        if not line_item_status:
             return EpsErrorBase.PRESCRIPTION_NOT_FOUND
 
-        if _lineItemStatus == LineItemStatus.FULLY_DISPENSED:
+        if line_item_status == LineItemStatus.FULLY_DISPENSED:
             return EpsErrorBase.NOT_CANCELLED_DISPENSED
-        if _lineItemStatus == LineItemStatus.NOT_DISPENSED:
+        if line_item_status == LineItemStatus.NOT_DISPENSED:
             return EpsErrorBase.NOT_CANCELLED_NOT_DISPENSED
-        if _lineItemStatus == LineItemStatus.CANCELLED:
+        if line_item_status == LineItemStatus.CANCELLED:
             return EpsErrorBase.NOT_CANCELLED_CANCELLED
-        if _lineItemStatus == LineItemStatus.EXPIRED:
+        if line_item_status == LineItemStatus.EXPIRED:
             return EpsErrorBase.NOT_CANCELLED_EXPIRED
         else:
             return EpsErrorBase.NOT_CANCELLED_WITH_DISPENSER_ACTIVE
 
-    def applyCancellation(self, cancellationObj, _rangeToCancelStartIssue=None):
+    def apply_cancellation(self, cancellation_obj, range_to_cancel_start_issue=None):
         """
         Loop through the valid cancellations on the context and change the prescription
         status as appropriate
         """
-        _instances = self.prescriptionRecord[fields.FIELD_INSTANCES]
+        instances = self.prescription_record[fields.FIELD_INSTANCES]
 
         # only apply from the start issue upwards
-        if not _rangeToCancelStartIssue:
-            _rangeToCancelStartIssue = self.currentIssueNumber
-        _rangeToUpdate = self.get_issues_in_range(int(_rangeToCancelStartIssue), None)
+        if not range_to_cancel_start_issue:
+            range_to_cancel_start_issue = self.current_issue_number
+        range_to_update = self.get_issues_in_range(int(range_to_cancel_start_issue), None)
 
-        issueNumbers = [issue.number for issue in _rangeToUpdate]
-        for issueNumber in issueNumbers:
-            instance = _instances[str(issueNumber)]
-            if cancellationObj[fields.FIELD_CANCELLATION_TARGET] == "LineItem":
-                self.processLineCancellation(instance, cancellationObj)
+        issue_numbers = [issue.number for issue in range_to_update]
+        for issue_number in issue_numbers:
+            instance = instances[str(issue_number)]
+            if cancellation_obj[fields.FIELD_CANCELLATION_TARGET] == "LineItem":
+                self.process_line_cancellation(instance, cancellation_obj)
             else:
-                self.processInstanceCancellation(instance, cancellationObj)
+                self.process_instance_cancellation(instance, cancellation_obj)
         # the current issue may have become cancelled, so find the new current one?
-        self.resetCurrentInstance()
-        return [cancellationObj[fields.FIELD_CANCELLATION_ID], issueNumbers]
+        self.reset_current_instance()
+        return [cancellation_obj[fields.FIELD_CANCELLATION_ID], issue_numbers]
 
-    def removePendingCancellations(self):
+    def remove_pending_cancellations(self):
         """
         Once the pending cancellations have been completed, remove any pending
         cancellations from the record
         """
-        self.prescriptionRecord[fields.FIELD_PENDING_CANCELLATIONS] = False
+        self.prescription_record[fields.FIELD_PENDING_CANCELLATIONS] = False
 
-    def processInstanceCancellation(self, instance, cancellationObj):
+    def process_instance_cancellation(self, instance, cancellation_obj):
         """
         Change the prescription status, and set the completion date
         """
         instance[fields.FIELD_PREVIOUS_STATUS] = instance[fields.FIELD_PRESCRIPTION_STATUS]
         instance[fields.FIELD_PRESCRIPTION_STATUS] = PrescriptionStatus.CANCELLED
-        instance[fields.FIELD_CANCELLATIONS].append(cancellationObj)
-        _completionDate = datetime.datetime.strptime(
-            cancellationObj[fields.FIELD_CANCELLATION_TIME], TimeFormats.STANDARD_DATE_TIME_FORMAT
+        instance[fields.FIELD_CANCELLATIONS].append(cancellation_obj)
+        completion_date = datetime.datetime.strptime(
+            cancellation_obj[fields.FIELD_CANCELLATION_TIME], TimeFormats.STANDARD_DATE_TIME_FORMAT
         )
-        instance[fields.FIELD_COMPLETION_DATE] = _completionDate.strftime(
+        instance[fields.FIELD_COMPLETION_DATE] = completion_date.strftime(
             TimeFormats.STANDARD_DATE_FORMAT
         )
 
-    def processLineCancellation(self, instance, cancellationObj):
+    def process_line_cancellation(self, instance, cancellation_obj):
         """
         Loop through the line items to find one relevant to the cancellation,
         If all line items now inactive then cancel the instance
         """
-        activeLineItem = False
-        for lineItem in instance[fields.FIELD_LINE_ITEMS]:
-            if cancellationObj[fields.FIELD_CANCEL_LINE_ITEM_REF] != lineItem[fields.FIELD_ID]:
-                if lineItem[fields.FIELD_STATUS] in LineItemStatus.ACTIVE_STATES:
-                    activeLineItem = True
+        active_line_item = False
+        for line_item in instance[fields.FIELD_LINE_ITEMS]:
+            if cancellation_obj[fields.FIELD_CANCEL_LINE_ITEM_REF] != line_item[fields.FIELD_ID]:
+                if line_item[fields.FIELD_STATUS] in LineItemStatus.ACTIVE_STATES:
+                    active_line_item = True
                 continue
-            lineItem[fields.FIELD_PREVIOUS_STATUS] = lineItem[fields.FIELD_STATUS]
-            lineItem[fields.FIELD_STATUS] = LineItemStatus.CANCELLED
-        instance[fields.FIELD_CANCELLATIONS].append(cancellationObj)
+            line_item[fields.FIELD_PREVIOUS_STATUS] = line_item[fields.FIELD_STATUS]
+            line_item[fields.FIELD_STATUS] = LineItemStatus.CANCELLED
+        instance[fields.FIELD_CANCELLATIONS].append(cancellation_obj)
 
-        if not activeLineItem:
-            self.processInstanceCancellation(instance, cancellationObj)
+        if not active_line_item:
+            self.process_instance_cancellation(instance, cancellation_obj)
 
-    def returnPendingCancellations(self):
+    def return_pending_cancellations(self):
         """
         Return the list of pendingCancellations (should be False if none exist)
         """
-        return self._pendingCancellations
+        return self._pending_cancellations
 
-    def returnCancellationObject(self, context, _hl7, _reasons):
+    def return_cancellation_object(self, context, hl7, reasons):
         """
         Create an object (dict) which describes a cancellation
         """
-        cancellationObj = self.set_all_snippet_details(
+        cancellation_obj = self.set_all_snippet_details(
             fields.INSTANCE_CANCELLATION_DETAILS, context
         )
-        cancellationObj[fields.FIELD_REASONS] = _reasons
-        cancellationObj[fields.FIELD_HL7] = _hl7
-        return cancellationObj
+        cancellation_obj[fields.FIELD_REASONS] = reasons
+        cancellation_obj[fields.FIELD_HL7] = hl7
+        return cancellation_obj
 
-    def checkPendingCancellationUniqueWDisp(self, cancellationObj):
+    def check_pending_cancellation_unique_w_disp(self, cancellation_obj):
         """
         Check whether the pending cancellation is unique. If not unique, return false and
         a boolean to indicate whether the requesting organisation matches.
@@ -3284,49 +3322,49 @@ class PrescriptionRecord(object):
         This method is used for pending cancellations when the prescription is with
         dispenser, therefore whilst it is similar to the method used when
         the prescription has not yet been received by Spine
-        (checkPendingCancellationUnique), in this case a whole prescription cancellation
+        (check_pending_cancellation_unique), in this case a whole prescription cancellation
         is treated independently to individual line item cancellations, as the action of
         the dispenser could mean that either one, both or neither cancellations are
         possible.
         """
-        if not self._pendingCancellations:
+        if not self._pending_cancellations:
             return [True, None]
 
-        cancellationTarget = str(cancellationObj[fields.FIELD_CANCELLATION_TARGET])
-        cancellationOrg = str(cancellationObj[fields.FIELD_AGENT_ORGANIZATION])
-        if cancellationTarget == "LineItem":
-            cancellationTarget = "LineItem_" + str(
-                cancellationObj[fields.FIELD_CANCEL_LINE_ITEM_REF]
+        cancellation_target = str(cancellation_obj[fields.FIELD_CANCELLATION_TARGET])
+        cancellation_org = str(cancellation_obj[fields.FIELD_AGENT_ORGANIZATION])
+        if cancellation_target == "LineItem":
+            cancellation_target = "LineItem_" + str(
+                cancellation_obj[fields.FIELD_CANCEL_LINE_ITEM_REF]
             )
 
-        orgMatch = True
-        for _pendingCancellation in self._pendingCancellations:
-            pendingTarget = str(_pendingCancellation[fields.FIELD_CANCELLATION_TARGET])
-            if pendingTarget == "LineItem":
-                pendingTarget = "LineItem_" + str(
-                    _pendingCancellation[fields.FIELD_CANCEL_LINE_ITEM_REF]
+        org_match = True
+        for pending_cancellation in self._pending_cancellations:
+            pending_target = str(pending_cancellation[fields.FIELD_CANCELLATION_TARGET])
+            if pending_target == "LineItem":
+                pending_target = "LineItem_" + str(
+                    pending_cancellation[fields.FIELD_CANCEL_LINE_ITEM_REF]
                 )
-            pendingOrg = str(_pendingCancellation[fields.FIELD_AGENT_ORGANIZATION])
-            if pendingTarget == cancellationTarget:
-                if pendingOrg != cancellationOrg:
-                    orgMatch = False
-                self.logObject.writeLog(
+            pending_org = str(pending_cancellation[fields.FIELD_AGENT_ORGANIZATION])
+            if pending_target == cancellation_target:
+                if pending_org != cancellation_org:
+                    org_match = False
+                self.log_object.writeLog(
                     "EPS0264a",
                     None,
                     dict(
                         {
-                            "internalID": self.internalID,
-                            "pendingOrg": pendingOrg,
-                            "cancellationTarget": cancellationTarget,
-                            "cancellationOrg": cancellationOrg,
+                            "internalID": self.internal_id,
+                            "pendingOrg": pending_org,
+                            "cancellationTarget": cancellation_target,
+                            "cancellationOrg": cancellation_org,
                         }
                     ),
                 )
-                return [False, orgMatch]
+                return [False, org_match]
 
         return [True, None]
 
-    def checkPendingCancellationUnique(self, cancellationObj):
+    def check_pending_cancellation_unique(self, cancellation_obj):
         """
         Check whether the pending cancellation is unique. If not unique, return false and
         a boolean to indicate whether the requesting organisation matches.
@@ -3339,113 +3377,113 @@ class PrescriptionRecord(object):
 
         This method is used for pending cancellations when the prescription has not yet
         been received by Spine, therefore whilst it is similar to the method used when
-        the prescription is With Dispenser (checkPendingCancellationUniqueWDisp) except
+        the prescription is With Dispenser (check_pending_cancellation_unique_w_disp) except
         that in this case a whole prescription cancellation takes precedence over
         individual line item cancellations.
         """
 
-        if not self._pendingCancellations:
+        if not self._pending_cancellations:
             return [True, None]
 
-        cancellationTarget = str(cancellationObj[fields.FIELD_CANCELLATION_TARGET])
-        cancellationOrg = str(cancellationObj[fields.FIELD_AGENT_ORGANIZATION])
-        if cancellationTarget == "LineItem":
-            cancellationTarget = "LineItem_" + str(
-                cancellationObj[fields.FIELD_CANCEL_LINE_ITEM_REF]
+        cancellation_target = str(cancellation_obj[fields.FIELD_CANCELLATION_TARGET])
+        cancellation_org = str(cancellation_obj[fields.FIELD_AGENT_ORGANIZATION])
+        if cancellation_target == "LineItem":
+            cancellation_target = "LineItem_" + str(
+                cancellation_obj[fields.FIELD_CANCEL_LINE_ITEM_REF]
             )
 
-        wholePrescriptionCancellation = False
-        orgMatch = True
-        for _pendingCancellation in self._pendingCancellations:
-            pendingTarget = str(_pendingCancellation[fields.FIELD_CANCELLATION_TARGET])
-            pendingOrg = str(_pendingCancellation[fields.FIELD_AGENT_ORGANIZATION])
-            if pendingTarget == fields.FIELD_PRESCRIPTION:
-                wholePrescriptionCancellation = True
-            if pendingTarget == "LineItem":
-                pendingTarget = "LineItem_" + str(
-                    _pendingCancellation[fields.FIELD_CANCEL_LINE_ITEM_REF]
+        whole_prescription_cancellation = False
+        org_match = True
+        for pending_cancellation in self._pending_cancellations:
+            pending_target = str(pending_cancellation[fields.FIELD_CANCELLATION_TARGET])
+            pending_org = str(pending_cancellation[fields.FIELD_AGENT_ORGANIZATION])
+            if pending_target == fields.FIELD_PRESCRIPTION:
+                whole_prescription_cancellation = True
+            if pending_target == "LineItem":
+                pending_target = "LineItem_" + str(
+                    pending_cancellation[fields.FIELD_CANCEL_LINE_ITEM_REF]
                 )
-            if (pendingTarget == cancellationTarget) or wholePrescriptionCancellation:
-                if pendingOrg != cancellationOrg:
-                    orgMatch = False
-                self.logObject.writeLog(
+            if (pending_target == cancellation_target) or whole_prescription_cancellation:
+                if pending_org != cancellation_org:
+                    org_match = False
+                self.log_object.writeLog(
                     "EPS0264a",
                     None,
                     dict(
                         {
-                            "internalID": self.internalID,
-                            "pendingOrg": pendingOrg,
-                            "cancellationTarget": cancellationTarget,
-                            "cancellationOrg": cancellationOrg,
+                            "internalID": self.internal_id,
+                            "pendingOrg": pending_org,
+                            "cancellationTarget": cancellation_target,
+                            "cancellationOrg": cancellation_org,
                         }
                     ),
                 )
-                return [False, orgMatch]
+                return [False, org_match]
 
         return [True, None]
 
-    def setUnsuccessfulCancellation(self, cancellationObj, failureReason):
+    def set_unsuccessful_cancellation(self, cancellation_obj, failure_reason):
         """
         Set on the record details of the cancellation that has been unsuccessful,
         including the a reason. Note that this is used for unsuccessful pending
         cancellations and where a cancellation is a duplicate, and does not apply to
         cancellations that are simply not valid.
         """
-        _failedCs = self.prescriptionRecord[fields.FIELD_PRESCRIPTION][
+        failed_cs = self.prescription_record[fields.FIELD_PRESCRIPTION][
             fields.FIELD_UNSUCCESSFUL_CANCELLATIONS
         ]
-        cancellationObj["failureReason"] = failureReason
+        cancellation_obj["failureReason"] = failure_reason
 
-        if not _failedCs:
-            _failedCs = []
-        _failedCs.append(cancellationObj)
+        if not failed_cs:
+            failed_cs = []
+        failed_cs.append(cancellation_obj)
 
-        self.prescriptionRecord[fields.FIELD_PRESCRIPTION][
+        self.prescription_record[fields.FIELD_PRESCRIPTION][
             fields.FIELD_UNSUCCESSFUL_CANCELLATIONS
-        ] = _failedCs
+        ] = failed_cs
 
-    def setPendingCancellation(self, cancellationObj, prescriptionPresent):
+    def set_pending_cancellation(self, cancellation_obj, prescription_present):
         """
         Set the default Prescription Pending Cancellation status code and then
         Append a cancellation object to the pendingCancellations
         """
 
-        if not prescriptionPresent:
+        if not prescription_present:
             instance = self._get_prescription_instance_data("1")
-            self.updateInstanceStatus(instance, PrescriptionStatus.PENDING_CANCELLATION)
+            self.update_instance_status(instance, PrescriptionStatus.PENDING_CANCELLATION)
 
-        _pendingCs = self._pendingCancellations
+        pending_cs = self._pending_cancellations
 
-        if not _pendingCs:
-            _pendingCs = [cancellationObj]
-            _cancellationDate = datetime.datetime.strptime(
-                cancellationObj[fields.FIELD_CANCELLATION_TIME],
+        if not pending_cs:
+            pending_cs = [cancellation_obj]
+            cancellation_date_obj = datetime.datetime.strptime(
+                cancellation_obj[fields.FIELD_CANCELLATION_TIME],
                 TimeFormats.STANDARD_DATE_TIME_FORMAT,
             )
-            cancellationDate = _cancellationDate.strftime(TimeFormats.STANDARD_DATE_FORMAT)
-            if not self.prescriptionRecord[fields.FIELD_PRESCRIPTION][
+            cancellation_date = cancellation_date_obj.strftime(TimeFormats.STANDARD_DATE_FORMAT)
+            if not self.prescription_record[fields.FIELD_PRESCRIPTION][
                 fields.FIELD_PRESCRIPTION_TIME
             ]:
-                self.prescriptionRecord[fields.FIELD_PRESCRIPTION][
+                self.prescription_record[fields.FIELD_PRESCRIPTION][
                     fields.FIELD_PRESCRIPTION_TIME
-                ] = cancellationDate
-                self.logObject.writeLog(
+                ] = cancellation_date
+                self.log_object.writeLog(
                     "EPS0340",
                     None,
                     dict(
                         {
-                            "internalID": self.internalID,
-                            "cancellationDate": cancellationDate,
-                            "prescriptionID": self.returnPrescriptionID(),
+                            "internalID": self.internal_id,
+                            "cancellationDate": cancellation_date,
+                            "prescriptionID": self.return_prescription_id(),
                         }
                     ),
                 )
         else:
-            _pendingCs.append(cancellationObj)
+            pending_cs.append(cancellation_obj)
 
-        self._pendingCancellations = _pendingCs
+        self._pending_cancellations = pending_cs
 
-    def setInitialPrescriptionStatus(self, handleTime):
+    def set_initial_prescription_status(self, handle_time):
         """
         Create the initial prescription status. For repeat dispense prescriptions, this
         needs to consider both the prescription date and the dispense window low dates,
@@ -3453,15 +3491,15 @@ class PrescriptionRecord(object):
 
         A prescription should not be available for download before its start date.
 
-        :type handleTime: datetime.datetime
+        :type handle_time: datetime.datetime
         """
-        firstIssue = self.get_issue(1)
+        first_issue = self.get_issue(1)
 
-        futureThreshold = handleTime + datetime.timedelta(days=1)
-        if self.time > futureThreshold:
-            firstIssue.status = PrescriptionStatus.FUTURE_DATED_PRESCRIPTION
+        future_threshold = handle_time + datetime.timedelta(days=1)
+        if self.time > future_threshold:
+            first_issue.status = PrescriptionStatus.FUTURE_DATED_PRESCRIPTION
         else:
-            firstIssue.status = PrescriptionStatus.TO_BE_DISPENSED
+            first_issue.status = PrescriptionStatus.TO_BE_DISPENSED
 
     @property
     def maxRepeats(self):
@@ -3472,7 +3510,7 @@ class PrescriptionRecord(object):
         """
         return 1
 
-    def returnInstanceDetailsForAmend(self, instanceNumber):
+    def return_instance_details_for_amend(self, instance_number):
         """
         For dispense messages the following details are required:
         Instance status
@@ -3480,73 +3518,79 @@ class PrescriptionRecord(object):
         Dispensing Organisation
         None (indicating not a repeat prescription so no maxRepeats)
         """
-        instance = self._get_prescription_instance_data(instanceNumber)
-        instanceStatus = instance[fields.FIELD_PRESCRIPTION_STATUS]
-        dispensingOrg = instance[fields.FIELD_DISPENSE][fields.FIELD_DISPENSING_ORGANIZATION]
+        instance = self._get_prescription_instance_data(instance_number)
+        instance_status = instance[fields.FIELD_PRESCRIPTION_STATUS]
+        dispensing_org = instance[fields.FIELD_DISPENSE][fields.FIELD_DISPENSING_ORGANIZATION]
 
-        return [str(self.currentIssueNumber), instanceStatus, self._nhsNumber, dispensingOrg, None]
+        return [
+            str(self.current_issue_number),
+            instance_status,
+            self._nhs_number,
+            dispensing_org,
+            None,
+        ]
 
-    def returnDispenseHistoryEvents(self, _targetInstance):
+    def return_dispense_history_events(self, target_instance):
         """
         Return the dispense history events for a specific instance
         """
-        _instance = self._get_prescription_instance_data(_targetInstance)
-        return _instance[fields.FIELD_DISPENSE_HISTORY]
+        instance = self._get_prescription_instance_data(target_instance)
+        return instance[fields.FIELD_DISPENSE_HISTORY]
 
-    def getWithdrawnStatus(self, _passedStatus):
+    def get_withdrawn_status(self, passed_status):
         """
         Dispense Return can only go back as far as 'with dispenser-active' for repeat dispense
         prescriptions, so convert the status for with dispenser, otherwise, return what was provided.
         """
-        return _passedStatus
+        return passed_status
 
-    def returnPrescriptionType(self):
+    def return_prescription_type(self):
         """
         Return the prescription type from the prescription record
         """
-        return self.prescriptionRecord[fields.FIELD_PRESCRIPTION].get(
+        return self.prescription_record[fields.FIELD_PRESCRIPTION].get(
             fields.FIELD_PRESCRIPTION_TYPE, ""
         )
 
-    def returnPrescriptionTreatmentType(self):
+    def return_prescription_treatment_type(self):
         """
         Return the prescription treatment type from the prescription record
         """
-        return self.prescriptionRecord[fields.FIELD_PRESCRIPTION].get(
+        return self.prescription_record[fields.FIELD_PRESCRIPTION].get(
             fields.FIELD_PRESCRIPTION_TREATMENT_TYPE, ""
         )
 
-    def returnParentPrescriptionDocumentKey(self):
+    def return_parent_prescription_document_key(self):
         """
         Return the parent prescription document key from the prescription record
         """
-        return self.prescriptionRecord.get(fields.FIELD_PRESCRIPTION, {}).get(
+        return self.prescription_record.get(fields.FIELD_PRESCRIPTION, {}).get(
             fields.FIELD_PRESCRIPTION_MSG_REF
         )
 
-    def returnSignedTime(self):
+    def return_signed_time(self):
         """
         Return the signed date/time from the prescription record
         """
-        return self.prescriptionRecord[fields.FIELD_PRESCRIPTION].get(fields.FIELD_SIGNED_TIME, "")
+        return self.prescription_record[fields.FIELD_PRESCRIPTION].get(fields.FIELD_SIGNED_TIME, "")
 
-    def returnChangeLog(self):
+    def return_change_log(self):
         """
         Return the change log from the prescription record
         """
-        return self.prescriptionRecord.get(fields.FIELD_CHANGE_LOG, [])
+        return self.prescription_record.get(fields.FIELD_CHANGE_LOG, [])
 
-    def returnNominationData(self):
+    def return_nomination_data(self):
         """
         Return the nomination data from the prescription record
         """
-        return self.prescriptionRecord.get(fields.FIELD_NOMINATION)
+        return self.prescription_record.get(fields.FIELD_NOMINATION)
 
-    def returnPrescriptionField(self):
+    def return_prescription_field(self):
         """
         Return the complete prescription field
         """
-        return self.prescriptionRecord[fields.FIELD_PRESCRIPTION]
+        return self.prescription_record[fields.FIELD_PRESCRIPTION]
 
 
 class SinglePrescribeRecord(PrescriptionRecord):
@@ -3561,7 +3605,7 @@ class SinglePrescribeRecord(PrescriptionRecord):
         super(SinglePrescribeRecord, self).__init__(logObject, internalID)
         self.recordType = "Acute"
 
-    def addLineItemRepeatData(self, releaseData, lineItemRef, lineItem):
+    def add_line_item_repeat_data(self, release_data, line_item_ref, line_item):
         """
         Add line item information (This is not required for Acute prescriptions, but
         will invalidate the signature if provided in the prescription and not returned
@@ -3569,19 +3613,19 @@ class SinglePrescribeRecord(PrescriptionRecord):
         It the lineItem.maxRepeats is false (not provided inbound), then do not include
         it in the response, otherwise, both MaxRepeats and CurrentInstnace will be 1 for Acute.
 
-        :type releaseData: dict
-        :type lineItemRef: str
-        :type lineItem: PrescriptionLineItem
+        :type release_data: dict
+        :type line_item_ref: str
+        :type line_item: PrescriptionLineItem
         """
         # Handle the missing inbound maxRepeats
-        if not lineItem.maxRepeats:
+        if not line_item.maxRepeats:
             return
 
         # Acute, so both values may only be '1'
-        releaseData[lineItemRef + "MaxRepeats"] = quoted(str(1))
-        releaseData[lineItemRef + "CurrentInstance"] = quoted(str(1))
+        release_data[line_item_ref + "MaxRepeats"] = quoted(str(1))
+        release_data[line_item_ref + "CurrentInstance"] = quoted(str(1))
 
-    def returnDetailsForDispense(self):
+    def return_details_for_dispense(self):
         """
         For dispense messages the following details are required:
         - Issue number
@@ -3590,17 +3634,17 @@ class SinglePrescribeRecord(PrescriptionRecord):
         - Dispensing Organisation
         - None (indicating not a repeat prescription so no maxRepeats)
         """
-        currentIssue = self.currentIssue
+        current_issue = self.current_issue
         details = [
-            str(currentIssue.number),
-            currentIssue.status,
-            self._nhsNumber,
-            currentIssue.dispensing_organization,
+            str(current_issue.number),
+            current_issue.status,
+            self._nhs_number,
+            current_issue.dispensing_organization,
             None,
         ]
         return details
 
-    def returnDetailsForClaim(self, instanceNumberStr):
+    def return_details_for_claim(self, instance_number_str):
         """
         For dispense messages the following details are required:
         - Issue status
@@ -3608,24 +3652,24 @@ class SinglePrescribeRecord(PrescriptionRecord):
         - Dispensing Organisation
         - None (indicating not a repeat prescription so no maxRepeats)
         """
-        issueNumber = int(instanceNumberStr)
-        issue = self.get_issue(issueNumber)
+        issue_number = int(instance_number_str)
+        issue = self.get_issue(issue_number)
         details = [
             issue.claim,
             issue.status,
-            self._nhsNumber,
-            issue.dispensingOrganization,
+            self._nhs_number,
+            issue.dispensing_organization,
             None,
         ]
         return details
 
-    def returnLastDispenseDate(self, instanceNumber):
+    def return_last_dispense_date(self, instance_number):
         """
-        Return the lastDispenseDate for the requested instance
+        Return the last_dispense_date for the requested instance
         """
-        instance = self._get_prescription_instance_data(instanceNumber)
-        lastDispenseDate = instance[fields.FIELD_DISPENSE][fields.FIELD_LAST_DISPENSE_DATE]
-        return lastDispenseDate
+        instance = self._get_prescription_instance_data(instance_number)
+        last_dispense_date = instance[fields.FIELD_DISPENSE][fields.FIELD_LAST_DISPENSE_DATE]
+        return last_dispense_date
 
     def returnLastDispMsgRef(self, instanceNumberStr):
         """
@@ -3633,7 +3677,7 @@ class SinglePrescribeRecord(PrescriptionRecord):
         """
         issueNumber = int(instanceNumberStr)
         issue = self.get_issue(issueNumber)
-        return issue.lastDispenseNotificationMsgRef
+        return issue.last_dispense_notification_msg_ref
 
 
 class RepeatPrescribeRecord(PrescriptionRecord):
@@ -3700,7 +3744,7 @@ class RepeatDispenseRecord(PrescriptionRecord):
 
         return instance_snippets
 
-    def setInitialPrescriptionStatus(self, handleTime):
+    def set_initial_prescription_status(self, handle_time):
         """
         Create the initial prescription status. For repeat dispense prescriptions, this
         needs to consider both the prescription date and the dispense window low dates.
@@ -3713,30 +3757,30 @@ class RepeatDispenseRecord(PrescriptionRecord):
         Note that this only applies to the first instance, the remaining instances will
         already have a Future Repeat Dispense Instance status set.
 
-        :type handleTime: datetime.datetime
+        :type handle_time: datetime.datetime
         """
-        firstIssue = self.get_issue(1)
+        first_issue = self.get_issue(1)
 
-        futureThreshold = handleTime + datetime.timedelta(days=1)
-        isFutureDated = self.time > futureThreshold
+        future_threshold = handle_time + datetime.timedelta(days=1)
+        is_future_dated = self.time > future_threshold
 
-        dispense_low_date = firstIssue.dispense_window_low_date
-        if dispense_low_date is not None and dispense_low_date > futureThreshold:
-            isFutureDated = True
+        dispense_low_date = first_issue.dispense_window_low_date
+        if dispense_low_date is not None and dispense_low_date > future_threshold:
+            is_future_dated = True
 
-        if isFutureDated:
-            firstIssue.status = PrescriptionStatus.FUTURE_DATED_PRESCRIPTION
+        if is_future_dated:
+            first_issue.status = PrescriptionStatus.FUTURE_DATED_PRESCRIPTION
         else:
-            firstIssue.status = PrescriptionStatus.TO_BE_DISPENSED
+            first_issue.status = PrescriptionStatus.TO_BE_DISPENSED
 
-    def getWithdrawnStatus(self, _passedStatus):
+    def get_withdrawn_status(self, passed_status):
         """
         Dispense Return can only go back as far as 'with dispenser-active' for repeat dispense
         prescriptions, so convert the status for with dispenser, otherwise, return what was provided.
         """
-        if _passedStatus == PrescriptionStatus.WITH_DISPENSER:
+        if passed_status == PrescriptionStatus.WITH_DISPENSER:
             return PrescriptionStatus.WITH_DISPENSER_ACTIVE
-        return _passedStatus
+        return passed_status
 
     @property
     def maxRepeats(self):
@@ -3745,7 +3789,7 @@ class RepeatDispenseRecord(PrescriptionRecord):
 
         :rtype: int
         """
-        maxRepeats = self.prescriptionRecord[fields.FIELD_PRESCRIPTION][fields.FIELD_MAX_REPEATS]
+        maxRepeats = self.prescription_record[fields.FIELD_PRESCRIPTION][fields.FIELD_MAX_REPEATS]
         return int(maxRepeats)
 
     @property
@@ -3756,4 +3800,4 @@ class RepeatDispenseRecord(PrescriptionRecord):
 
         :rtype: bool
         """
-        return self.currentIssueNumber < self.maxRepeats
+        return self.current_issue_number < self.maxRepeats

@@ -88,8 +88,8 @@ class PrescriptionIssue(object):
                     {
                         "internalID": parent_prescription.internalID,
                         "previousStatus": currentStatus,
-                        "releaseVersion": parent_prescription.getReleaseVersion(),
-                        "prescriptionID": str(parent_prescription.returnPrescriptionID()),
+                        "releaseVersion": parent_prescription.get_release_version(),
+                        "prescriptionID": str(parent_prescription.return_prescription_id()),
                     },
                 )
 
@@ -122,7 +122,7 @@ class PrescriptionIssue(object):
         new_completion_date_str = completion_datetime.strftime(TimeFormats.STANDARD_DATE_FORMAT)
         self._issue_dict[fields.FIELD_COMPLETION_DATE] = new_completion_date_str
 
-        parent_prescription.logAttributeChange(
+        parent_prescription.log_attribute_change(
             fields.FIELD_COMPLETION_DATE,
             (current_completion_date_str or ""),
             new_completion_date_str,
@@ -169,7 +169,7 @@ class PrescriptionIssue(object):
         currentStatus = self.status
         self._issue_dict[fields.FIELD_PREVIOUS_STATUS] = currentStatus
         self._issue_dict[fields.FIELD_PRESCRIPTION_STATUS] = new_status
-        parent_prescription.logAttributeChange(
+        parent_prescription.log_attribute_change(
             fields.FIELD_PRESCRIPTION_STATUS, currentStatus, new_status, None
         )
 

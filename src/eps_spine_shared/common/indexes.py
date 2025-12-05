@@ -97,84 +97,84 @@ class EpsIndexFactory(object):
         """
         See build_indexes
         """
-        nhs_number = eps_record.returnNHSNumber()
-        prescription_time = eps_record.returnPrescriptionTime()
+        nhs_number = eps_record.return_nhs_number()
+        prescription_time = eps_record.return_prescription_time()
         nhs_number_date_bin = nhs_number + SEPERATOR + prescription_time
-        index_dict[INDEX_NHSNUMBER_DATE] = eps_record.addReleaseAndStatus(nhs_number_date_bin)
+        index_dict[INDEX_NHSNUMBER_DATE] = eps_record.add_release_and_status(nhs_number_date_bin)
 
     def _add_nhs_number_prescriber_date_index(self, eps_record, index_dict):
         """
         See build_indexes
         """
-        nhs_number = eps_record.returnNHSNumber()
-        prescriber = eps_record.returnPrescribingOrganisation()
-        prescription_time = eps_record.returnPrescriptionTime()
+        nhs_number = eps_record.return_nhs_number()
+        prescriber = eps_record.return_prescribing_organisation()
+        prescription_time = eps_record.return_prescription_time()
         index = nhs_number + SEPERATOR + prescriber + SEPERATOR + prescription_time
-        new_indexes = eps_record.addReleaseAndStatus(index)
+        new_indexes = eps_record.add_release_and_status(index)
         index_dict[INDEX_NHSNUMBER_PRDATE] = new_indexes
 
     def _add_nhs_number_prescriber_dispenser_date_index(self, eps_record, index_dict):
         """
         See build_indexes
         """
-        result_list = eps_record.returnNhsNumberPrescriberDispenserDateIndex()
+        result_list = eps_record.return_nhs_number_prescriber_dispenser_date_index()
         [success, nhs_number_presc_disp_date_bin] = result_list
         if not success:
             raise EpsSystemError(INDEX_NHSNUMBER_PRDSDATE)
         if nhs_number_presc_disp_date_bin:
-            new_indexes = eps_record.addReleaseAndStatus(nhs_number_presc_disp_date_bin, False)
+            new_indexes = eps_record.add_release_and_status(nhs_number_presc_disp_date_bin, False)
             index_dict[INDEX_NHSNUMBER_PRDSDATE] = new_indexes
 
     def _add_prescriber_date_index(self, eps_record, index_dict):
         """
         See build_indexes
         """
-        prescriber = eps_record.returnPrescribingOrganisation()
-        prescription_time = eps_record.returnPrescriptionTime()
+        prescriber = eps_record.return_prescribing_organisation()
+        prescription_time = eps_record.return_prescription_time()
         prescriber_date_bin = prescriber + SEPERATOR + prescription_time
-        index_dict[INDEX_PRESCRIBER_DATE] = eps_record.addReleaseAndStatus(prescriber_date_bin)
+        index_dict[INDEX_PRESCRIBER_DATE] = eps_record.add_release_and_status(prescriber_date_bin)
 
     def _add_nhs_number_dispenser_date_index(self, eps_record, index_dict):
         """
         See build_indexes
         """
-        result_list = eps_record.returnNhsNumberDispenserDateIndex()
+        result_list = eps_record.return_nhs_number_dispenser_date_index()
         [success, nhs_number_dispenser_date_bin] = result_list
         if not success:
             raise EpsSystemError(INDEX_NHSNUMBER_DSDATE)
         if nhs_number_dispenser_date_bin:
-            new_indexes = eps_record.addReleaseAndStatus(nhs_number_dispenser_date_bin, False)
+            new_indexes = eps_record.add_release_and_status(nhs_number_dispenser_date_bin, False)
             index_dict[INDEX_NHSNUMBER_DSDATE] = new_indexes
 
     def _add_prescriber_dispenser_date_index(self, eps_record, index_dict):
         """
         See build_indexes
         """
-        result_list = eps_record.returnPrescriberDispenserDateIndex()
-        [success, presc_disp_date_bin] = result_list
+        result_list = eps_record.return_prescriber_dispenser_date_index()
+        [success, presc_disp_dates] = result_list
         if not success:
             raise EpsSystemError(INDEX_PRESCRIBER_DSDATE)
-        if presc_disp_date_bin:
-            new_indexes = eps_record.addReleaseAndStatus(presc_disp_date_bin, False)
+        if presc_disp_dates:
+            new_indexes = eps_record.add_release_and_status(presc_disp_dates, False)
             index_dict[INDEX_PRESCRIBER_DSDATE] = new_indexes
 
     def _add_dispenser_date_index(self, eps_record, index_dict):
         """
         See build_indexes
         """
-        result_list = eps_record.returnDispenserDateIndex()
-        [success, dispenser_date_bin] = result_list
+        result_list = eps_record.return_dispenser_date_index()
+        [success, disp_dates] = result_list
         if not success:
             raise EpsSystemError(INDEX_DISPENSER_DATE)
-        if dispenser_date_bin:
-            new_indexes = eps_record.addReleaseAndStatus(dispenser_date_bin, False)
+        if disp_dates:
+            new_indexes = eps_record.add_release_and_status(disp_dates, False)
             index_dict[INDEX_DISPENSER_DATE] = new_indexes
 
     def _add_next_activity_next_activity_date_index(self, context, index_dict):
         """
         See build_indexes
         """
-        result_list = context.epsRecord.returnNextActivityIndex(
+        result_list = context.epsRecord.return_next_activity_index(
             self.test_prescribing_sites, self.nad_reference, context
         )
 
@@ -190,7 +190,7 @@ class EpsIndexFactory(object):
         """
         See build_indexes
         """
-        result_list = eps_record.returnPrescSiteStatusIndex()
+        result_list = eps_record.return_presc_site_status_index()
         [success, presc_site, prescription_status] = result_list
         if not success:
             raise EpsSystemError(INDEX_PRESCRIBER_STATUS)
@@ -202,7 +202,7 @@ class EpsIndexFactory(object):
         """
         See build_indexes
         """
-        result_list = eps_record.returnDispSiteStatusIndex()
+        result_list = eps_record.return_disp_site_status_index()
         [success, disp_site_statuses] = result_list
         if not success:
             raise EpsSystemError(INDEX_DISPENSER_STATUS)
@@ -212,7 +212,7 @@ class EpsIndexFactory(object):
         """
         See build_indexes
         """
-        [nom_pharmacy, prescription_status] = eps_record.returnNomPharmStatusIndex()
+        [nom_pharmacy, prescription_status] = eps_record.return_nom_pharm_status_index()
 
         if nom_pharmacy:
             index_dict[INDEX_NOMPHARM] = []
@@ -235,7 +235,7 @@ class EpsIndexFactory(object):
         """
         See build_indexes
         """
-        nhs_number = eps_record.returnNHSNumber()
+        nhs_number = eps_record.return_nhs_number()
         index_dict[INDEX_NHSNUMBER] = [nhs_number]
 
     def _add_delta_index(self, eps_record, index_dict):

@@ -312,20 +312,20 @@ class PrescriptionsChangeLogProcessor(ChangeLogProcessor):
         # superceded by the INS_FROM_STATUS and INS_TO_STATUS fields set below.
         # The only reference to TO_STATUS seems to be in PrescriptionJsonQueryResponse.cfg
         # template used by the prescription detail view web service
-        logOfChange[cls.FROM_STATUS] = updateContext.epsRecord.returnPreviousPrescriptionStatus(
+        logOfChange[cls.FROM_STATUS] = updateContext.epsRecord.return_previous_prescription_status(
             updateContext.instanceID, False
         )
-        logOfChange[cls.TO_STATUS] = updateContext.epsRecord.returnPrescriptionStatus(
+        logOfChange[cls.TO_STATUS] = updateContext.epsRecord.return_prescription_status(
             updateContext.instanceID, False
         )
 
         # Event history lines for UI
         # **** NOTE THAT THESE ARE WRONG, THEY REFER TO THE FINAL ISSUE, WHICH MAY NOT BE THE ISSUE THAT WAS UPDATED
         logOfChange[cls.INSTANCE] = _instance
-        logOfChange[cls.INS_FROM_STATUS] = updateContext.epsRecord.returnPreviousPrescriptionStatus(
-            _instance, False
+        logOfChange[cls.INS_FROM_STATUS] = (
+            updateContext.epsRecord.return_previous_prescription_status(_instance, False)
         )
-        logOfChange[cls.INS_TO_STATUS] = updateContext.epsRecord.returnPrescriptionStatus(
+        logOfChange[cls.INS_TO_STATUS] = updateContext.epsRecord.return_prescription_status(
             _instance, False
         )
         logOfChange[cls.AGENT_ROLE_PROFILE_CODE_ID] = updateContext.agentRoleProfileCodeId
@@ -352,7 +352,7 @@ class PrescriptionsChangeLogProcessor(ChangeLogProcessor):
         logOfChange[cls.PRE_CHANGE_CURRENT_ISSUE] = (
             updateContext.epsRecord.return_prechange_current_issue()
         )
-        logOfChange[cls.POST_CHANGE_CURRENT_ISSUE] = updateContext.epsRecord.currentIssueNumber
+        logOfChange[cls.POST_CHANGE_CURRENT_ISSUE] = updateContext.epsRecord.current_issue_number
         if hasattr(updateContext, cls.TOUCHED) and updateContext.touched:
             logOfChange[cls.TOUCHED] = updateContext.touched
 
