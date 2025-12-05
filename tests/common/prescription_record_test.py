@@ -568,8 +568,8 @@ class ReturnNextActivityIndexTest(SetUpNadReferences):
         Test Runner for next activity and next activity date method. Takes the created
         nadStatus (on self) and compares it to the expected result
         """
-        _results = self.testclass.nextActivityDate(self.nadStatus, self.nadReference)
-        [_nextActivity, _nextActivityDate, _ignore] = _results
+        results = self.testclass.next_activity_date(self.nadStatus, self.nadReference)
+        [_nextActivity, _nextActivityDate, _] = results
         self.assertTrue([_nextActivity, _nextActivityDate] == _expectedResult)
 
     def testNextActivityDateScenario1(self):

@@ -76,149 +76,151 @@ class NextActivityGenerator(object):
     FIELD_NOT_DISPENSED_DELETE_PERIOD = "notDispensedDeletePeriod"
     FIELD_RELEASE_VERSION = "releaseVersion"
 
-    def __init__(self, logObject, internalID):
-        self.logObject = logObject
-        self.internalID = internalID
+    def __init__(self, log_object, internal_id):
+        self.log_object = log_object
+        self.internal_id = internal_id
 
         # Map between prescription status and method for calculating index values
-        self._indexMap = {}
-        self._indexMap[PrescriptionStatus.TO_BE_DISPENSED] = self.unDispensed
-        self._indexMap[PrescriptionStatus.WITH_DISPENSER] = self.unDispensed
-        self._indexMap[PrescriptionStatus.WITH_DISPENSER_ACTIVE] = self.partDispensed
-        self._indexMap[PrescriptionStatus.EXPIRED] = self.expired
-        self._indexMap[PrescriptionStatus.CANCELLED] = self.cancelled
-        self._indexMap[PrescriptionStatus.DISPENSED] = self.dispensed
-        self._indexMap[PrescriptionStatus.NO_CLAIMED] = self.completed
-        self._indexMap[PrescriptionStatus.NOT_DISPENSED] = self.notDispensed
-        self._indexMap[PrescriptionStatus.CLAIMED] = self.completed
-        self._indexMap[PrescriptionStatus.AWAITING_RELEASE_READY] = self.awaitingNominatedRelease
-        self._indexMap[PrescriptionStatus.REPEAT_DISPENSE_FUTURE_INSTANCE] = self.unDispensed
-        self._indexMap[PrescriptionStatus.FUTURE_DATED_PRESCRIPTION] = self.futureDated
-        self._indexMap[PrescriptionStatus.PENDING_CANCELLATION] = self.awaitingCancellation
+        self._index_map = {}
+        self._index_map[PrescriptionStatus.TO_BE_DISPENSED] = self.un_dispensed
+        self._index_map[PrescriptionStatus.WITH_DISPENSER] = self.un_dispensed
+        self._index_map[PrescriptionStatus.WITH_DISPENSER_ACTIVE] = self.part_dispensed
+        self._index_map[PrescriptionStatus.EXPIRED] = self.expired
+        self._index_map[PrescriptionStatus.CANCELLED] = self.cancelled
+        self._index_map[PrescriptionStatus.DISPENSED] = self.dispensed
+        self._index_map[PrescriptionStatus.NO_CLAIMED] = self.completed
+        self._index_map[PrescriptionStatus.NOT_DISPENSED] = self.not_dispensed
+        self._index_map[PrescriptionStatus.CLAIMED] = self.completed
+        self._index_map[PrescriptionStatus.AWAITING_RELEASE_READY] = self.awaiting_nominated_release
+        self._index_map[PrescriptionStatus.REPEAT_DISPENSE_FUTURE_INSTANCE] = self.un_dispensed
+        self._index_map[PrescriptionStatus.FUTURE_DATED_PRESCRIPTION] = self.future_dated
+        self._index_map[PrescriptionStatus.PENDING_CANCELLATION] = self.awaiting_cancellation
 
-    def nextActivityDate(self, nadStatus, nadReference):
+    def next_activity_date(self, nad_status, nad_reference):
         """
         Function takes prescriptionStatus (this will be the prescriptionStatus to be
         if the function is called during an update process)
-        Function takes nadStatus - a dictionary of information relevant to
+        Function takes nad_status - a dictionary of information relevant to
         next-activity-date calculation
-        Function takes nadreference - a dictionary of global variables relevant to
+        Function takes nad_reference - a dictionary of global variables relevant to
         next-activity-date calculation
         Function should return [nextActivity, nextActivityDate, expiryDate]
         """
-        prescriptionStatus = nadStatus[fields.FIELD_PRESCRIPTION_STATUS]
+        prescription_status = nad_status[fields.FIELD_PRESCRIPTION_STATUS]
 
-        for key in NextActivityGenerator.INPUT_BY_STATUS[prescriptionStatus]:
+        for key in NextActivityGenerator.INPUT_BY_STATUS[prescription_status]:
             if fields.FIELD_CAPITAL_D_DATE in key:
-                if nadStatus[key]:
-                    nadStatus[key] = datetime.datetime.strptime(
-                        nadStatus[key], TimeFormats.STANDARD_DATE_FORMAT
+                if nad_status[key]:
+                    nad_status[key] = datetime.datetime.strptime(
+                        nad_status[key], TimeFormats.STANDARD_DATE_FORMAT
                     )
                 elif key not in [
                     fields.FIELD_NOMINATED_DOWNLOAD_DATE,
                     fields.FIELD_DISPENSE_WINDOW_LOW_DATE,
                 ]:
-                    nadStatus[key] = datetime.datetime.now()
+                    nad_status[key] = datetime.datetime.now()
 
-        self._calculateExpiryDate(nadStatus, nadReference)
-        returnValue = self._indexMap[prescriptionStatus](nadStatus, nadReference)
-        return returnValue
+        self._calculate_expiry_date(nad_status, nad_reference)
+        return_value = self._index_map[prescription_status](nad_status, nad_reference)
+        return return_value
 
-    def _calculateExpiryDate(self, nadStatus, nadReference):
+    def _calculate_expiry_date(self, nad_status, nad_reference):
         """
         Canculate the expiry date to be used in subsequent Next Activity calculations
         """
-        if int(nadStatus[fields.FIELD_INSTANCE_NUMBER]) > 1:
-            _expiryDate = (
-                nadStatus[fields.FIELD_PRESCRIPTION_DATE]
-                + nadReference[fields.FIELD_REPEAT_DISPENSE_EXPIRY_PERIOD]
+        if int(nad_status[fields.FIELD_INSTANCE_NUMBER]) > 1:
+            expiry_date = (
+                nad_status[fields.FIELD_PRESCRIPTION_DATE]
+                + nad_reference[fields.FIELD_REPEAT_DISPENSE_EXPIRY_PERIOD]
             )
         else:
-            _expiryDate = (
-                nadStatus[fields.FIELD_PRESCRIPTION_DATE]
-                + nadReference[fields.FIELD_PRESCRIPTION_EXPIRY_PERIOD]
+            expiry_date = (
+                nad_status[fields.FIELD_PRESCRIPTION_DATE]
+                + nad_reference[fields.FIELD_PRESCRIPTION_EXPIRY_PERIOD]
             )
 
-        nadStatus[fields.FIELD_EXPIRY_DATE] = _expiryDate
-        _expiryDateStr = _expiryDate.strftime(TimeFormats.STANDARD_DATE_FORMAT)
-        nadStatus[fields.FIELD_FORMATTED_EXPIRY_DATE] = _expiryDateStr
+        nad_status[fields.FIELD_EXPIRY_DATE] = expiry_date
+        expiry_date_str = expiry_date.strftime(TimeFormats.STANDARD_DATE_FORMAT)
+        nad_status[fields.FIELD_FORMATTED_EXPIRY_DATE] = expiry_date_str
 
-    def unDispensed(self, nadStatus, _):
+    def un_dispensed(self, nad_status, _):
         """
-        return [nextActivity, nextActivityDate, expiryDate] for unDispensed prescription
+        return [nextActivity, nextActivityDate, expiryDate] for un_dispensed prescription
         messages, covers:
         toBeDispensed
         withDispenser
         RepeatDispenseFutureInstance
         """
-        nextActivity = fields.NEXTACTIVITY_EXPIRE
-        nextActivityDate = nadStatus[fields.FIELD_FORMATTED_EXPIRY_DATE]
-        return [nextActivity, nextActivityDate, nadStatus[fields.FIELD_EXPIRY_DATE]]
+        next_activity = fields.NEXTACTIVITY_EXPIRE
+        next_activity_date = nad_status[fields.FIELD_FORMATTED_EXPIRY_DATE]
+        return [next_activity, next_activity_date, nad_status[fields.FIELD_EXPIRY_DATE]]
 
-    def partDispensed(self, nadStatus, nadReference):
+    def part_dispensed(self, nad_status, nad_reference):
         """
-        return [nextActivity, nextActivityDate, expiryDate] for partDispensed prescription
+        return [nextActivity, nextActivityDate, expiryDate] for part_dispensed prescription
         messages
         """
-        _maxDispenseTime = nadStatus[fields.FIELD_LAST_DISPENSE_DATE]
-        _maxDispenseTime += nadReference[fields.FIELD_WITH_DISPENSER_ACTIVE_EXPIRY_PERIOD]
-        expiryDate = min(_maxDispenseTime, nadStatus[fields.FIELD_EXPIRY_DATE])
+        max_dispense_time = nad_status[fields.FIELD_LAST_DISPENSE_DATE]
+        max_dispense_time += nad_reference[fields.FIELD_WITH_DISPENSER_ACTIVE_EXPIRY_PERIOD]
+        expiry_date = min(max_dispense_time, nad_status[fields.FIELD_EXPIRY_DATE])
 
-        if nadStatus[fields.FIELD_RELEASE_VERSION] == fields.R1_VERSION:
-            nextActivity = fields.NEXTACTIVITY_EXPIRE
-            nextActivityDate = expiryDate.strftime(TimeFormats.STANDARD_DATE_FORMAT)
+        if nad_status[fields.FIELD_RELEASE_VERSION] == fields.R1_VERSION:
+            next_activity = fields.NEXTACTIVITY_EXPIRE
+            next_activity_date = expiry_date.strftime(TimeFormats.STANDARD_DATE_FORMAT)
         else:
-            if not nadStatus[fields.FIELD_LAST_DISPENSE_NOTIFICATION_MSG_REF]:
-                nextActivity = fields.NEXTACTIVITY_EXPIRE
-                nextActivityDate = expiryDate.strftime(TimeFormats.STANDARD_DATE_FORMAT)
+            if not nad_status[fields.FIELD_LAST_DISPENSE_NOTIFICATION_MSG_REF]:
+                next_activity = fields.NEXTACTIVITY_EXPIRE
+                next_activity_date = expiry_date.strftime(TimeFormats.STANDARD_DATE_FORMAT)
             else:
-                nextActivity = fields.NEXTACTIVITY_CREATENOCLAIM
-                nextActivityDate = _maxDispenseTime.strftime(TimeFormats.STANDARD_DATE_FORMAT)
-        return [nextActivity, nextActivityDate, expiryDate]
+                next_activity = fields.NEXTACTIVITY_CREATENOCLAIM
+                next_activity_date = max_dispense_time.strftime(TimeFormats.STANDARD_DATE_FORMAT)
+        return [next_activity, next_activity_date, expiry_date]
 
-    def expired(self, nadStatus, nadReference):
+    def expired(self, nad_status, nad_reference):
         """
         return [nextActivity, nextActivityDate, expiryDate] for expired prescription
         messages
         """
-        deletionDate = (
-            nadStatus[fields.FIELD_COMPLETION_DATE]
-            + nadReference[fields.FIELD_EXPIRED_DELETE_PERIOD]
+        deletion_date = (
+            nad_status[fields.FIELD_COMPLETION_DATE]
+            + nad_reference[fields.FIELD_EXPIRED_DELETE_PERIOD]
         )
-        nextActivity = fields.NEXTACTIVITY_DELETE
-        nextActivityDate = deletionDate.strftime(TimeFormats.STANDARD_DATE_FORMAT)
-        return [nextActivity, nextActivityDate, None]
+        next_activity = fields.NEXTACTIVITY_DELETE
+        next_activity_date = deletion_date.strftime(TimeFormats.STANDARD_DATE_FORMAT)
+        return [next_activity, next_activity_date, None]
 
-    def cancelled(self, nadStatus, nadReference):
+    def cancelled(self, nad_status, nad_reference):
         """
         return [nextActivity, nextActivityDate, expiryDate] for cancelled prescription
         messages
         """
-        deletionDate = (
-            nadStatus[fields.FIELD_COMPLETION_DATE]
-            + nadReference[fields.FIELD_CANCELLED_DELETE_PERIOD]
+        deletion_date = (
+            nad_status[fields.FIELD_COMPLETION_DATE]
+            + nad_reference[fields.FIELD_CANCELLED_DELETE_PERIOD]
         )
-        nextActivity = fields.NEXTACTIVITY_DELETE
-        nextActivityDate = deletionDate.strftime(TimeFormats.STANDARD_DATE_FORMAT)
-        return [nextActivity, nextActivityDate, None]
+        next_activity = fields.NEXTACTIVITY_DELETE
+        next_activity_date = deletion_date.strftime(TimeFormats.STANDARD_DATE_FORMAT)
+        return [next_activity, next_activity_date, None]
 
-    def dispensed(self, nadStatus, nadReference):
+    def dispensed(self, nad_status, nad_reference):
         """
         return [nextActivity, nextActivityDate, expiryDate] for dispensed prescription
         messages.
         Note that if a claim is not received before the notification delay period expires,
         a no claim notification is sent to the PPD.
         """
-        _completionDate = nadStatus[fields.FIELD_COMPLETION_DATE]
-        maxNotificationDate = _completionDate + nadReference[fields.FIELD_NOTIFICATION_DELAY_PERIOD]
-        if nadStatus[fields.FIELD_RELEASE_VERSION] == fields.R1_VERSION:  # noqa: SIM108
-            nextActivity = fields.NEXTACTIVITY_DELETE
+        completion_date = nad_status[fields.FIELD_COMPLETION_DATE]
+        max_notification_date = (
+            completion_date + nad_reference[fields.FIELD_NOTIFICATION_DELAY_PERIOD]
+        )
+        if nad_status[fields.FIELD_RELEASE_VERSION] == fields.R1_VERSION:  # noqa: SIM108
+            next_activity = fields.NEXTACTIVITY_DELETE
         else:
-            nextActivity = fields.NEXTACTIVITY_CREATENOCLAIM
-        nextActivityDate = maxNotificationDate.strftime(TimeFormats.STANDARD_DATE_FORMAT)
-        return [nextActivity, nextActivityDate, None]
+            next_activity = fields.NEXTACTIVITY_CREATENOCLAIM
+        next_activity_date = max_notification_date.strftime(TimeFormats.STANDARD_DATE_FORMAT)
+        return [next_activity, next_activity_date, None]
 
-    def completed(self, nadStatus, nadReference):
+    def completed(self, nad_status, nad_reference):
         """
         return [nextActivity, nextActivityDate, expiryDate] for completed prescription
         messages
@@ -226,80 +228,81 @@ class NextActivityGenerator(object):
         Note, all reference to claim sent date removed as this now only applies to already
         claimed and no-claimed prescriptions.
         """
-        deletionDate = (
-            nadStatus[fields.FIELD_CLAIM_SENT_DATE]
-            + nadReference[fields.FIELD_CLAIMED_DELETE_PERIOD]
+        deletion_date = (
+            nad_status[fields.FIELD_CLAIM_SENT_DATE]
+            + nad_reference[fields.FIELD_CLAIMED_DELETE_PERIOD]
         )
-        nextActivity = fields.NEXTACTIVITY_DELETE
-        nextActivityDate = deletionDate.strftime(TimeFormats.STANDARD_DATE_FORMAT)
-        return [nextActivity, nextActivityDate, None]
+        next_activity = fields.NEXTACTIVITY_DELETE
+        next_activity_date = deletion_date.strftime(TimeFormats.STANDARD_DATE_FORMAT)
+        return [next_activity, next_activity_date, None]
 
-    def notDispensed(self, nadStatus, nadReference):
+    def not_dispensed(self, nad_status, nad_reference):
         """
-        return [nextActivity, nextActivityDate, expiryDate] for notDispensed prescription
+        return [nextActivity, nextActivityDate, expiryDate] for not_dispensed prescription
         messages
         """
-        deletionDate = (
-            nadStatus[fields.FIELD_COMPLETION_DATE]
-            + nadReference[fields.FIELD_NOT_DISPENSED_DELETE_PERIOD]
+        deletion_date = (
+            nad_status[fields.FIELD_COMPLETION_DATE]
+            + nad_reference[fields.FIELD_NOT_DISPENSED_DELETE_PERIOD]
         )
-        nextActivity = fields.NEXTACTIVITY_DELETE
-        nextActivityDate = deletionDate.strftime(TimeFormats.STANDARD_DATE_FORMAT)
-        return [nextActivity, nextActivityDate, None]
+        next_activity = fields.NEXTACTIVITY_DELETE
+        next_activity_date = deletion_date.strftime(TimeFormats.STANDARD_DATE_FORMAT)
+        return [next_activity, next_activity_date, None]
 
-    def awaitingNominatedRelease(self, nadStatus, _):
+    def awaiting_nominated_release(self, nad_status, _):
         """
-        return [nextActivity, nextActivityDate, expiryDate] for awaitingNominatedRelease
+        return [nextActivity, nextActivityDate, expiryDate] for awaiting_nominated_release
         prescription messages
         """
-        readyDate = nadStatus[fields.FIELD_DISPENSE_WINDOW_LOW_DATE]
+        ready_date = nad_status[fields.FIELD_DISPENSE_WINDOW_LOW_DATE]
 
-        if nadStatus[fields.FIELD_NOMINATED_DOWNLOAD_DATE]:
-            readyDate = nadStatus[fields.FIELD_NOMINATED_DOWNLOAD_DATE]
+        if nad_status[fields.FIELD_NOMINATED_DOWNLOAD_DATE]:
+            ready_date = nad_status[fields.FIELD_NOMINATED_DOWNLOAD_DATE]
 
-        readyDateString = readyDate.strftime(TimeFormats.STANDARD_DATE_FORMAT)
+        ready_date_string = ready_date.strftime(TimeFormats.STANDARD_DATE_FORMAT)
 
-        if readyDate < nadStatus[fields.FIELD_EXPIRY_DATE]:
-            nextActivity = fields.NEXTACTIVITY_READY
-            nextActivityDate = readyDateString
+        if ready_date < nad_status[fields.FIELD_EXPIRY_DATE]:
+            next_activity = fields.NEXTACTIVITY_READY
+            next_activity_date = ready_date_string
         else:
-            nextActivity = fields.NEXTACTIVITY_EXPIRE
-            nextActivityDate = nadStatus[fields.FIELD_FORMATTED_EXPIRY_DATE]
-        return [nextActivity, nextActivityDate, nadStatus[fields.FIELD_EXPIRY_DATE]]
+            next_activity = fields.NEXTACTIVITY_EXPIRE
+            next_activity_date = nad_status[fields.FIELD_FORMATTED_EXPIRY_DATE]
+        return [next_activity, next_activity_date, nad_status[fields.FIELD_EXPIRY_DATE]]
 
-    def futureDated(self, nadStatus, _):
+    def future_dated(self, nad_status, _):
         """
-        return [nextActivity, nextActivityDate, expiryDate] for awaitingNominatedRelease
+        return [nextActivity, nextActivityDate, expiryDate] for awaiting_nominated_release
         prescription messages
         """
-        if nadStatus[fields.FIELD_DISPENSE_WINDOW_LOW_DATE]:
-            readyDate = max(
-                nadStatus[fields.FIELD_DISPENSE_WINDOW_LOW_DATE],
-                nadStatus[fields.FIELD_PRESCRIPTION_DATE],
+        if nad_status[fields.FIELD_DISPENSE_WINDOW_LOW_DATE]:
+            ready_date = max(
+                nad_status[fields.FIELD_DISPENSE_WINDOW_LOW_DATE],
+                nad_status[fields.FIELD_PRESCRIPTION_DATE],
             )
         else:
-            readyDate = nadStatus[fields.FIELD_PRESCRIPTION_DATE]
+            ready_date = nad_status[fields.FIELD_PRESCRIPTION_DATE]
 
-        readyDateString = readyDate.strftime(TimeFormats.STANDARD_DATE_FORMAT)
+        ready_date_string = ready_date.strftime(TimeFormats.STANDARD_DATE_FORMAT)
 
-        if nadStatus[fields.FIELD_NOMINATED_DOWNLOAD_DATE]:
-            readyDate = nadStatus[fields.FIELD_NOMINATED_DOWNLOAD_DATE]
-        if readyDate < nadStatus[fields.FIELD_EXPIRY_DATE]:
-            nextActivity = fields.NEXTACTIVITY_READY
-            nextActivityDate = readyDateString
+        if nad_status[fields.FIELD_NOMINATED_DOWNLOAD_DATE]:
+            ready_date = nad_status[fields.FIELD_NOMINATED_DOWNLOAD_DATE]
+        if ready_date < nad_status[fields.FIELD_EXPIRY_DATE]:
+            next_activity = fields.NEXTACTIVITY_READY
+            next_activity_date = ready_date_string
         else:
-            nextActivity = fields.NEXTACTIVITY_EXPIRE
-            nextActivityDate = nadStatus[fields.FIELD_FORMATTED_EXPIRY_DATE]
-        return [nextActivity, nextActivityDate, nadStatus[fields.FIELD_EXPIRY_DATE]]
+            next_activity = fields.NEXTACTIVITY_EXPIRE
+            next_activity_date = nad_status[fields.FIELD_FORMATTED_EXPIRY_DATE]
+        return [next_activity, next_activity_date, nad_status[fields.FIELD_EXPIRY_DATE]]
 
-    def awaitingCancellation(self, nadStatus, nadReference):
+    def awaiting_cancellation(self, nad_status, nad_reference):
         """
-        return [nextActivity, nextActivityDate, expiryDate] for awaitingCancellation
+        return [nextActivity, nextActivityDate, expiryDate] for awaiting_cancellation
         prescription messages
         """
-        deletionDate = (
-            nadStatus[fields.FIELD_HANDLE_TIME] + nadReference[fields.FIELD_CANCELLED_DELETE_PERIOD]
+        deletion_date = (
+            nad_status[fields.FIELD_HANDLE_TIME]
+            + nad_reference[fields.FIELD_CANCELLED_DELETE_PERIOD]
         )
-        nextActivity = fields.NEXTACTIVITY_DELETE
-        nextActivityDate = deletionDate.strftime(TimeFormats.STANDARD_DATE_FORMAT)
-        return [nextActivity, nextActivityDate, None]
+        next_activity = fields.NEXTACTIVITY_DELETE
+        next_activity_date = deletion_date.strftime(TimeFormats.STANDARD_DATE_FORMAT)
+        return [next_activity, next_activity_date, None]
