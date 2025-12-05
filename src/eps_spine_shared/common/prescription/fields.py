@@ -1,0 +1,277 @@
+"""
+Field name constants and related configuration for prescription records.
+"""
+
+from eps_spine_shared.spinecore.changelog import PrescriptionsChangeLogProcessor
+
+# Field name constants
+FIELD_AGENT_ORGANIZATION = "agentOrganization"
+FIELD_BATCH_ID = "batchID"
+FIELD_BATCH_NUMBER = "batchNumber"
+FIELD_BIRTH_TIME = "birthTime"
+FIELD_PREFIX = "prefix"
+FIELD_SUFFIX = "suffix"
+FIELD_GIVEN = "given"
+FIELD_FAMILY = "family"
+FIELD_CANCEL_LINE_ITEM_REF = "cancelLineItemRef"
+FIELD_CANCELLATION_ID = "cancellationID"
+FIELD_CANCELLATION_MSG_REF = "cancellationMsgRef"
+FIELD_CANCELLATION_TARGET = "cancellationTarget"
+FIELD_CANCELLATION_TIME = "cancellationTime"
+FIELD_CANCELLATIONS = "cancellations"
+FIELD_CHANGE_LOG = "changeLog"
+FIELD_CLAIM = "claim"
+FIELD_CLAIM_GUID = "claimGUID"
+FIELD_CLAIM_REBUILD = "claimRebuild"
+FIELD_CLAIM_RECEIVED_DATE = "claimReceivedDate"
+FIELD_CLAIM_SENT_DATE = "claimSentDate"
+FIELD_CLAIM_STATUS = "claimStatus"
+FIELD_CLAIMED_DISPLAY_NAME = "claimed"
+FIELD_COMPLETION_DATE = "completionDate"
+FIELD_CURRENT_INSTANCE = "currentInstance"
+FIELD_DAYS_SUPPLY = "daysSupply"
+FIELD_DAYS_SUPPLY_HIGH = "daysSupplyValidHigh"
+FIELD_DAYS_SUPPLY_LOW = "daysSupplyValidLow"
+FIELD_DISPENSE = "dispense"
+FIELD_DISPENSE_DATE = "dispenseDate"
+FIELD_DISPENSE_TIME = "dispenseTime"
+FIELD_DISPENSE_CLAIM_MSG_REF = "dispenseClaimMsgRef"
+FIELD_DISPENSE_HISTORY = "dispenseHistory"
+FIELD_DISPENSE_WINDOW_HIGH_DATE = "dispenseWindowHighDate"
+FIELD_DISPENSE_WINDOW_LOW_DATE = "dispenseWindowLowDate"
+FIELD_DISPENSING_ORGANIZATION = "dispensingOrganization"
+FIELD_EXPIRY_DATE = "expiryDate"
+FIELD_EXPIRY_PERIOD = "expiryPeriod"
+FIELD_FORMATTED_EXPIRY_DATE = "formattedExpiryDate"
+FIELD_HANDLE_TIME = "handleTime"
+FIELD_HIGHER_AGE_LIMIT = "higherAgeLimit"
+FIELD_HISTORIC_CLAIM_GUIDS = "historicClaimGUIDs"
+FIELD_HISTORIC_CLAIMS = "historicClaims"
+FIELD_HISTORIC_DISPENSE_CLAIM_MSG_REF = "historicDispenseClaimMsgRef"
+FIELD_HL7 = "hl7"
+FIELD_ID = "ID"
+FIELD_INDEXES = "indexes"
+FIELD_INSTANCES = "instances"
+FIELD_INSTANCE_NUMBER = "instanceNumber"
+FIELD_ISSUE = "issue"
+FIELD_LAST_DISPENSE_DATE = "lastDispenseDate"
+FIELD_LAST_DISPENSE_NOTIFICATION_GUID = "lastDispenseNotificationGuid"
+FIELD_LAST_DISPENSE_NOTIFICATION_MSG_REF = "lastDispenseNotificationMsgRef"
+FIELD_LAST_DISPENSE_STATUS = "lastDispenseStatus"
+FIELD_LOWER_AGE_LIMIT = "lowerAgeLimit"
+FIELD_LINE_ITEMS = "lineItems"
+FIELD_MAX_REPEATS = "maxRepeats"
+FIELD_NEXT_ACTIVITY = "nextActivity"
+FIELD_NHS_NUMBER = "nhsNumber"
+FIELD_NOMINATION = "nomination"
+FIELD_NOMINATED = "nominated"
+FIELD_NOMINATED_DOWNLOAD_DATE = "nominatedDownloadDate"
+FIELD_NOMINATED_PERFORMER = "nominatedPerformer"
+FIELD_NOMINATED_PERFORMER_TYPE = "nominatedPerformerType"
+FIELD_NOMINATION_HISTORY = "nominationHistory"
+FIELD_ORDER = "order"
+FIELD_PATIENT = "patient"
+FIELD_PENDING_CANCELLATIONS = "pendingCancellations"
+FIELD_PRESCRIBING_ORG = "prescribingOrganization"
+FIELD_PRESCRIBING_SITE_TEST_STATUS = "prescribingSiteTestStatus"
+FIELD_PRESCRIPTION = "prescription"
+FIELD_PRESCRIPTION_ID = "prescriptionID"
+FIELD_PRESCRIPTION_MSG_REF = "prescriptionMsgRef"
+FIELD_PRESCRIPTION_PRESENT = "prescriptionPresent"
+FIELD_PRESCRIPTION_REPEAT_HIGH = "prescriptionRepeatHigh"
+FIELD_PRESCRIPTION_STATUS = "prescriptionStatus"
+FIELD_PRESCRIPTION_TIME = "prescriptionTime"
+FIELD_PRESCRIPTION_DATE = "prescriptionDate"
+# NOTE: be aware of the two similar named fields here:
+# - treatment type describes whether the prescription is acute, repeat prescribe or
+#   repeat dispense
+# - prescription type seems to indicate where the prescription is from, eg. GP, nurse
+#   hospital, dental, etc. - see MIM 4.2 for details (vocabulary "PrescriptionType")
+# Confusingly, they both accept similar values, ie. numeric codes of the form "000X",
+# so take care when examining prescription records!
+FIELD_PRESCRIPTION_TREATMENT_TYPE = "prescriptionTreatmentType"
+FIELD_PRESCRIPTION_TYPE = "prescriptionType"
+FIELD_PREVIOUS_STATUS = "previousStatus"
+FIELD_REASONS = "Reasons"
+FIELD_RELEASE = "release"
+FIELD_RELEASE_DATE = "releaseDate"
+FIELD_RELEASE_REQUEST_MGS_REF = "releaseRequestMsgRef"
+FIELD_RELEASE_DISPENSER_DETAILS = "releaseDispenserDetails"
+FIELD_RELEASE_VERSION = "releaseVersion"
+FIELD_SCN = "SCN"
+FIELD_SIGNED_TIME = "signedTime"
+FIELD_STATUS = "status"
+FIELD_UNSUCCESSFUL_CANCELLATIONS = "unsuccessfulCancellations"
+FIELD_ACTIVITY = "activity"
+FIELD_DATE = "date"
+FIELD_CAPITAL_D_DATE = "Date"
+FIELD_TIMESTAMP = "Timestamp"
+
+FIELD_PRESCRIPTION_STATUS_DISPLAY_NAME = "prescriptionStatusDisplayName"
+FIELD_PRESCRIPTION_CURRENT_INSTANCE = "prescriptionCurrentInstance"
+FIELD_PRESCRIPTION_MAX_REPEATS = "prescriptionMaxRepeats"
+FIELD_PREVIOUS_ISSUE_DATE = "priorPreviousIssueDate"
+
+# Treatment type constants
+TREATMENT_TYPE_ACUTE = "0001"
+TREATMENT_TYPE_REPEAT_PRESCRIBE = "0002"
+TREATMENT_TYPE_REPEAT_DISPENSE = "0003"
+
+# Default values
+DEFAULT_DAYSSUPPLY = 28
+
+# Field groups for different sections of prescription records
+PATIENT_DETAILS = [
+    FIELD_NHS_NUMBER,
+    FIELD_BIRTH_TIME,
+    FIELD_LOWER_AGE_LIMIT,
+    FIELD_HIGHER_AGE_LIMIT,
+    FIELD_PREFIX,
+    FIELD_SUFFIX,
+    FIELD_GIVEN,
+    FIELD_FAMILY,
+]
+
+PRESCRIPTION_DETAILS = [
+    FIELD_PRESCRIPTION_ID,
+    FIELD_PRESCRIPTION_MSG_REF,
+    FIELD_PRESCRIPTION_TREATMENT_TYPE,
+    FIELD_PRESCRIPTION_TYPE,
+    FIELD_PRESCRIPTION_TIME,
+    FIELD_PRESCRIBING_ORG,
+    FIELD_SIGNED_TIME,
+    FIELD_DAYS_SUPPLY,
+    FIELD_MAX_REPEATS,
+    FIELD_PENDING_CANCELLATIONS,
+    FIELD_UNSUCCESSFUL_CANCELLATIONS,
+    FIELD_CURRENT_INSTANCE,
+    FIELD_PRESCRIPTION_PRESENT,
+    FIELD_HL7,
+    FIELD_SCN,
+]
+
+NOMINATION_DETAILS = [
+    FIELD_NOMINATED,
+    FIELD_NOMINATED_PERFORMER,
+    FIELD_NOMINATED_PERFORMER_TYPE,
+    FIELD_NOMINATION_HISTORY,
+]
+
+INSTANCE_DETAILS = [
+    FIELD_NEXT_ACTIVITY,
+    FIELD_INSTANCE_NUMBER,
+    FIELD_DISPENSE_WINDOW_LOW_DATE,
+    FIELD_DISPENSE_WINDOW_HIGH_DATE,
+    FIELD_PREVIOUS_ISSUE_DATE,
+    FIELD_COMPLETION_DATE,
+    FIELD_NOMINATED_DOWNLOAD_DATE,
+    FIELD_RELEASE_DATE,
+    FIELD_RELEASE_REQUEST_MGS_REF,
+    FIELD_EXPIRY_DATE,
+    FIELD_DISPENSE_HISTORY,
+    FIELD_PRESCRIPTION_STATUS,
+    FIELD_PREVIOUS_STATUS,
+    FIELD_LAST_DISPENSE_STATUS,
+]
+
+DISPENSE_DETAILS = [
+    FIELD_DISPENSING_ORGANIZATION,
+    FIELD_LAST_DISPENSE_NOTIFICATION_GUID,
+    FIELD_LAST_DISPENSE_NOTIFICATION_MSG_REF,
+    FIELD_LAST_DISPENSE_DATE,
+]
+
+LINE_ITEM_DETAILS = [
+    FIELD_STATUS,
+    FIELD_ID,
+    FIELD_PREVIOUS_STATUS,
+    FIELD_ORDER,
+    FIELD_MAX_REPEATS,
+]
+
+CLAIM_DETAILS = [
+    FIELD_CLAIM_GUID,
+    FIELD_BATCH_ID,
+    FIELD_BATCH_NUMBER,
+    FIELD_DISPENSE_CLAIM_MSG_REF,
+    FIELD_HISTORIC_DISPENSE_CLAIM_MSG_REF,
+    FIELD_CLAIM_RECEIVED_DATE,
+    FIELD_CLAIM_STATUS,
+    FIELD_CLAIM_REBUILD,
+    FIELD_HISTORIC_CLAIM_GUIDS,
+]
+
+INSTANCE_CANCELLATION_DETAILS = [
+    FIELD_CANCELLATION_ID,
+    FIELD_AGENT_ORGANIZATION,
+    FIELD_CANCELLATION_TARGET,
+    FIELD_CANCELLATION_TIME,
+    FIELD_CANCELLATION_MSG_REF,
+    FIELD_CANCEL_LINE_ITEM_REF,
+    FIELD_REASONS,
+    FIELD_CANCELLATION_MSG_REF,
+]
+
+# Prescription ID lengths for different versions
+R1_PRESCRIPTIONID_LENGTHS = [36, 37]
+R2_PRESCRIPTIONID_LENGTHS = [19, 20]
+
+R1_VERSION = "R1"
+R2_VERSION = "R2"
+
+# Other constants
+NOMINATED_DOWNLOAD_LEAD_DAYS = 7
+
+_YOUNG_AGE_EXEMPTION = 16
+_OLD_AGE_EXEMPTION = 60
+
+# Activity constants
+NEXTACTIVITY_EXPIRE = "expire"
+NEXTACTIVITY_CREATENOCLAIM = "createNoClaim"
+NEXTACTIVITY_DELETE = "delete"
+NEXTACTIVITY_PURGE = "purge"
+NEXTACTIVITY_READY = "ready"
+ACTIVITY_NOMINATED_DOWNLOAD = "nominated-download"
+BATCH_STATUS_AVAILABLE = "Available"
+BATCH_STATUS_ALL = "All"
+BATCH_STATUS_CURRENT = "Current"
+ADMIN_ACTION_RESET_NAD = "resetNAD"
+SPECIAL_DISPENSE_RESET = "specialDispenseReset"
+SPECIAL_RESET_CURRENT_INSTANCE = "specialCurrentInstanceReset"
+SPECIAL_APPLY_PENDING_CANCELLATIONS = "specialApplyPendingCancellations"
+
+# Update detail text mapping
+UPDATE_DETAIL_TEXT = {
+    NEXTACTIVITY_EXPIRE: "Batch update for Prescription Expiry",
+    NEXTACTIVITY_CREATENOCLAIM: "Batch create no claim",
+    NEXTACTIVITY_DELETE: "Batch prescription deletion",
+    NEXTACTIVITY_READY: "Batch make prescription available for download",
+    ACTIVITY_NOMINATED_DOWNLOAD: "Batch make prescription available for nominated download",
+    ADMIN_ACTION_RESET_NAD: "Administrative reset of Next Activity Date",
+    SPECIAL_DISPENSE_RESET: "Administrative hard-reset return to Spine",
+    SPECIAL_RESET_CURRENT_INSTANCE: "Administrative reset current issue number",
+    SPECIAL_APPLY_PENDING_CANCELLATIONS: "Administrative apply all pending cancellations",
+    NEXTACTIVITY_PURGE: "Batch prescription purge",
+}
+
+# Activity lookup mapping
+ACTIVITY_LOOKUP = {}
+ACTIVITY_LOOKUP[NEXTACTIVITY_EXPIRE] = NEXTACTIVITY_EXPIRE
+ACTIVITY_LOOKUP[NEXTACTIVITY_CREATENOCLAIM] = NEXTACTIVITY_CREATENOCLAIM
+ACTIVITY_LOOKUP[NEXTACTIVITY_DELETE] = NEXTACTIVITY_DELETE
+ACTIVITY_LOOKUP[NEXTACTIVITY_PURGE] = NEXTACTIVITY_PURGE
+ACTIVITY_LOOKUP[ACTIVITY_NOMINATED_DOWNLOAD] = NEXTACTIVITY_READY
+ACTIVITY_LOOKUP[ADMIN_ACTION_RESET_NAD] = ADMIN_ACTION_RESET_NAD
+ACTIVITY_LOOKUP[SPECIAL_DISPENSE_RESET] = SPECIAL_DISPENSE_RESET
+ACTIVITY_LOOKUP[SPECIAL_RESET_CURRENT_INSTANCE] = SPECIAL_RESET_CURRENT_INSTANCE
+ACTIVITY_LOOKUP[SPECIAL_APPLY_PENDING_CANCELLATIONS] = SPECIAL_APPLY_PENDING_CANCELLATIONS
+
+USER_IMPACTING_ACTIVITY = [NEXTACTIVITY_READY]
+
+FIELDS_DOCUMENTS = "documents"
+FIELDS_SCN = PrescriptionsChangeLogProcessor.RECORD_SCN_REF
+
+SCN_MAX = 512
+# Limit beyond which we should stop updating the change log as almost certainly in an
+# uncontrolled loop - and updating the change log may lead to the record being of an
+# unbounded size

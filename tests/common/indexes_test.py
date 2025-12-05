@@ -7,12 +7,12 @@ from dateutil.relativedelta import relativedelta
 from freezegun import freeze_time
 
 from eps_spine_shared.common.indexes import EpsIndexFactory
-from eps_spine_shared.common.prescription_record import (
-    PrescriptionTreatmentType,
+from eps_spine_shared.common.prescription.records import (
     RepeatDispenseRecord,
     RepeatPrescribeRecord,
     SinglePrescribeRecord,
 )
+from eps_spine_shared.common.prescription.types import PrescriptionTreatmentType
 from tests.mock_logger import MockLogObject
 
 

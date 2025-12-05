@@ -15,7 +15,7 @@ from eps_spine_shared.common.dynamodb_common import (
     ProjectedAttribute,
     SortKey,
 )
-from eps_spine_shared.common.prescription_record import PrescriptionStatus
+from eps_spine_shared.common.prescription.records import PrescriptionStatus
 from eps_spine_shared.nhsfundamentals.timeutilities import TimeFormats
 
 

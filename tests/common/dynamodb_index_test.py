@@ -21,7 +21,7 @@ from eps_spine_shared.common.dynamodb_common import (
     ProjectedAttribute,
     SortKey,
 )
-from eps_spine_shared.common.prescription_record import (
+from eps_spine_shared.common.prescription.records import (
     PrescriptionRecord,
     PrescriptionStatus,
 )
