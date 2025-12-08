@@ -1,1 +1,6 @@
+# GitHub workflows
 id-token: write
+
+# Test data
+"agentSystemSDS1CodeSystem": *
+"cancellationResponseCodeSystem": *

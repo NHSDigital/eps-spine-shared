@@ -1,0 +1,311 @@
+{
+    "documents": [
+        "20240415101552901994_B4D632_208005743390136970170184304764716375459",
+        "20240415101553071705_C24486_208005743390136970170184304764716375459"
+    ],
+    "patient": {
+        "nhsNumber": "9912003489",
+        "birthTime": "19800420",
+        "lowerAgeLimit": false,
+        "higherAgeLimit": false,
+        "prefix": "MR",
+        "suffix": "",
+        "given": "DONOTUSE",
+        "family": "XXTESTPATIENTTRCEONE"
+    },
+    "changeLog": {
+        "23C1BC7A-FB11-11EE-8CEB-000C297C24E7": {
+            "Timestamp": "20240415101552",
+            "SCN": 2,
+            "InternalID": "20240415101552901994_B4D632_208005743390136970170184304764716375459",
+            "Source XSLT": "requestSuccessResponse_MCAI_MT040101UK03.xsl",
+            "Response Parameters": {
+                "versionCode": "\"V3NPfIT4.2.00\"",
+                "responseAction": "\"MCCI_IN010000UK13\"",
+                "messageID": "\"5B808FF1-B331-48AD-B7EF-853F2C424A3E\"",
+                "refToEventID": "\"23C1BC7A-FB11-11EE-8CEB-000C297C24E7\"",
+                "refToMessageID": "\"23C1BC7A-FB11-11EE-8CEB-000C297C24E7\"",
+                "timeStampAck": "\"20240415T101552.901\"",
+                "timeStampSent": "\"20240415101552\"",
+                "fromASID": "\"990101234567\"",
+                "toASID": "\"992101234567\"",
+                "fromPartyKey": "\"TESTGEN-201324\"",
+                "toPartyKey": "\"YEA-0000806\"",
+                "serviceASID": "\"618729461037\"",
+                "responseText": "\"Prescription upload successful\"",
+                "prescriptionID": "\"23C1BC-Z75FB1-11EE84\""
+            },
+            "interactionID": "PORX_IN020101UK31",
+            "agentSystemSDS": "992101234567",
+            "agentPerson": "G8448879",
+            "agentPersonOrgCode": "Z99901",
+            "timePreparedForUpdate": "20240415101552",
+            "fromStatus": false,
+            "toStatus": "0001",
+            "instance": "1",
+            "instanceFromStatus": false,
+            "instanceToStatus": "0001",
+            "agentRoleProfileCodeId": "103142999989",
+            "agentPersonRole": "NotProvided",
+            "preChangeStatusDict": {},
+            "postChangeStatusDict": {
+                "issue1": {
+                    "prescription": "0001",
+                    "lineItems": {
+                        "1": "0007",
+                        "2": "0007",
+                        "3": "0007"
+                    }
+                }
+            },
+            "issuesAlteredByChange": [
+                "1"
+            ],
+            "preChangeCurrentIssue": null,
+            "postChangeCurrentIssue": 1
+        },
+        "23C1BC7F-FB11-11EE-8CEB-000C297C24E7": {
+            "Timestamp": "20240415101553",
+            "SCN": 3,
+            "InternalID": "20240415101553071705_C24486_208005743390136970170184304764716375459",
+            "Source XSLT": [
+                "generateHL7MCCIDetectedIssue.xsl",
+                "cancellationRequest_to_cancellationResponse.xsl"
+            ],
+            "Response Parameters": {
+                "cancellationResponseText": "\"Prescription/item was cancelled\"",
+                "cancellationResponseCode": "\"0001\"",
+                "cancellationResponseCodeSystem": "\"2.16.840.1.113883.2.1.3.2.4.17.19\"",
+                "messageID": "\"899757E4-AE44-4B41-B086-A2BA1AB941CB\"",
+                "refToEventID": "\"23C1BC7F-FB11-11EE-8CEB-000C297C24E7\"",
+                "refToMessageID": "\"23C1BC7F-FB11-11EE-8CEB-000C297C24E7\"",
+                "timeStampAck": "\"20240415T101553.071\"",
+                "timeStampSent": "\"20240415101553\"",
+                "fromASID": "\"990101234567\"",
+                "toASID": "\"992101234567\"",
+                "serviceASID": "\"618729461037\""
+            },
+            "interactionID": "PORX_IN050102UK32",
+            "agentSystemSDS": "992101234567",
+            "agentPerson": null,
+            "agentPersonOrgCode": "Z99901",
+            "timePreparedForUpdate": "20240415101553",
+            "fromStatus": false,
+            "toStatus": "0001",
+            "instance": "1",
+            "instanceFromStatus": false,
+            "instanceToStatus": "0001",
+            "agentRoleProfileCodeId": "103142999989",
+            "agentPersonRole": "NotProvided",
+            "preChangeStatusDict": {
+                "issue1": {
+                    "prescription": "0001",
+                    "lineItems": {
+                        "1": "0007",
+                        "2": "0007",
+                        "3": "0007"
+                    }
+                }
+            },
+            "postChangeStatusDict": {
+                "issue1": {
+                    "prescription": "0001",
+                    "lineItems": {
+                        "1": "0005",
+                        "2": "0007",
+                        "3": "0007"
+                    }
+                }
+            },
+            "issuesAlteredByChange": [
+                "1"
+            ],
+            "preChangeCurrentIssue": "1",
+            "postChangeCurrentIssue": 1
+        }
+    },
+    "indexes": {
+        "prescribingSiteStatus_bin": [
+            "Z99901_0001"
+        ],
+        "dispensingSiteStatus_bin": [
+            "FA666_0001"
+        ],
+        "nomPharmStatus_bin": [
+            "FA666_0001"
+        ],
+        "nextActivityNAD_bin": [
+            "expire_20241015"
+        ],
+        "nhsNumber_bin": [
+            "9912003489"
+        ],
+        "nhsNumberDate_bin": [
+            "9912003489|20240415101552|R2|0001"
+        ],
+        "nhsNumberPrescriberDate_bin": [
+            "9912003489|Z99901|20240415101552|R2|0001"
+        ],
+        "nhsNumberPrescDispDate_bin": [
+            "9912003489|Z99901|FA666|20240415101552|R2|0001"
+        ],
+        "nhsNumberDispenserDate_bin": [
+            "9912003489|FA666|20240415101552|R2|0001"
+        ],
+        "prescriberDate_bin": [
+            "Z99901|20240415101552|R2|0001"
+        ],
+        "prescDispDate_bin": [
+            "Z99901|FA666|20240415101552|R2|0001"
+        ],
+        "dispenserDate_bin": [
+            "FA666|20240415101552|R2|0001"
+        ],
+        "delta_bin": [
+            "20240415101553|2"
+        ]
+    },
+    "instances": {
+        "1": {
+            "nextActivity": {
+                "activity": "expire",
+                "date": "20241015"
+            },
+            "instanceNumber": "1",
+            "dispenseWindowLowDate": "20240415",
+            "dispenseWindowHighDate": "20250415",
+            "priorPreviousIssueDate": false,
+            "completionDate": false,
+            "nominatedDownloadDate": false,
+            "releaseDate": false,
+            "releaseRequestMsgRef": false,
+            "expiryDate": "20241015",
+            "dispenseHistory": {},
+            "prescriptionStatus": "0001",
+            "previousStatus": false,
+            "lastDispenseStatus": false,
+            "lineItems": [
+                {
+                    "status": "0005",
+                    "ID": "02ED7776-21CD-4E7B-AC9D-D1DBFEE7B8CF",
+                    "previousStatus": "0007",
+                    "order": 1,
+                    "maxRepeats": false
+                },
+                {
+                    "status": "0007",
+                    "ID": "45D5FB11-D793-4D51-9ADD-95E0F54D2786",
+                    "previousStatus": false,
+                    "order": 2,
+                    "maxRepeats": false
+                },
+                {
+                    "status": "0007",
+                    "ID": "BC7A2174-72D6-4C95-8B2D-3E1B63DF90BD",
+                    "previousStatus": false,
+                    "order": 3,
+                    "maxRepeats": false
+                }
+            ],
+            "dispense": {
+                "dispensingOrganization": false,
+                "lastDispenseNotificationGuid": false,
+                "lastDispenseNotificationMsgRef": false,
+                "lastDispenseDate": false
+            },
+            "claim": {
+                "claimGUID": false,
+                "batchID": false,
+                "batchNumber": false,
+                "dispenseClaimMsgRef": false,
+                "historicDispenseClaimMsgRef": false,
+                "claimReceivedDate": false,
+                "claimStatus": false,
+                "claimRebuild": false,
+                "historicClaimGUIDs": false
+            },
+            "cancellations": [
+                {
+                    "cancellationID": "23C1BC7F-FB11-11EE-8CEB-000C297C24E7",
+                    "agentOrganization": "Z99901",
+                    "cancellationTarget": "LineItem",
+                    "cancellationTime": "20240415101553",
+                    "cancellationMsgRef": "20240415101553071705_C24486_208005743390136970170184304764716375459",
+                    "cancelLineItemRef": "02ED7776-21CD-4E7B-AC9D-D1DBFEE7B8CF",
+                    "Reasons": [
+                        "0002: Clinical contra-indication \u00e9"
+                    ],
+                    "hl7": {
+                        "interactionID": "PORX_IN050102UK32",
+                        "messageID": "23C1BC7F-FB11-11EE-8CEB-000C297C24E7",
+                        "eventID": "23C1BC7F-FB11-11EE-8CEB-000C297C24E7",
+                        "messageVersion": "V3NPfIT4.2.00",
+                        "toASID": "990101234567",
+                        "fromASID": "992101234567",
+                        "agentPersonSDSRole": "S0080:G0450:R5080",
+                        "agentPersonSDSPerson": null,
+                        "agentPersonSDSTargetRole": null,
+                        "agentPersonSDSCodeSystem": null,
+                        "agentPersonSDSRoleCodeSystem": null,
+                        "agentSystemSDS1": "992101234567",
+                        "agentSystemSDS1CodeSystem": "1.2.826.0.1285.0.2.0.107",
+                        "agentSystemSDS2": null,
+                        "agentPersonOrgCode": null,
+                        "querySize": null,
+                        "fileName": null,
+                        "originalFileName": null,
+                        "orgId": null,
+                        "issueWarning": null,
+                        "agentPersonSDSRoleProfileId": "103142999989"
+                    }
+                }
+            ]
+        }
+    },
+    "SCN": 3,
+    "prescription": {
+        "prescriptionID": "23C1BC-Z75FB1-11EE84",
+        "prescriptionMsgRef": "20240415101552901994_B4D632_208005743390136970170184304764716375459",
+        "prescriptionTreatmentType": "0001",
+        "prescriptionType": "0001",
+        "prescriptionTime": "20240415101552",
+        "prescribingOrganization": "Z99901",
+        "signedTime": "20120108210751",
+        "daysSupply": 28,
+        "maxRepeats": null,
+        "pendingCancellations": false,
+        "unsuccessfulCancellations": false,
+        "currentInstance": "1",
+        "prescriptionPresent": true,
+        "hl7": {
+            "interactionID": "PORX_IN020101UK31",
+            "messageID": "23C1BC7A-FB11-11EE-8CEB-000C297C24E7",
+            "eventID": "23C1BC7A-FB11-11EE-8CEB-000C297C24E7",
+            "messageVersion": "V3NPfIT4.2.00",
+            "toASID": "990101234567",
+            "fromASID": "992101234567",
+            "agentPersonSDSRole": "S0080:G0450:R5080",
+            "agentPersonSDSPerson": "G8448879",
+            "agentPersonSDSTargetRole": null,
+            "agentPersonSDSCodeSystem": null,
+            "agentPersonSDSRoleCodeSystem": null,
+            "agentSystemSDS1": "992101234567",
+            "agentSystemSDS1CodeSystem": "1.2.826.0.1285.0.2.0.107",
+            "agentSystemSDS2": null,
+            "agentPersonOrgCode": null,
+            "querySize": null,
+            "fileName": null,
+            "originalFileName": null,
+            "orgId": null,
+            "issueWarning": null,
+            "agentPersonSDSRoleProfileId": "103142999989"
+        },
+        "SCN": false
+    },
+    "nomination": {
+        "nominated": true,
+        "nominatedPerformer": "FA666",
+        "nominatedPerformerType": "P1",
+        "nominationHistory": []
+    }
+}

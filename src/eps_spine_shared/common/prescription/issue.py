@@ -82,7 +82,7 @@ class PrescriptionIssue(object):
             self.update_status(newStatus, parent_prescription)
 
             if currentStatus in PrescriptionStatus.UNACTIONED_STATES:
-                parent_prescription.logObject.writeLog(
+                parent_prescription.logObject.write_log(
                     "EPS0616",
                     None,
                     {
@@ -97,7 +97,7 @@ class PrescriptionIssue(object):
         for lineItem in self.line_items:
             lineItem.expire(parent_prescription)
 
-        parent_prescription.logObject.writeLog(
+        parent_prescription.logObject.write_log(
             "EPS0403",
             None,
             {

@@ -4,6 +4,7 @@ from datetime import datetime, timedelta
 from unittest.case import TestCase
 from unittest.mock import MagicMock, Mock
 
+from eps_spine_shared.common.prescription import fields
 from eps_spine_shared.common.prescription.record import PrescriptionRecord
 from eps_spine_shared.common.prescription.repeat_dispense import RepeatDispenseRecord
 from eps_spine_shared.common.prescription.repeat_prescribe import RepeatPrescribeRecord
@@ -14,7 +15,7 @@ from eps_spine_shared.nhsfundamentals.timeutilities import TimeFormats
 from tests.mock_logger import MockLogObject
 
 
-def loadTestExampleJson(mock_log_object, filename):
+def load_test_example_json(mock_log_object, filename):
     """
     Load prescription data from JSON files in the test resources directory.
 
@@ -22,25 +23,25 @@ def loadTestExampleJson(mock_log_object, filename):
     :rtype: PrescriptionRecord
     """
     # load the JSON dict
-    testDirPath = os.path.dirname(__file__)
-    fullPath = os.path.join(testDirPath, "resources", filename)
-    with open(fullPath) as jsonFile:
-        prescriptionDict = json.load(jsonFile)
-        jsonFile.close()
+    test_dir_path = os.path.dirname(__file__)
+    full_path = os.path.join(test_dir_path, "resources", filename)
+    with open(full_path) as json_file:
+        prescription_dict = json.load(json_file)
+        json_file.close()
 
     # wrap it in a PrescriptionRecord - need to create the
     # appropriate subclass based on treatment type
-    treatmentType = prescriptionDict["prescription"]["prescriptionTreatmentType"]
-    if treatmentType == PrescriptionTreatmentType.ACUTE_PRESCRIBING:
+    treatment_type = prescription_dict["prescription"]["prescriptionTreatmentType"]
+    if treatment_type == PrescriptionTreatmentType.ACUTE_PRESCRIBING:
         prescription = SinglePrescribeRecord(mock_log_object, "test")
-    elif treatmentType == PrescriptionTreatmentType.REPEAT_PRESCRIBING:
+    elif treatment_type == PrescriptionTreatmentType.REPEAT_PRESCRIBING:
         prescription = RepeatPrescribeRecord(mock_log_object, "test")
-    elif treatmentType == PrescriptionTreatmentType.REPEAT_DISPENSING:
+    elif treatment_type == PrescriptionTreatmentType.REPEAT_DISPENSING:
         prescription = RepeatDispenseRecord(mock_log_object, "test")
     else:
-        raise ValueError("Unknown treatment type %s" % str(treatmentType))
+        raise ValueError("Unknown treatment type %s" % str(treatment_type))
 
-    prescription.create_record_from_store(prescriptionDict)
+    prescription.create_record_from_store(prescription_dict)
 
     return prescription
 
@@ -52,7 +53,7 @@ class MockInteractionWorker(object):
 
     def __init__(self):
         mock = Mock()
-        attrs = {"writeLog.return_value": None}
+        attrs = {"write_log.return_value": None}
         mock.configure_mock(**attrs)
         self.logObject = mock
 
@@ -67,11 +68,11 @@ class PrescriptionRecordTest(TestCase):
     def setUp(self):
         self.mock_log_object = MagicMock()
 
-    def testBasicProperties(self):
+    def test_basic_properties(self):
         """
         Test basic property access of a record loaded from JSON
         """
-        prescription = loadTestExampleJson(self.mock_log_object, "7D9625-Z72BF2-11E3A.json")
+        prescription = load_test_example_json(self.mock_log_object, "7D9625-Z72BF2-11E3A.json")
 
         self.assertEqual(prescription.id, "7D9625-Z72BF2-11E3AC")
         self.assertEqual(prescription.max_repeats, 3)
@@ -80,7 +81,7 @@ class PrescriptionRecordTest(TestCase):
         """
         Test that we can access the current issue
         """
-        prescription = loadTestExampleJson(self.mock_log_object, "7D9625-Z72BF2-11E3A.json")
+        prescription = load_test_example_json(self.mock_log_object, "7D9625-Z72BF2-11E3A.json")
 
         self.assertEqual(prescription.current_issue_number, 3)
         self.assertEqual(prescription.current_issue.number, 3)
@@ -92,27 +93,27 @@ class PrescriptionRecordTest(TestCase):
         self.assertEqual(prescription.current_issue.number, 1)
         self.assertEqual(prescription.current_issue.status, "0009")
 
-    def testIssues(self):
+    def test_issues(self):
         """
         Test that we can access the prescription issues
         """
-        prescription = loadTestExampleJson(self.mock_log_object, "7D9625-Z72BF2-11E3A.json")
+        prescription = load_test_example_json(self.mock_log_object, "7D9625-Z72BF2-11E3A.json")
 
-        self.assertEqual(prescription.issueNumbers, [1, 2, 3])
+        self.assertEqual(prescription.issue_numbers, [1, 2, 3])
 
         issues = prescription.issues
         self.assertEqual(len(issues), 3)
 
-        issueNumbers = [issue.number for issue in issues]
-        self.assertEqual(issueNumbers, [1, 2, 3])
+        issue_numbers = [issue.number for issue in issues]
+        self.assertEqual(issue_numbers, [1, 2, 3])
 
-    def testClaims(self):
+    def test_claims(self):
         """
         Test that we can access the prescription issue claims
         """
-        prescription = loadTestExampleJson(self.mock_log_object, "7D9625-Z72BF2-11E3A.json")
+        prescription = load_test_example_json(self.mock_log_object, "7D9625-Z72BF2-11E3A.json")
 
-        issue = prescription.getIssue(1)
+        issue = prescription.get_issue(1)
         claim = issue.claim
 
         self.assertEqual(claim.received_date_str, "20140408")
@@ -121,11 +122,11 @@ class PrescriptionRecordTest(TestCase):
         claim.received_date_str = "20131225"
         self.assertEqual(claim.received_date_str, "20131225")
 
-    def testFindNextFutureIssueNumber_futureIssueAvailable(self):
+    def test_find_next_future_issue_number_future_issue_available(self):
         """
         Test that a future issue can be found in a prescription.
         """
-        prescription = loadTestExampleJson(self.mock_log_object, "DD0180-ZBED5C-11E3A.json")
+        prescription = load_test_example_json(self.mock_log_object, "DD0180-ZBED5C-11E3A.json")
 
         # check the future issue can be found
         self.assertEqual(prescription._find_next_future_issue_number("1"), "2")
@@ -134,11 +135,11 @@ class PrescriptionRecordTest(TestCase):
         self.assertEqual(prescription.max_repeats, 2)
         self.assertEqual(prescription._find_next_future_issue_number("2"), None)
 
-    def testFindNextFutureIssueNumber_issuesAlreadyDispensed(self):
+    def test_find_next_future_issue_number_issues_already_dispensed(self):
         """
         Test that no future issues can be found if they're all dispensed.
         """
-        prescription = loadTestExampleJson(self.mock_log_object, "7D9625-Z72BF2-11E3A.json")
+        prescription = load_test_example_json(self.mock_log_object, "7D9625-Z72BF2-11E3A.json")
 
         # chekc that dispensed issues can not be found
         self.assertEqual(prescription._find_next_future_issue_number("1"), None)
@@ -148,133 +149,133 @@ class PrescriptionRecordTest(TestCase):
         self.assertEqual(prescription.max_repeats, 3)
         self.assertEqual(prescription._find_next_future_issue_number("3"), None)
 
-    def testGetIssueNumbersInRange(self):
+    def test_get_issue_numbers_in_range(self):
         """
         Test that we can correctly retrieve ranges of issue numbers.
         """
-        prescription = loadTestExampleJson(self.mock_log_object, "7D9625-Z72BF2-11E3A.json")
+        prescription = load_test_example_json(self.mock_log_object, "7D9625-Z72BF2-11E3A.json")
 
-        self.assertEqual(prescription.issueNumbers, [1, 2, 3])
+        self.assertEqual(prescription.issue_numbers, [1, 2, 3])
 
         # test lower bound only
-        self.assertEqual(prescription.getIssueNumbersInRange(0, None), [1, 2, 3])
-        self.assertEqual(prescription.getIssueNumbersInRange(1, None), [1, 2, 3])
-        self.assertEqual(prescription.getIssueNumbersInRange(2, None), [2, 3])
-        self.assertEqual(prescription.getIssueNumbersInRange(3, None), [3])
-        self.assertEqual(prescription.getIssueNumbersInRange(4, None), [])
+        self.assertEqual(prescription.get_issue_numbers_in_range(0, None), [1, 2, 3])
+        self.assertEqual(prescription.get_issue_numbers_in_range(1, None), [1, 2, 3])
+        self.assertEqual(prescription.get_issue_numbers_in_range(2, None), [2, 3])
+        self.assertEqual(prescription.get_issue_numbers_in_range(3, None), [3])
+        self.assertEqual(prescription.get_issue_numbers_in_range(4, None), [])
 
         # test upper bound only
-        self.assertEqual(prescription.getIssueNumbersInRange(None, 4), [1, 2, 3])
-        self.assertEqual(prescription.getIssueNumbersInRange(None, 3), [1, 2, 3])
-        self.assertEqual(prescription.getIssueNumbersInRange(None, 2), [1, 2])
-        self.assertEqual(prescription.getIssueNumbersInRange(None, 1), [1])
-        self.assertEqual(prescription.getIssueNumbersInRange(None, 0), [])
+        self.assertEqual(prescription.get_issue_numbers_in_range(None, 4), [1, 2, 3])
+        self.assertEqual(prescription.get_issue_numbers_in_range(None, 3), [1, 2, 3])
+        self.assertEqual(prescription.get_issue_numbers_in_range(None, 2), [1, 2])
+        self.assertEqual(prescription.get_issue_numbers_in_range(None, 1), [1])
+        self.assertEqual(prescription.get_issue_numbers_in_range(None, 0), [])
 
         # test both bounds
-        self.assertEqual(prescription.getIssueNumbersInRange(0, 4), [1, 2, 3])
-        self.assertEqual(prescription.getIssueNumbersInRange(1, 3), [1, 2, 3])
-        self.assertEqual(prescription.getIssueNumbersInRange(2, 3), [2, 3])
-        self.assertEqual(prescription.getIssueNumbersInRange(2, 2), [2])
-        self.assertEqual(prescription.getIssueNumbersInRange(2, 1), [])
+        self.assertEqual(prescription.get_issue_numbers_in_range(0, 4), [1, 2, 3])
+        self.assertEqual(prescription.get_issue_numbers_in_range(1, 3), [1, 2, 3])
+        self.assertEqual(prescription.get_issue_numbers_in_range(2, 3), [2, 3])
+        self.assertEqual(prescription.get_issue_numbers_in_range(2, 2), [2])
+        self.assertEqual(prescription.get_issue_numbers_in_range(2, 1), [])
 
         # test no bounds
-        self.assertEqual(prescription.getIssueNumbersInRange(None, None), [1, 2, 3])
-        self.assertEqual(prescription.getIssueNumbersInRange(), [1, 2, 3])
+        self.assertEqual(prescription.get_issue_numbers_in_range(None, None), [1, 2, 3])
+        self.assertEqual(prescription.get_issue_numbers_in_range(), [1, 2, 3])
 
     def test_missing_issue_numbers(self):
         """
         Test that we can deal correctly with prescriptions with missing instances.
         """
         # this 12-issue prescription has issues 1 and 2 missing because of migration
-        prescription = loadTestExampleJson(self.mock_log_object, "50EE48-B83002-490F7.json")
+        prescription = load_test_example_json(self.mock_log_object, "50EE48-B83002-490F7.json")
 
-        self.assertEqual(prescription.issueNumbers, [3, 4, 5, 6, 7, 8, 9, 10, 11, 12])
+        self.assertEqual(prescription.issue_numbers, [3, 4, 5, 6, 7, 8, 9, 10, 11, 12])
         self.assertEqual(prescription.missing_issue_numbers, [1, 2])
 
         # make sure the range fetches work as well
         self.assertEqual(
-            prescription.getIssueNumbersInRange(None, None), [3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+            prescription.get_issue_numbers_in_range(None, None), [3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
         )
         self.assertEqual(
-            prescription.getIssueNumbersInRange(2, None), [3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+            prescription.get_issue_numbers_in_range(2, None), [3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
         )
         self.assertEqual(
-            prescription.getIssueNumbersInRange(3, None), [3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+            prescription.get_issue_numbers_in_range(3, None), [3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
         )
         self.assertEqual(
-            prescription.getIssueNumbersInRange(4, None), [4, 5, 6, 7, 8, 9, 10, 11, 12]
+            prescription.get_issue_numbers_in_range(4, None), [4, 5, 6, 7, 8, 9, 10, 11, 12]
         )
         self.assertEqual(
-            prescription.getIssueNumbersInRange(None, 13), [3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+            prescription.get_issue_numbers_in_range(None, 13), [3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
         )
         self.assertEqual(
-            prescription.getIssueNumbersInRange(None, 12), [3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
+            prescription.get_issue_numbers_in_range(None, 12), [3, 4, 5, 6, 7, 8, 9, 10, 11, 12]
         )
         self.assertEqual(
-            prescription.getIssueNumbersInRange(None, 11), [3, 4, 5, 6, 7, 8, 9, 10, 11]
+            prescription.get_issue_numbers_in_range(None, 11), [3, 4, 5, 6, 7, 8, 9, 10, 11]
         )
-        self.assertEqual(prescription.getIssueNumbersInRange(5, 8), [5, 6, 7, 8])
-        self.assertEqual(prescription.getIssueNumbersInRange(10, 7), [])
+        self.assertEqual(prescription.get_issue_numbers_in_range(5, 8), [5, 6, 7, 8])
+        self.assertEqual(prescription.get_issue_numbers_in_range(10, 7), [])
 
     def _assert_find_instances_to_action_update(
-        self, prescription, handleTime, action, expectedIssueNumberStrs
+        self, prescription: PrescriptionRecord, handle_time, action, expected_issue_number_strs
     ):
         """
         Helper to test that find_instances_to_action_update() returns expected instances
         """
-        mockContext = MagicMock()
-        mockContext.handleTime = handleTime
-        mockContext.instancesToUpdate = None
-        prescription.find_instances_to_action_update(mockContext, action)
-        self.assertEqual(mockContext.instancesToUpdate, expectedIssueNumberStrs)
+        mock_context = MagicMock()
+        mock_context.handleTime = handle_time
+        mock_context.instancesToUpdate = None
+        prescription.find_instances_to_action_update(mock_context, action)
+        self.assertEqual(mock_context.instancesToUpdate, expected_issue_number_strs)
 
     def test_find_instances_to_action_update(self):
         """
         Test that we can find instances that need updating at a particular time.
         """
-        prescription = loadTestExampleJson(self.mock_log_object, "7D9625-Z72BF2-11E3A.json")
+        prescription = load_test_example_json(self.mock_log_object, "7D9625-Z72BF2-11E3A.json")
 
         # first, try a date that will pick up all next actions
-        handleTime = datetime(year=2050, month=1, day=1)
+        handle_time = datetime(year=2050, month=1, day=1)
 
-        action = PrescriptionRecord.NEXTACTIVITY_DELETE
-        self._assert_find_instances_to_action_update(prescription, handleTime, action, ["1"])
+        action = fields.NEXTACTIVITY_DELETE
+        self._assert_find_instances_to_action_update(prescription, handle_time, action, ["1"])
 
-        action = PrescriptionRecord.NEXTACTIVITY_CREATENOCLAIM
-        self._assert_find_instances_to_action_update(prescription, handleTime, action, ["2", "3"])
+        action = fields.NEXTACTIVITY_CREATENOCLAIM
+        self._assert_find_instances_to_action_update(prescription, handle_time, action, ["2", "3"])
 
-        action = PrescriptionRecord.NEXTACTIVITY_EXPIRE
-        self._assert_find_instances_to_action_update(prescription, handleTime, action, None)
+        action = fields.NEXTACTIVITY_EXPIRE
+        self._assert_find_instances_to_action_update(prescription, handle_time, action, None)
 
         # then try a date in the past that won't pick up actions
-        handleTime = datetime(year=2010, month=1, day=1)
-        action = PrescriptionRecord.NEXTACTIVITY_CREATENOCLAIM
-        self._assert_find_instances_to_action_update(prescription, handleTime, action, None)
+        handle_time = datetime(year=2010, month=1, day=1)
+        action = fields.NEXTACTIVITY_CREATENOCLAIM
+        self._assert_find_instances_to_action_update(prescription, handle_time, action, None)
 
         # first, try a date that will pick up all next actions
-        handleTime = datetime(year=2050, month=1, day=1)
+        handle_time = datetime(year=2050, month=1, day=1)
         # same as above json but with nextActivityNAD_bin and instance 1 nextActivity set to purge
-        prescription = loadTestExampleJson(self.mock_log_object, "7D9625-Z72BF2-11E3B.json")
-        action = PrescriptionRecord.NEXTACTIVITY_PURGE
-        self._assert_find_instances_to_action_update(prescription, handleTime, action, ["1"])
+        prescription = load_test_example_json(self.mock_log_object, "7D9625-Z72BF2-11E3B.json")
+        action = fields.NEXTACTIVITY_PURGE
+        self._assert_find_instances_to_action_update(prescription, handle_time, action, ["1"])
 
-    def test_find_instances_to_action_update_missingInstances(self):
+    def test_find_instances_to_action_update_missing_instances(self):
         """
         SPII-10492 - Test that we can find instances that need updating in a migrated
         prescription with missing instances.
         """
         # this 12-issue prescription has issues 1 and 2 missing because of migration
-        prescription = loadTestExampleJson(self.mock_log_object, "50EE48-B83002-490F7.json")
+        prescription = load_test_example_json(self.mock_log_object, "50EE48-B83002-490F7.json")
 
         # first, try a date that will pick up all next actions
-        handleTime = datetime(year=2050, month=1, day=1)
+        handle_time = datetime(year=2050, month=1, day=1)
 
-        action = PrescriptionRecord.NEXTACTIVITY_DELETE
-        self._assert_find_instances_to_action_update(prescription, handleTime, action, ["3"])
+        action = fields.NEXTACTIVITY_DELETE
+        self._assert_find_instances_to_action_update(prescription, handle_time, action, ["3"])
 
-        action = PrescriptionRecord.NEXTACTIVITY_EXPIRE
+        action = fields.NEXTACTIVITY_EXPIRE
         self._assert_find_instances_to_action_update(
-            prescription, handleTime, action, ["5", "6", "7", "8", "9", "10", "11", "12"]
+            prescription, handle_time, action, ["5", "6", "7", "8", "9", "10", "11", "12"]
         )
 
     def test_reset_current_instance(self):
@@ -282,39 +283,39 @@ class PrescriptionRecordTest(TestCase):
         Test that resetting the current instance chooses the correct instance.
         """
 
-        prescription = loadTestExampleJson(self.mock_log_object, "50EE48-B83002-490F7.json")
+        prescription = load_test_example_json(self.mock_log_object, "50EE48-B83002-490F7.json")
         self.assertEqual(prescription.current_issue_number, 4)
         (old, new) = prescription.reset_current_instance()
         self.assertEqual((old, new), (4, 4))
         self.assertEqual(prescription.current_issue_number, 4)
 
-        prescription = loadTestExampleJson(self.mock_log_object, "DD0180-ZBED5C-11E3A.json")
+        prescription = load_test_example_json(self.mock_log_object, "DD0180-ZBED5C-11E3A.json")
         self.assertEqual(prescription.current_issue_number, 1)
         (old, new) = prescription.reset_current_instance()
         self.assertEqual((old, new), (1, 1))
         self.assertEqual(prescription.current_issue_number, 1)
 
-        prescription = loadTestExampleJson(self.mock_log_object, "7D9625-Z72BF2-11E3A.json")
+        prescription = load_test_example_json(self.mock_log_object, "7D9625-Z72BF2-11E3A.json")
         self.assertEqual(prescription.current_issue_number, 3)
         (old, new) = prescription.reset_current_instance()
         self.assertEqual((old, new), (3, 3))
         self.assertEqual(prescription.current_issue_number, 3)
 
-    def test_handle_overdue_expiryNone(self):
+    def test_handle_overdue_expiry_none(self):
         """
         SPII-31379 due to old prescrptions the NAD index is set to None
         """
         nad = [None]
         self.assertFalse(PrescriptionRecord._is_expiry_overdue(nad))
 
-    def test_handle_overdue_expiryEmpty(self):
+    def test_handle_overdue_expiry_empty(self):
         """
         SPII-31379 due to old prescrptions the NAD index is empty
         """
         nad = []
         self.assertFalse(PrescriptionRecord._is_expiry_overdue(nad))
 
-    def test_handle_overdue_expiryNotExpired(self):
+    def test_handle_overdue_expiry_not_expired(self):
         """
         Expiry is set to tomorrow
         """
@@ -325,7 +326,7 @@ class PrescriptionRecordTest(TestCase):
         ]
         self.assertFalse(PrescriptionRecord._is_expiry_overdue(nad))
 
-    def test_handle_overdue_expiryExpired(self):
+    def test_handle_overdue_expiry_expired(self):
         """
         Expiry is set to yesterday
         """
@@ -336,59 +337,59 @@ class PrescriptionRecordTest(TestCase):
         ]
         self.assertTrue(PrescriptionRecord._is_expiry_overdue(nad))
 
-    def testGetLineItemCancellations(self):
+    def test_get_line_item_cancellations(self):
         """
         Test that we can get the line item cancellations for a prescription
         """
-        prescription = loadTestExampleJson(self.mock_log_object, "23C1BC-Z75FB1-11EE84.json")
+        prescription = load_test_example_json(self.mock_log_object, "23C1BC-Z75FB1-11EE84.json")
         current_issue = prescription.current_issue
 
-        cancelledLineItemID = "02ED7776-21CD-4E7B-AC9D-D1DBFEE7B8CF"
-        cancellations = current_issue.get_line_item_cancellations(cancelledLineItemID)
+        cancelled_line_item_id = "02ED7776-21CD-4E7B-AC9D-D1DBFEE7B8CF"
+        cancellations = current_issue.get_line_item_cancellations(cancelled_line_item_id)
         self.assertEqual(len(cancellations), 1)
 
-        notCancelledLineItemID = "45D5FB11-D793-4D51-9ADD-95E0F54D2786"
-        cancellations = current_issue.get_line_item_cancellations(notCancelledLineItemID)
+        not_cancelled_line_item_id = "45D5FB11-D793-4D51-9ADD-95E0F54D2786"
+        cancellations = current_issue.get_line_item_cancellations(not_cancelled_line_item_id)
         self.assertEqual(len(cancellations), 0)
 
-    def testGetLineItemFirstCancellationTime(self):
-        prescription = loadTestExampleJson(self.mock_log_object, "23C1BC-Z75FB1-11EE84.json")
+    def test_get_line_item_first_cancellation_time(self):
+        prescription = load_test_example_json(self.mock_log_object, "23C1BC-Z75FB1-11EE84.json")
         current_issue = prescription.current_issue
 
-        cancelledLineItemID = "02ED7776-21CD-4E7B-AC9D-D1DBFEE7B8CF"
-        firstCancellationTime = current_issue.get_line_item_first_cancellation_time(
-            cancelledLineItemID
+        cancelled_line_item_id = "02ED7776-21CD-4E7B-AC9D-D1DBFEE7B8CF"
+        first_cancellation_time = current_issue.get_line_item_first_cancellation_time(
+            cancelled_line_item_id
         )
-        self.assertEqual(firstCancellationTime, "20240415101553")
+        self.assertEqual(first_cancellation_time, "20240415101553")
 
-        notCancelledLineItemID = "45D5FB11-D793-4D51-9ADD-95E0F54D2786"
-        firstCancellationTime = current_issue.get_line_item_first_cancellation_time(
-            notCancelledLineItemID
+        not_cancelled_line_item_id = "45D5FB11-D793-4D51-9ADD-95E0F54D2786"
+        first_cancellation_time = current_issue.get_line_item_first_cancellation_time(
+            not_cancelled_line_item_id
         )
-        self.assertEqual(firstCancellationTime, None)
+        self.assertEqual(first_cancellation_time, None)
 
-    def testSetInitialPrescriptionStatusActivePrescription(self):
+    def test_set_initial_prescription_status_active_prescription(self):
         """
         Test that a prescription with a start date of today or earlier is marked as TO_BE_DISPENSED.
         """
-        prescription = loadTestExampleJson(self.mock_log_object, "7D9625-Z72BF2-11E3A.json")
+        prescription = load_test_example_json(self.mock_log_object, "7D9625-Z72BF2-11E3A.json")
 
         current_time = datetime.now()
         prescription.set_initial_prescription_status(current_time)
 
-        self.assertEqual(prescription.getIssue(1).status, "0001")
+        self.assertEqual(prescription.get_issue(1).status, "0001")
 
-    def testSetInitialPrescriptionStatusFutureDated(self):
+    def test_set_initial_prescription_status_future_dated(self):
         """
         Test that a prescription with a future start date is marked as FUTURE_DATED_PRESCRIPTION.
         """
 
-        prescription = loadTestExampleJson(self.mock_log_object, "0DA698-A83008-F50593.json")
+        prescription = load_test_example_json(self.mock_log_object, "0DA698-A83008-F50593.json")
 
         future_time = datetime.now() + timedelta(days=10)
         prescription.set_initial_prescription_status(future_time)
 
-        self.assertEqual(prescription.getIssue(1).status, "9001")
+        self.assertEqual(prescription.get_issue(1).status, "9001")
 
 
 class PrescriptionRecordChangeLogTest(TestCase):
@@ -397,27 +398,27 @@ class PrescriptionRecordChangeLogTest(TestCase):
     """
 
     def setUp(self):
-        self.logObject = MockLogObject()
-        self.mockRecord = PrescriptionRecord(self.logObject, "test")
+        self.log_object = MockLogObject()
+        self.mock_record = PrescriptionRecord(self.log_object, "test")
 
-    def testErrorLogChangeLogTooBig(self):
+    def test_error_log_change_log_too_big(self):
         """
         When a change log cannot be pruned small enough an error is raised.
         """
-        self.mockRecord.prescriptionRecord = {
-            "prescription": {self.mockRecord.FIELD_PRESCRIPTION_ID: "testID"},
+        self.mock_record.prescription_record = {
+            "prescription": {fields.FIELD_PRESCRIPTION_ID: "testID"},
             "SCN": 10,
             "changeLog": {
                 "438eb94f-9da7-46ca-ba2a-72c4f83b2a06": {"SCN": 10},
                 "438eb94f-9da7-46ca-ba2a-72c4f83b2a46": {"SCN": 10},
             },
         }
-        self.mockRecord.SCN_MAX = 1
+        self.mock_record.SCN_MAX = 1
         self.assertRaises(
             EpsSystemError,
-            self.mockRecord.add_event_to_change_log,
+            self.mock_record.add_event_to_change_log,
             "ce6c4a39-e239-44c5-81e2-adf3612a7391",
             {},
         )
-        self.assertTrue(self.logObject.wasLogged("EPS0336"))
-        self.assertTrue(self.logObject.wasValueLogged("EPS0336", "prescriptionID", "testID"))
+        self.assertTrue(self.log_object.was_logged("EPS0336"))
+        self.assertTrue(self.log_object.was_value_logged("EPS0336", "prescriptionID", "testID"))

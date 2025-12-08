@@ -30,6 +30,11 @@ class PrescriptionRecord(object):
     using the attributes which have been bound to it
     """
 
+    SCN_MAX = 512
+    # Limit beyond which we should stop updating the change log as almost certainly in an
+    # uncontrolled loop - and updating the change log may lead to the record being of an
+    # unbounded size
+
     def __init__(self, log_object, internal_id):
         """
         The basic attributes of an epsRecord
@@ -153,10 +158,10 @@ class PrescriptionRecord(object):
         length_before = len(self.prescription_record.get(fields.FIELD_CHANGE_LOG, []))
         try:
             PrescriptionsChangeLogProcessor.updateChangeLog(
-                self.prescription_record, event_log, message_id, fields.SCN_MAX
+                self.prescription_record, event_log, message_id, self.SCN_MAX
             )
         except Exception as e:  # noqa: BLE001
-            self.log_object.writeLog(
+            self.log_object.write_log(
                 "EPS0336",
                 sys.exc_info(),
                 {"internalID": self.internal_id, "prescriptionID": self.id, "error": str(e)},
@@ -164,7 +169,7 @@ class PrescriptionRecord(object):
             raise EpsSystemError(EpsSystemError.SYSTEM_FAILURE) from e
         length_after = len(self.prescription_record.get(fields.FIELD_CHANGE_LOG, []))
         if length_after != length_before + 1:
-            self.log_object.writeLog(
+            self.log_object.write_log(
                 "EPS0672",
                 None,
                 {
@@ -392,7 +397,7 @@ class PrescriptionRecord(object):
         Missing instances are a data migration specific issue, and will throw
         a prescription not found error after after being logged
         """
-        self.log_object.writeLog(
+        self.log_object.write_log(
             "EPS0073c",
             None,
             {"internalID": self.internal_id, "prescriptionID": self.id, "issue": issue_number},
@@ -1165,7 +1170,7 @@ class PrescriptionRecord(object):
             return [True, None]
 
         for failure_reason in test_failures:
-            self.log_object.writeLog(
+            self.log_object.write_log(
                 "EPS0073",
                 None,
                 {
@@ -1190,7 +1195,7 @@ class PrescriptionRecord(object):
                 if fail_on_none:
                     test_failures.append("Mandatory item " + req_field + " set to None")
                     return
-                self.log_object.writeLog(
+                self.log_object.write_log(
                     "EPS0073b", None, {"internalID": self.internal_id, "mandatoryItem": req_field}
                 )
 
@@ -1428,7 +1433,7 @@ class PrescriptionRecord(object):
         for line_item in passed_line_items:
             passed_ids.add(str(line_item[fields.FIELD_ID]))
         if stored_ids != passed_ids:
-            self.log_object.writeLog(
+            self.log_object.write_log(
                 "EPS0146",
                 None,
                 {
@@ -1448,7 +1453,7 @@ class PrescriptionRecord(object):
             previous_status = stored_line_item[fields.FIELD_STATUS]
             new_status = line_item[fields.FIELD_STATUS]
             if [previous_status, new_status] not in valid_status_changes:
-                self.log_object.writeLog(
+                self.log_object.write_log(
                     "EPS0148",
                     None,
                     {
@@ -1466,7 +1471,7 @@ class PrescriptionRecord(object):
 
             if line_item[fields.FIELD_MAX_REPEATS] != stored_line_item[fields.FIELD_MAX_REPEATS]:
                 if treatment_type == fields.TREATMENT_TYPE_REPEAT_PRESCRIBE:
-                    self.log_object.writeLog(
+                    self.log_object.write_log(
                         "EPS0147b",
                         None,
                         {
@@ -1482,7 +1487,7 @@ class PrescriptionRecord(object):
                 # prescription max_repeats as is normal when the line item expires sooner
                 # than the prescription.
                 if line_item.get(fields.FIELD_MAX_REPEATS) is None or self.max_repeats is None:
-                    self.log_object.writeLog(
+                    self.log_object.write_log(
                         "EPS0147d",
                         None,
                         {
@@ -1500,7 +1505,7 @@ class PrescriptionRecord(object):
                     raise EpsBusinessError(EpsErrorBase.MAX_REPEAT_MISMATCH)
 
                 if int(line_item[fields.FIELD_MAX_REPEATS]) == int(self.max_repeats):
-                    self.log_object.writeLog(
+                    self.log_object.write_log(
                         "EPS0147c",
                         None,
                         {
@@ -1512,7 +1517,7 @@ class PrescriptionRecord(object):
                     )
                     continue
 
-                self.log_object.writeLog(
+                self.log_object.write_log(
                     "EPS0147",
                     None,
                     {
@@ -1802,7 +1807,7 @@ class PrescriptionRecord(object):
         Set the instance to action update based on the value passed in the request
         """
         context.instancesToUpdate = str(target_instance)
-        self.log_object.writeLog(
+        self.log_object.write_log(
             "EPS0407b",
             None,
             {
@@ -1862,7 +1867,7 @@ class PrescriptionRecord(object):
         if issues_to_update:
             # Note: calling code currently expects issue numbers as strings
             context.instancesToUpdate = [str(issue.number) for issue in issues_to_update]
-            self.log_object.writeLog(
+            self.log_object.write_log(
                 "EPS0407",
                 None,
                 {
@@ -1872,7 +1877,7 @@ class PrescriptionRecord(object):
                 },
             )
         else:
-            self.log_object.writeLog(
+            self.log_object.write_log(
                 "EPS0405",
                 None,
                 {
@@ -1989,7 +1994,7 @@ class PrescriptionRecord(object):
         elif context.action == fields.SPECIAL_RESET_CURRENT_INSTANCE:
             old_current_issue_number, new_current_issue_number = self.reset_current_instance()
             if old_current_issue_number != new_current_issue_number:
-                self.log_object.writeLog(
+                self.log_object.write_log(
                     "EPS0401c",
                     None,
                     {
@@ -2029,14 +2034,14 @@ class PrescriptionRecord(object):
 
         elif context.action == fields.ADMIN_ACTION_RESET_NAD:
             # Log that the prescription has been touched, but no change should be made
-            self.log_object.writeLog(
+            self.log_object.write_log(
                 "EPS0401b",
                 None,
                 {"internalID": self.internal_id, "prescriptionID": context.prescriptionID},
             )
         else:
             # invalid action
-            self.log_object.writeLog(
+            self.log_object.write_log(
                 "EPS0401",
                 None,
                 {
@@ -2095,7 +2100,7 @@ class PrescriptionRecord(object):
         issue.claim.received_date_str = handle_time_str
         self.log_attribute_change(fields.FIELD_CLAIM_RECEIVED_DATE, "", handle_time_str, None)
 
-        self.log_object.writeLog("EPS0406", None, {"internalID": self.internal_id})
+        self.log_object.write_log("EPS0406", None, {"internalID": self.internal_id})
 
     def _update_make_available_for_nominated_download(self, issue):
         """
@@ -2105,7 +2110,7 @@ class PrescriptionRecord(object):
         """
         issue.update_status(PrescriptionStatus.TO_BE_DISPENSED, self)
 
-        self.log_object.writeLog("EPS0402", None, {"internalID": self.internal_id})
+        self.log_object.write_log("EPS0402", None, {"internalID": self.internal_id})
 
     def _verify_record_deletion(self):
         """
@@ -2120,7 +2125,7 @@ class PrescriptionRecord(object):
             if next_activity_for_issue == fields.NEXTACTIVITY_DELETE:
                 continue
 
-            self.log_object.writeLog(
+            self.log_object.write_log(
                 "EPS0404b",
                 None,
                 {
@@ -2151,7 +2156,7 @@ class PrescriptionRecord(object):
 
         context.updatesToApply = False
 
-        self.log_object.writeLog(
+        self.log_object.write_log(
             "EPS0404",
             None,
             {
@@ -2239,7 +2244,7 @@ class PrescriptionRecord(object):
         if not self._is_expiry_overdue(nad):
             return
 
-        self.log_object.writeLog("EPS0335", None, {"internalID": self.internal_id})
+        self.log_object.write_log("EPS0335", None, {"internalID": self.internal_id})
         context.overdueExpiry = True
 
         # Only set the status to Expired if not already part of the admin update
@@ -2297,7 +2302,7 @@ class PrescriptionRecord(object):
             start_instance = target_instance
 
         if instance_range:
-            self.log_object.writeLog(
+            self.log_object.write_log(
                 "EPS0297a",
                 None,
                 dict(
@@ -2309,7 +2314,7 @@ class PrescriptionRecord(object):
                 ),
             )
         else:
-            self.log_object.writeLog(
+            self.log_object.write_log(
                 "EPS0297b",
                 None,
                 dict({"internalID": self.internal_id, "startInstance": start_instance}),
@@ -2438,7 +2443,7 @@ class PrescriptionRecord(object):
                     changed_line_status = LineItemStatus.EXPIRED
                 else:
                     changed_line_status = context.lineDict[line_item_id]
-                self.log_object.writeLog(
+                self.log_object.write_log(
                     "EPS0072",
                     None,
                     {
@@ -2459,7 +2464,7 @@ class PrescriptionRecord(object):
         if fields_to_update is not None:
             fields_to_update.append(item_changed)
 
-        self.log_object.writeLog(
+        self.log_object.write_log(
             "EPS0071",
             None,
             {
@@ -2623,7 +2628,7 @@ class PrescriptionRecord(object):
         prescribe_date = context.epsRecord.return_prescription_time()
         if nom_download_date_enabled:
             if prescribe_date is None:
-                self.log_object.writeLog(
+                self.log_object.write_log(
                     "EPS0676",
                     None,
                     dict(
@@ -2633,7 +2638,7 @@ class PrescriptionRecord(object):
             nominated_download_date = self._calculate_nominated_download_date(
                 prescribe_date[:8], days_supply, nom_down_lead_days, next_issue_number_str
             )
-            self.log_object.writeLog(
+            self.log_object.write_log(
                 "EPS0675",
                 None,
                 dict(
@@ -3002,7 +3007,7 @@ class PrescriptionRecord(object):
         if line_item_status in LineItemStatus.VALID_STATES[prescription_status]:
             return True
 
-        self.log_object.writeLog(
+        self.log_object.write_log(
             "EPS0259",
             None,
             {
@@ -3022,7 +3027,7 @@ class PrescriptionRecord(object):
         old_current_issue_number = self.current_issue_number
 
         if self.current_issue_number == self.max_repeats:
-            self.log_object.writeLog(
+            self.log_object.write_log(
                 "EPS0625b",
                 None,
                 {
@@ -3044,7 +3049,7 @@ class PrescriptionRecord(object):
                 continue
 
         if not new_current_issue_number:
-            self.log_object.writeLog(
+            self.log_object.write_log(
                 "EPS0625b",
                 None,
                 {
@@ -3055,7 +3060,7 @@ class PrescriptionRecord(object):
             )
             return
 
-        self.log_object.writeLog(
+        self.log_object.write_log(
             "EPS0625",
             None,
             {
@@ -3167,7 +3172,7 @@ class PrescriptionRecord(object):
         """
         presc_status = self._current_instance_status
 
-        self.log_object.writeLog(
+        self.log_object.write_log(
             "EPS0262",
             None,
             {
@@ -3205,7 +3210,7 @@ class PrescriptionRecord(object):
                 continue
             line_item_status = line_item[fields.FIELD_STATUS]
 
-        self.log_object.writeLog(
+        self.log_object.write_log(
             "EPS0262",
             None,
             {
@@ -3350,7 +3355,7 @@ class PrescriptionRecord(object):
             if pending_target == cancellation_target:
                 if pending_org != cancellation_org:
                     org_match = False
-                self.log_object.writeLog(
+                self.log_object.write_log(
                     "EPS0264a",
                     None,
                     dict(
@@ -3408,7 +3413,7 @@ class PrescriptionRecord(object):
             if (pending_target == cancellation_target) or whole_prescription_cancellation:
                 if pending_org != cancellation_org:
                     org_match = False
-                self.log_object.writeLog(
+                self.log_object.write_log(
                     "EPS0264a",
                     None,
                     dict(
@@ -3469,7 +3474,7 @@ class PrescriptionRecord(object):
                 self.prescription_record[fields.FIELD_PRESCRIPTION][
                     fields.FIELD_PRESCRIPTION_TIME
                 ] = cancellation_date
-                self.log_object.writeLog(
+                self.log_object.write_log(
                     "EPS0340",
                     None,
                     dict(

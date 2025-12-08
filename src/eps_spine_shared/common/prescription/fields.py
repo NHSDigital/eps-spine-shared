@@ -270,8 +270,3 @@ USER_IMPACTING_ACTIVITY = [NEXTACTIVITY_READY]
 
 FIELDS_DOCUMENTS = "documents"
 FIELDS_SCN = PrescriptionsChangeLogProcessor.RECORD_SCN_REF
-
-SCN_MAX = 512
-# Limit beyond which we should stop updating the change log as almost certainly in an
-# uncontrolled loop - and updating the change log may lead to the record being of an
-# unbounded size
