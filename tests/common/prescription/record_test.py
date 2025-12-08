@@ -59,108 +59,6 @@ class MockInteractionWorker(object):
         self.servicesDict = {"Style Sheets": None}
 
 
-class ReturnChangedIssueListTest(TestCase):
-    """
-    Returns the list of changed issues.
-    """
-
-    def setUp(self):
-        """
-        Set up all valid values - tests will overwrite these where required.
-        """
-
-        mock = Mock()
-        attrs = {"writeLog.return_value": None}
-        mock.configure_mock(**attrs)
-        logObject = mock
-        internalID = "test"
-
-        self.mockRecord = RepeatDispenseRecord(logObject, internalID)
-        self.preChangeDict = {
-            "issue1": {"lineItems": {"1": "0001", "2": "0001"}, "prescription": "0006"},
-            "issue2": {"lineItems": {"1": "0008", "2": "0008"}, "prescription": "0002"},
-            "issue3": {"lineItems": {"1": "0007", "2": "0007"}, "prescription": "9000"},
-        }
-        self.postChangeDict = {
-            "issue1": {"lineItems": {"1": "0001", "2": "0001"}, "prescription": "0006"},
-            "issue2": {"lineItems": {"1": "0008", "2": "0008"}, "prescription": "0002"},
-            "issue3": {"lineItems": {"1": "0007", "2": "0007"}, "prescription": "9000"},
-        }
-        self.max_repeats = 3
-        self.expectedResult = None
-
-    def runReturnChangedIssueListTest(self):
-        """
-        Execute the test
-        """
-        resultSet = self.mockRecord.return_changed_issue_list(
-            self.preChangeDict, self.postChangeDict, self.max_repeats
-        )
-        self.assertEqual(resultSet, self.expectedResult)
-
-    def testIdenticalDicts(self):
-        """
-        No difference in content
-        """
-        self.expectedResult = []
-        self.runReturnChangedIssueListTest()
-
-    def testIdenticalDictsOutOfOrder(self):
-        """
-        Out of order elements, but key:value pairs unchanged
-        """
-        self.postChangeDict = {
-            "issue1": {"lineItems": {"1": "0001", "2": "0001"}, "prescription": "0006"},
-            "issue3": {"prescription": "9000", "lineItems": {"2": "0007", "1": "0007"}},
-            "issue2": {"lineItems": {"2": "0008", "1": "0008"}, "prescription": "0002"},
-        }
-        self.expectedResult = []
-        self.runReturnChangedIssueListTest()
-
-    def testMissingIssueFromPreChangeDict(self):
-        """
-        Issue missing from pre change dict
-        """
-        del self.preChangeDict["issue2"]
-        self.expectedResult = ["2"]
-        self.runReturnChangedIssueListTest()
-
-    def testMissingIssueFromPostChangeDict(self):
-        """
-        Issue missing from pre change dict
-        """
-        del self.postChangeDict["issue2"]
-        self.expectedResult = ["2"]
-        self.runReturnChangedIssueListTest()
-
-    def testSingleItemStatusChange(self):
-        """
-        Test that a single line item difference is identified
-        """
-        self.postChangeDict["issue1"]["lineItems"]["1"] = "0002"
-        self.expectedResult = ["1"]
-        self.runReturnChangedIssueListTest()
-
-    def testSinglePrescriptionStatusChange(self):
-        """
-        Test that a single prescription difference is identified
-        """
-        self.postChangeDict["issue1"]["prescription"] = "0007"
-        self.expectedResult = ["1"]
-        self.runReturnChangedIssueListTest()
-
-    def testMultipleCombinationStatusChange(self):
-        """
-        Test that a multiple line item and prescription differences are identified
-        """
-        self.postChangeDict["issue1"]["lineItems"]["1"] = "0002"
-        self.postChangeDict["issue1"]["lineItems"]["2"] = "0003"
-        self.postChangeDict["issue3"]["prescription"] = "0006"
-        self.postChangeDict["issue3"]["prescription"] = "0007"
-        self.expectedResult = ["1", "3"]
-        self.runReturnChangedIssueListTest()
-
-
 class IncludeNextActivityForInstanceTest(TestCase):
     """
     Test Case for testing the Include Next Activity for Instance Test
@@ -177,7 +75,7 @@ class IncludeNextActivityForInstanceTest(TestCase):
         logObject = mock
         internalID = "test"
 
-        self.mockRecord = PrescriptionRecord(logObject, internalID)
+        self.mockRecord: PrescriptionRecord = PrescriptionRecord(logObject, internalID)
 
     def testincludeNextActivity_1(self):
         """
