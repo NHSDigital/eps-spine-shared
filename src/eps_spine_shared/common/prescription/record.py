@@ -1234,8 +1234,8 @@ class PrescriptionRecord(object):
 
             issue = PrescriptionIssue(instance_dict)
             nad_status = self.set_nad_status(test_sites, context, str(issue.number))
-            [next_activity, next_activity_date, expiry_date] = self.nad_generator.nextActivityDate(
-                nad_status, nad_reference
+            [next_activity, next_activity_date, expiry_date] = (
+                self.nad_generator.next_activity_date(nad_status, nad_reference)
             )
 
             if fields.FIELD_NEXT_ACTIVITY not in instance_dict:

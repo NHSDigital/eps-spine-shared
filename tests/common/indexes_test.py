@@ -14,7 +14,7 @@ from eps_spine_shared.common.prescription.types import PrescriptionTreatmentType
 from tests.mock_logger import MockLogObject
 
 
-def getNADReferences():
+def get_nad_references():
     """
     Reference dictionary of information to be used during next activity
     date calculation
@@ -33,27 +33,27 @@ def getNADReferences():
     }
 
 
-def _loadTestPrescription(mock_log_object, prescriptionId):
+def _load_test_prescription(mock_log_object, prescription_id):
     """
     Load prescription data from JSON files in the test resources directory.
     """
-    testDirPath = path.dirname(__file__)
-    fullPath = path.join(testDirPath, "resources", prescriptionId + ".json")
-    with open(fullPath) as jsonFile:
-        prescriptionDict = simplejson.load(jsonFile)
-        jsonFile.close()
+    test_dir_path = path.dirname(__file__)
+    full_path = path.join(test_dir_path, "prescription", "resources", prescription_id + ".json")
+    with open(full_path) as json_file:
+        prescription_dict = simplejson.load(json_file)
+        json_file.close()
 
-    treatmentType = prescriptionDict["prescription"]["prescriptionTreatmentType"]
-    if treatmentType == PrescriptionTreatmentType.ACUTE_PRESCRIBING:
+    treatment_type = prescription_dict["prescription"]["prescriptionTreatmentType"]
+    if treatment_type == PrescriptionTreatmentType.ACUTE_PRESCRIBING:
         prescription = SinglePrescribeRecord(mock_log_object, "test")
-    elif treatmentType == PrescriptionTreatmentType.REPEAT_PRESCRIBING:
+    elif treatment_type == PrescriptionTreatmentType.REPEAT_PRESCRIBING:
         prescription = RepeatPrescribeRecord(mock_log_object, "test")
-    elif treatmentType == PrescriptionTreatmentType.REPEAT_DISPENSING:
+    elif treatment_type == PrescriptionTreatmentType.REPEAT_DISPENSING:
         prescription = RepeatDispenseRecord(mock_log_object, "test")
     else:
-        raise ValueError("Unknown treatment type %s" % str(treatmentType))
+        raise ValueError("Unknown treatment type %s" % str(treatment_type))
 
-    prescription.create_record_from_store(prescriptionDict)
+    prescription.create_record_from_store(prescription_dict)
 
     return prescription
 
@@ -67,25 +67,25 @@ class PrescriptionIndexFactoryTest(TestCase):
         """
         Common init code
         """
-        self.logObject = MockLogObject()
+        self.log_object = MockLogObject()
 
     @freeze_time("2025-07-15")
-    def testBuildIndexes(self):
+    def test_build_indexes(self):
         """
         Test that build_indexes method creates indexes as expected.
         """
-        prescriptionId = "7D9625-Z72BF2-11E3A"
-        nadReferences = getNADReferences()
-        indexFactory = EpsIndexFactory(self.logObject, prescriptionId, [], nadReferences)
+        prescription_id = "7D9625-Z72BF2-11E3A"
+        nad_references = get_nad_references()
+        index_factory = EpsIndexFactory(self.log_object, prescription_id, [], nad_references)
 
         context = Mock()
-        context.epsRecord = _loadTestPrescription(self.logObject, prescriptionId)
+        context.epsRecord = _load_test_prescription(self.log_object, prescription_id)
 
-        recordIndexes = indexFactory.build_indexes(context)
-        for key, value in recordIndexes.items():
-            recordIndexes[key] = sorted(value)
+        record_indexes = index_factory.build_indexes(context)
+        for key, value in record_indexes.items():
+            record_indexes[key] = sorted(value)
 
-        expectedIndexes = {
+        expected_indexes = {
             "prescribingSiteStatus_bin": ["Z99901_0006", "Z99901_0009"],
             "dispensingSiteStatus_bin": ["F001M_0006", "F001M_0009"],
             "nomPharmStatus_bin": ["F001M_0006", "F001M_0009"],
@@ -118,4 +118,4 @@ class PrescriptionIndexFactoryTest(TestCase):
             "dispenserDate_bin": ["F001M|20140408144130|R2|0006", "F001M|20140408144130|R2|0009"],
             "delta_bin": ["20250715000000|10"],
         }
-        self.assertEqual(recordIndexes, expectedIndexes)
+        self.assertEqual(record_indexes, expected_indexes)
