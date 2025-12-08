@@ -17,6 +17,15 @@ jobs:
         id: get-asdf-version
         uses: ./.github/actions/get_asdf_version
 
+  quality_checks:
+    name: Quality Checks
+    needs: get_asdf_version
+    uses: NHSDigital/eps-common-workflows/.github/workflows/quality-checks.yml@41e3450a9869f278be0e431a4b47b5c77bd55559
+    with:
+      asdfVersion: ${{ needs.get_asdf_version.outputs.version }}
+      reinstall_poetry: true
+      run_sonar: false
+
   build:
     name: Build Package and Upload as Artifact
     runs-on: ubuntu-22.04
@@ -36,15 +45,15 @@ jobs:
         run: |
           make build
           cd dist
-          zip -r package.zip ./*
+          zip -r eps_spine_shared.zip ./*
 
       - name: Upload artifact
         id: upload-artifact
         uses: actions/upload-artifact@330a01c490aca151604b8cf639adc76d48f6c5d4
         with:
-          name: eps_spine_shared
+          name: packaged_code
           path: |
-            dist/package.zip
+            dist/eps_spine_shared.zip
 
   tag_release:
     name: Tag Release
