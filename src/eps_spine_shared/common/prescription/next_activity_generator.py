@@ -126,17 +126,17 @@ class NextActivityGenerator(object):
 
     def _calculate_expiry_date(self, nad_status, nad_reference):
         """
-        Canculate the expiry date to be used in subsequent Next Activity calculations
+        Calculate the expiry date to be used in subsequent Next Activity calculations
         """
         if int(nad_status[fields.FIELD_INSTANCE_NUMBER]) > 1:
             expiry_date = (
                 nad_status[fields.FIELD_PRESCRIPTION_DATE]
-                + nad_reference[fields.FIELD_REPEAT_DISPENSE_EXPIRY_PERIOD]
+                + nad_reference[self.FIELD_REPEAT_DISPENSE_EXPIRY_PERIOD]
             )
         else:
             expiry_date = (
                 nad_status[fields.FIELD_PRESCRIPTION_DATE]
-                + nad_reference[fields.FIELD_PRESCRIPTION_EXPIRY_PERIOD]
+                + nad_reference[self.FIELD_PRESCRIPTION_EXPIRY_PERIOD]
             )
 
         nad_status[fields.FIELD_EXPIRY_DATE] = expiry_date
@@ -161,10 +161,10 @@ class NextActivityGenerator(object):
         messages
         """
         max_dispense_time = nad_status[fields.FIELD_LAST_DISPENSE_DATE]
-        max_dispense_time += nad_reference[fields.FIELD_WITH_DISPENSER_ACTIVE_EXPIRY_PERIOD]
+        max_dispense_time += nad_reference[self.FIELD_WITH_DISPENSER_ACTIVE_EXPIRY_PERIOD]
         expiry_date = min(max_dispense_time, nad_status[fields.FIELD_EXPIRY_DATE])
 
-        if nad_status[fields.FIELD_RELEASE_VERSION] == fields.R1_VERSION:
+        if nad_status[self.FIELD_RELEASE_VERSION] == fields.R1_VERSION:
             next_activity = fields.NEXTACTIVITY_EXPIRE
             next_activity_date = expiry_date.strftime(TimeFormats.STANDARD_DATE_FORMAT)
         else:
@@ -183,7 +183,7 @@ class NextActivityGenerator(object):
         """
         deletion_date = (
             nad_status[fields.FIELD_COMPLETION_DATE]
-            + nad_reference[fields.FIELD_EXPIRED_DELETE_PERIOD]
+            + nad_reference[self.FIELD_EXPIRED_DELETE_PERIOD]
         )
         next_activity = fields.NEXTACTIVITY_DELETE
         next_activity_date = deletion_date.strftime(TimeFormats.STANDARD_DATE_FORMAT)
@@ -196,7 +196,7 @@ class NextActivityGenerator(object):
         """
         deletion_date = (
             nad_status[fields.FIELD_COMPLETION_DATE]
-            + nad_reference[fields.FIELD_CANCELLED_DELETE_PERIOD]
+            + nad_reference[self.FIELD_CANCELLED_DELETE_PERIOD]
         )
         next_activity = fields.NEXTACTIVITY_DELETE
         next_activity_date = deletion_date.strftime(TimeFormats.STANDARD_DATE_FORMAT)
@@ -211,9 +211,9 @@ class NextActivityGenerator(object):
         """
         completion_date = nad_status[fields.FIELD_COMPLETION_DATE]
         max_notification_date = (
-            completion_date + nad_reference[fields.FIELD_NOTIFICATION_DELAY_PERIOD]
+            completion_date + nad_reference[self.FIELD_NOTIFICATION_DELAY_PERIOD]
         )
-        if nad_status[fields.FIELD_RELEASE_VERSION] == fields.R1_VERSION:  # noqa: SIM108
+        if nad_status[self.FIELD_RELEASE_VERSION] == fields.R1_VERSION:  # noqa: SIM108
             next_activity = fields.NEXTACTIVITY_DELETE
         else:
             next_activity = fields.NEXTACTIVITY_CREATENOCLAIM
@@ -230,7 +230,7 @@ class NextActivityGenerator(object):
         """
         deletion_date = (
             nad_status[fields.FIELD_CLAIM_SENT_DATE]
-            + nad_reference[fields.FIELD_CLAIMED_DELETE_PERIOD]
+            + nad_reference[self.FIELD_CLAIMED_DELETE_PERIOD]
         )
         next_activity = fields.NEXTACTIVITY_DELETE
         next_activity_date = deletion_date.strftime(TimeFormats.STANDARD_DATE_FORMAT)
@@ -243,7 +243,7 @@ class NextActivityGenerator(object):
         """
         deletion_date = (
             nad_status[fields.FIELD_COMPLETION_DATE]
-            + nad_reference[fields.FIELD_NOT_DISPENSED_DELETE_PERIOD]
+            + nad_reference[self.FIELD_NOT_DISPENSED_DELETE_PERIOD]
         )
         next_activity = fields.NEXTACTIVITY_DELETE
         next_activity_date = deletion_date.strftime(TimeFormats.STANDARD_DATE_FORMAT)
@@ -300,8 +300,7 @@ class NextActivityGenerator(object):
         prescription messages
         """
         deletion_date = (
-            nad_status[fields.FIELD_HANDLE_TIME]
-            + nad_reference[fields.FIELD_CANCELLED_DELETE_PERIOD]
+            nad_status[fields.FIELD_HANDLE_TIME] + nad_reference[self.FIELD_CANCELLED_DELETE_PERIOD]
         )
         next_activity = fields.NEXTACTIVITY_DELETE
         next_activity_date = deletion_date.strftime(TimeFormats.STANDARD_DATE_FORMAT)
