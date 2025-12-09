@@ -6,6 +6,7 @@ import zlib
 from unittest import TestCase
 from uuid import uuid4
 
+import boto3
 import simplejson
 from moto import mock_aws
 
@@ -29,6 +30,143 @@ def set_aws_credentials():
     os.environ["AWS_DEFAULT_REGION"] = "eu-west-2"
 
 
+def create_gsi(name: str, hash_key: str, range_key: str = None, projection_attributes: list = None):
+    """
+    Create a GSI definition for table creation.
+    """
+    gsi = {
+        "IndexName": name,
+        "KeySchema": [
+            {"AttributeName": hash_key, "KeyType": "HASH"},
+        ],
+    }
+    if range_key:
+        gsi["KeySchema"].append(
+            {"AttributeName": range_key, "KeyType": "RANGE"},
+        )
+
+    if projection_attributes:
+        gsi.update(
+            {"Projection": {"ProjectionType": "INCLUDE", "NonKeyAttributes": projection_attributes}}
+        )
+    else:
+        gsi.update({"Projection": {"ProjectionType": "KEYS_ONLY"}})
+
+
+def create_dynamodb_table():
+    """
+    Create the DynamoDB table with all required indexes.
+    """
+    dynamodb = boto3.client("dynamodb", region_name="eu-west-2")
+
+    dynamodb.create_table(
+        TableName="spine-eps-datastore",
+        KeySchema=[
+            {"AttributeName": name, "KeyType": key_type}
+            for name, key_type in [("pk", "HASH"), ("sk", "RANGE")]
+        ],
+        AttributeDefinitions=[
+            {"AttributeName": name, "AttributeType": "S"}
+            for name in [
+                "pk",
+                "sk",
+                "batchClaimId",
+                "creationDatetime",
+                "dispenserOrg",
+                "docRefTitle",
+                "nextActivity",
+                "nextActivityDate",
+                "nhsNumber",
+                "nominatedPharmacy",
+                "prescriberOrg",
+                "prescriptionId",
+                "storeTime",
+                "_lm_day",
+            ]
+        ]
+        + [
+            {"AttributeName": name, "AttributeType": "N"}
+            for name in [
+                "isReady",
+                "sequenceNumber",
+                "sequenceNumberNwssp",
+                "_riak_lm",
+                "_riak_tombstone",
+            ]
+        ],
+        GlobalSecondaryIndexes=[
+            create_gsi(
+                "nhsNumberDate",
+                "nhsNumber",
+                "creationDatetime",
+                ["indexes", "prescriberOrg", "dispenserOrg"],
+            ),
+            create_gsi(
+                "prescriberDate",
+                "prescriberOrg",
+                "creationDatetime",
+                ["indexes", "dispenserOrg"],
+            ),
+            create_gsi(
+                "dispenserDate",
+                "dispenserOrg",
+                "creationDatetime",
+                ["indexes"],
+            ),
+            create_gsi(
+                "nominatedPharmacyStatus",
+                "nominatedPharmacy",
+                "isReady",
+                ["status", "indexes"],
+            ),
+            create_gsi(
+                "claimId",
+                "sk",
+                "batchClaimId",
+                ["claimIds"],
+            ),
+            create_gsi(
+                "nextActivityDate",
+                "nextActivity",
+                "nextActivityDate",
+            ),
+            create_gsi(
+                "storeTimeDocRefTitle",
+                "docRefTitle",
+                "storeTime",
+            ),
+            create_gsi(
+                "prescriptionId",
+                "prescriptionId",
+                "sk",
+            ),
+            create_gsi(
+                "claimIdSequenceNumber",
+                "sequenceNumber",
+            ),
+            create_gsi(
+                "claimIdSequenceNumberNwssp",
+                "sequenceNumberNwssp",
+            ),
+            create_gsi(
+                "lastModified",
+                "_lm_day",
+                "_riak_lm",
+            ),
+            create_gsi(
+                "tombstones",
+                "sk",
+                "_riak_tombstone",
+            ),
+        ],
+    )
+
+    dynamodb.update_time_to_live(
+        TableName="spine-eps-datastore",
+        TimeToLiveSpecification={"Enabled": True, "AttributeName": "expireAt"},
+    )
+
+
 class DynamoDbTest(TestCase):
     """
     Parent class for DynamoDB tests.
@@ -41,6 +179,8 @@ class DynamoDbTest(TestCase):
         set_aws_credentials()
         self.mock_aws = mock_aws()
         self.mock_aws.start()
+
+        create_dynamodb_table()
 
         self.logger: MockLogObject = MockLogObject()
 
