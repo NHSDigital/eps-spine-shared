@@ -58,7 +58,7 @@ jobs:
           cd dist
           zip -r eps_spine_shared.zip ./*
         env:
-          NEXT_VERSION: ${{ needs.get_next_version.outputs.version_tag }}
+          NEXT_VERSION: ${{ needs.get_next_version.outputs.next_version_tag }}
 
       - name: Upload artifact
         id: upload-artifact
