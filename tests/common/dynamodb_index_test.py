@@ -245,7 +245,7 @@ class DynamoDbIndexTest(DynamoDbTest):
         record["indexes"]["nextActivityNAD_bin"] = ["purge_20241114"]
         record["SCN"] = record["SCN"] + 1
         self.datastore.insert_eps_record_object(
-            self.internal_id, prescriptionId2, record, isUpdate=True
+            self.internal_id, prescriptionId2, record, is_update=True
         )
 
         terms = self.datastore.return_terms_by_nhs_number(self.internal_id, nhsNumber)
@@ -788,17 +788,17 @@ class DynamoDbIndexTest(DynamoDbTest):
         startDatetimeStr = "20250911101112"
         endDatetimeStr = "20250912101111"
 
-        actual = self.datastore.indexes._getDateRangeForQuery(startDatetimeStr, endDatetimeStr)
+        actual = self.datastore.indexes._get_date_range_for_query(startDatetimeStr, endDatetimeStr)
         expected = ["20250911", "20250912"]
 
         self.assertEqual(actual, expected)
 
     @parameterized.expand(
         [
-            ["queryNhsNumberDate", ["index", "nhsNumber"], [], str],
-            ["queryPrescriberDate", ["index", "org"], [], str],
-            ["queryDispenserDate", ["index", "org"], [], str],
-            ["queryNextActivityDate", [], [], lambda x: f"_{x}"],
+            ["query_nhs_number_date", ["index", "nhsNumber"], [], str],
+            ["query_prescriber_date", ["index", "org"], [], str],
+            ["query_dispenser_date", ["index", "org"], [], str],
+            ["query_next_activity_date", [], [], lambda x: f"_{x}"],
         ]
     )
     def test_invalid_ranges(self, index, preargs, postargs, inputFormatter=None):

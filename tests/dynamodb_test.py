@@ -193,7 +193,7 @@ class DynamoDbTest(TestCase):
         Create a random id with the format of a prescription id.
         """
         parts = [random.choices(string.ascii_uppercase + string.digits, k=6) for _ in range(3)]
-        return "-".join([".".join(part) for part in parts])
+        return "-".join(["".join(part) for part in parts])
 
     def generate_document_key(self):
         """
