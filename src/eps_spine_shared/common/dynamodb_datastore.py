@@ -171,7 +171,7 @@ class EpsDynamoDbDataStore:
         """
         item = self.build_document(internal_id, document, index)
         item[Key.PK.name] = document_key
-        return self.client.insertItems(internal_id, [item], True)
+        return self.client.insert_items(internal_id, [item], True)
 
     def convert_index_keys_to_lower_case(self, index):
         """
@@ -277,7 +277,7 @@ class EpsDynamoDbDataStore:
         """
         item = self.build_record(prescription_id, record, record_type, index)
 
-        return self.client.insertItems(internal_id, [item], is_update)
+        return self.client.insert_items(internal_id, [item], is_update)
 
     @timer
     def insert_eps_work_list(self, internal_id, message_id, work_list, index=None):
@@ -298,7 +298,7 @@ class EpsDynamoDbDataStore:
                 work_list_indexes
             ),
         }
-        return self.client.insertItems(internal_id, [item], True)
+        return self.client.insert_items(internal_id, [item], True)
 
     @timer
     def is_record_present(self, internal_id, prescription_id) -> bool:
@@ -306,7 +306,7 @@ class EpsDynamoDbDataStore:
         Returns a boolean indicating the presence of a record.
         """
         record_key = prescription_id_without_check_digit(prescription_id)
-        record = self.client.getItem(
+        record = self.client.get_item(
             internal_id, record_key, SortKey.RECORD.value, expectExists=False
         )
         return True if record else False
@@ -382,7 +382,7 @@ class EpsDynamoDbDataStore:
         Look for and return an epsRecord object.
         """
         record_key = prescription_id_without_check_digit(prescription_id)
-        item = self.client.getItem(
+        item = self.client.get_item(
             internal_id, record_key, SortKey.RECORD.value, expectExists=expect_exists
         )
         if not item:
@@ -431,7 +431,7 @@ class EpsDynamoDbDataStore:
         """
         Look for and return an epsDocument object.
         """
-        item = self.client.getItem(
+        item = self.client.get_item(
             internal_id,
             document_key,
             SortKey.DOCUMENT.value,
@@ -458,7 +458,7 @@ class EpsDynamoDbDataStore:
         but with dataObject on self so that an update can be applied.
         """
         record_key = prescription_id_without_check_digit(prescription_id)
-        item = self.client.getItem(internal_id, record_key, SortKey.RECORD.value)
+        item = self.client.get_item(internal_id, record_key, SortKey.RECORD.value)
         body = item.get(ProjectedAttribute.BODY.name)
         if body and not isinstance(body, dict):
             body = simplejson.loads(zlib.decompress(bytes(body)))
@@ -473,7 +473,7 @@ class EpsDynamoDbDataStore:
         no matches are found DDB will throw a EpsDataStoreError (Missing Record).
         """
         record_key = prescription_id_without_check_digit(prescription_id)
-        data_object = self.client.getItem(
+        data_object = self.client.get_item(
             internal_id, record_key, SortKey.RECORD.value, expectExists=expect_exists
         )
 
@@ -487,7 +487,7 @@ class EpsDynamoDbDataStore:
         """
         Look for and return a workList object.
         """
-        item = self.client.getItem(
+        item = self.client.get_item(
             internal_id, message_id, SortKey.WORK_LIST.value, expectExists=False, expectNone=True
         )
         if item is None:
@@ -528,7 +528,7 @@ class EpsDynamoDbDataStore:
         """
         Fetch the next sequence number from a given key.
         """
-        item = self.client.getItem(
+        item = self.client.get_item(
             internal_id, key, SortKey.SEQUENCE_NUMBER.value, expectExists=False
         )
         is_update = True
@@ -550,7 +550,7 @@ class EpsDynamoDbDataStore:
             tries = 0
             while True:
                 try:
-                    self.client.insertItems(internal_id, [item], is_update, False)
+                    self.client.insert_items(internal_id, [item], is_update, False)
                     break
                 except EpsDataStoreError as e:
                     if e.errorTopic == EpsDataStoreError.CONDITIONAL_UPDATE_FAILURE and tries < 25:
@@ -631,7 +631,7 @@ class EpsDynamoDbDataStore:
             item[Attribute.SEQUENCE_NUMBER.name] = sequence_number
 
         try:
-            self.client.insertItems(internal_id, [item], True)
+            self.client.insert_items(internal_id, [item], True)
         except Exception:  # noqa: BLE001
             self.log_object.write_log("EPS0279", sys.exc_info(), {"internalID": key})
             return False
@@ -641,7 +641,7 @@ class EpsDynamoDbDataStore:
         """
         Retrieves the batch claim and returns the batch message for the calling application to handle.
         """
-        item = self.client.getItem(
+        item = self.client.get_item(
             internal_id, batch_claim_id, SortKey.CLAIM.value, expectExists=False
         )
         if not item:
@@ -687,7 +687,7 @@ class EpsDynamoDbDataStore:
         ):
             return True
 
-        item = self.client.getItem(
+        item = self.client.get_item(
             internal_id, document_key, SortKey.DOCUMENT.value, expectExists=False
         )
 
@@ -750,7 +750,7 @@ class EpsDynamoDbDataStore:
         """
         Returns False as covered by condition expression.
         """
-        item = self.client.getItem(internal_id, pk, sk, expect_exists)
+        item = self.client.get_item(internal_id, pk, sk, expect_exists)
         if item:
             return True
         return False

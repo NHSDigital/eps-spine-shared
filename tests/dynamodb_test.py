@@ -1,8 +1,8 @@
 import base64
 import os
+import random
 import string
 import zlib
-from random import random
 from unittest import TestCase
 from uuid import uuid4
 
