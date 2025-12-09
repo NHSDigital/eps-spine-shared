@@ -40,17 +40,20 @@ def create_gsi(name: str, hash_key: str, range_key: str = None, projection_attri
             {"AttributeName": hash_key, "KeyType": "HASH"},
         ],
     }
+
     if range_key:
         gsi["KeySchema"].append(
             {"AttributeName": range_key, "KeyType": "RANGE"},
         )
 
-    if projection_attributes:
-        gsi.update(
-            {"Projection": {"ProjectionType": "INCLUDE", "NonKeyAttributes": projection_attributes}}
-        )
-    else:
-        gsi.update({"Projection": {"ProjectionType": "KEYS_ONLY"}})
+    projection = (
+        {"Projection": {"ProjectionType": "INCLUDE", "NonKeyAttributes": projection_attributes}}
+        if projection_attributes
+        else {"Projection": {"ProjectionType": "KEYS_ONLY"}}
+    )
+    gsi.update(projection)
+
+    return gsi
 
 
 def create_dynamodb_table():
@@ -147,6 +150,7 @@ def create_dynamodb_table():
                 "storeTime",
             ),
         ],
+        BillingMode="PAY_PER_REQUEST",
     )
 
     dynamodb.update_time_to_live(

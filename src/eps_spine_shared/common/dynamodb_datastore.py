@@ -307,7 +307,7 @@ class EpsDynamoDbDataStore:
         """
         record_key = prescription_id_without_check_digit(prescription_id)
         record = self.client.get_item(
-            internal_id, record_key, SortKey.RECORD.value, expectExists=False
+            internal_id, record_key, SortKey.RECORD.value, expect_exists=False
         )
         return True if record else False
 
@@ -383,7 +383,7 @@ class EpsDynamoDbDataStore:
         """
         record_key = prescription_id_without_check_digit(prescription_id)
         item = self.client.get_item(
-            internal_id, record_key, SortKey.RECORD.value, expectExists=expect_exists
+            internal_id, record_key, SortKey.RECORD.value, expect_exists=expect_exists
         )
         if not item:
             return {}
@@ -435,8 +435,8 @@ class EpsDynamoDbDataStore:
             internal_id,
             document_key,
             SortKey.DOCUMENT.value,
-            expectNone=True,
-            expectExists=expect_exists,
+            expect_none=True,
+            expect_exists=expect_exists,
         )
         if not item:
             return {}
@@ -474,7 +474,7 @@ class EpsDynamoDbDataStore:
         """
         record_key = prescription_id_without_check_digit(prescription_id)
         data_object = self.client.get_item(
-            internal_id, record_key, SortKey.RECORD.value, expectExists=expect_exists
+            internal_id, record_key, SortKey.RECORD.value, expect_exists=expect_exists
         )
 
         if data_object is None:
@@ -488,7 +488,7 @@ class EpsDynamoDbDataStore:
         Look for and return a workList object.
         """
         item = self.client.get_item(
-            internal_id, message_id, SortKey.WORK_LIST.value, expectExists=False, expectNone=True
+            internal_id, message_id, SortKey.WORK_LIST.value, expect_exists=False, expect_none=True
         )
         if item is None:
             return None
@@ -529,7 +529,7 @@ class EpsDynamoDbDataStore:
         Fetch the next sequence number from a given key.
         """
         item = self.client.get_item(
-            internal_id, key, SortKey.SEQUENCE_NUMBER.value, expectExists=False
+            internal_id, key, SortKey.SEQUENCE_NUMBER.value, expect_exists=False
         )
         is_update = True
         if not item:
@@ -642,7 +642,7 @@ class EpsDynamoDbDataStore:
         Retrieves the batch claim and returns the batch message for the calling application to handle.
         """
         item = self.client.get_item(
-            internal_id, batch_claim_id, SortKey.CLAIM.value, expectExists=False
+            internal_id, batch_claim_id, SortKey.CLAIM.value, expect_exists=False
         )
         if not item:
             return {}
@@ -668,7 +668,9 @@ class EpsDynamoDbDataStore:
         Delete the claim notification document from the table, and return True if the deletion was successful.
         """
         try:
-            self.client.deleteItem(self.NOTIFICATION_PREFIX + str(claim_id), SortKey.DOCUMENT.value)
+            self.client.delete_item(
+                self.NOTIFICATION_PREFIX + str(claim_id), SortKey.DOCUMENT.value
+            )
         except Exception:  # noqa: BLE001
             self.log_object.write_log(
                 "EPS0289", sys.exc_info(), {"claimID": claim_id, "internalID": internal_id}
@@ -688,7 +690,7 @@ class EpsDynamoDbDataStore:
             return True
 
         item = self.client.get_item(
-            internal_id, document_key, SortKey.DOCUMENT.value, expectExists=False
+            internal_id, document_key, SortKey.DOCUMENT.value, expect_exists=False
         )
 
         if not item:
@@ -700,7 +702,7 @@ class EpsDynamoDbDataStore:
         self.log_object.write_log(
             "EPS0601", None, {"documentRef": document_key, "internalID": internal_id}
         )
-        self.client.deleteItem(document_key, SortKey.DOCUMENT.value)
+        self.client.delete_item(document_key, SortKey.DOCUMENT.value)
         return True
 
     @timer
@@ -711,7 +713,7 @@ class EpsDynamoDbDataStore:
         self.log_object.write_log(
             "EPS0602", None, {"recordRef": record_key, "internalID": internal_id}
         )
-        self.client.deleteItem(record_key, SortKey.RECORD.value)
+        self.client.delete_item(record_key, SortKey.RECORD.value)
 
     @timer
     def return_pids_due_for_next_activity(
