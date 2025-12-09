@@ -21,8 +21,8 @@ from eps_spine_shared.common.dynamodb_common import (
     ProjectedAttribute,
     SortKey,
 )
+from eps_spine_shared.common.prescription import fields
 from eps_spine_shared.common.prescription.record import (
-    PrescriptionRecord,
     PrescriptionStatus,
 )
 from tests.dynamodb_test import (
@@ -115,7 +115,7 @@ class DynamoDbIndexTest(DynamoDbTest):
         self.datastore.insert_eps_record_object(internalID, recordId, record)
         return recordId
 
-    def testBuildTermsWithRegex(self):
+    def test_build_terms_with_regex(self):
         """
         Test building terms from indexes of returned records, including regex checks.
         """
@@ -174,7 +174,7 @@ class DynamoDbIndexTest(DynamoDbTest):
 
         self.assertEqual(expected, terms)
 
-    def testReturnTermsByNhsNumberSameDate(self):
+    def test_return_terms_by_nhs_number_same_date(self):
         """
         Test querying against the nhsNumberDate index and returning nhsNumberDate records.
         Start and end date are the same.
@@ -224,7 +224,7 @@ class DynamoDbIndexTest(DynamoDbTest):
 
         self.assertEqual(expected, terms)
 
-    def testExcludeNextActivityPurge(self):
+    def test_exclude_next_activity_purge(self):
         """
         Test querying against a record index and excluding records with a nextActivity of purge.
         """
@@ -267,7 +267,7 @@ class DynamoDbIndexTest(DynamoDbTest):
 
         self.assertEqual(len(terms), 2)
 
-    def testReturnTermsByNomPharmStatus(self):
+    def test_return_terms_by_nom_pharm_status(self):
         """
         Test querying against the nomPharmStatus index and returning nomPharmStatus records.
         """
@@ -285,7 +285,7 @@ class DynamoDbIndexTest(DynamoDbTest):
 
         self.assertEqual(expected, terms)
 
-    def testReturnTermsByNomPharmStatusWithBatchSize(self):
+    def test_return_terms_by_nom_pharm_status_with_batch_size(self):
         """
         Test querying against the nomPharmStatus index via the get_nominated_pharmacy_records method and returning
         a defined number of nomPharmStatus records.
@@ -308,7 +308,7 @@ class DynamoDbIndexTest(DynamoDbTest):
         self.assertEqual(len(returnedPrescriptionIds), 2)
         self.assertTrue(set(returnedPrescriptionIds).issubset(set(prescriptionIds)))
 
-    def testReturnTermsByNomPharmStatusWithPagination(self):
+    def test_return_terms_by_nom_pharm_status_with_pagination(self):
         """
         Test querying against the nomPharmStatus index and returning nomPharmStatus records.
         Index attribute value is made artificially large, so that when projected into the index,
@@ -327,7 +327,7 @@ class DynamoDbIndexTest(DynamoDbTest):
 
         self.assertEqual(len(terms), totalTerms)
 
-    def testReturnTermsByNomPharmStatusUnfilteredWithLimit(self):
+    def test_return_terms_by_nom_pharm_status_unfiltered_with_limit(self):
         """
         Test querying against the nomPharmStatus index and returning nomPharmStatus records.
         Provide a limit for the query to adhere to.
@@ -346,7 +346,7 @@ class DynamoDbIndexTest(DynamoDbTest):
 
         self.assertEqual(len(terms), limit)
 
-    def testReturnTermsByNomPharmStatusUnfilteredWithLimitAndPagination(self):
+    def test_return_terms_by_nom_pharm_status_unfiltered_with_limit_and_pagination(self):
         """
         Test querying against the nomPharmStatus index and returning nomPharmStatus records.
         Provide a limit for the query to adhere to combined with pagination.
@@ -367,7 +367,7 @@ class DynamoDbIndexTest(DynamoDbTest):
 
         self.assertEqual(len(terms), limit)
 
-    def testReturnTermsByNomPharm(self):
+    def test_return_terms_by_nom_pharm(self):
         """
         Test querying against the nomPharmStatus index using only the odsCode and returning nomPharmStatus records.
         """
@@ -415,7 +415,7 @@ class DynamoDbIndexTest(DynamoDbTest):
 
         self.assertEqual(expected, terms)
 
-    def testReturnTermsByNhsNumberPrescriberDispenserDate(self):
+    def test_return_terms_by_nhs_number_prescriber_dispenser_date(self):
         """
         Test querying against the nhsNumberDate index and returning nhsNumberPrescriberDispenserDate records.
         """
@@ -445,7 +445,7 @@ class DynamoDbIndexTest(DynamoDbTest):
 
         self.assertEqual(expected, terms)
 
-    def testReturnTermsByNhsNumberPrescriberDate(self):
+    def test_return_terms_by_nhs_number_prescriber_date(self):
         """
         Test querying against the nhsNumberDate index and returning nhsNumberPrescriberDate records.
         """
@@ -474,7 +474,7 @@ class DynamoDbIndexTest(DynamoDbTest):
 
         self.assertEqual(expected, terms)
 
-    def testReturnTermsByNhsNumberDispenserDate(self):
+    def test_return_terms_by_nhs_number_dispenser_date(self):
         """
         Test querying against the nhsNumberDate index and returning nhsNumberDispenserDate records.
         """
@@ -503,7 +503,7 @@ class DynamoDbIndexTest(DynamoDbTest):
 
         self.assertEqual(expected, terms)
 
-    def testReturnTermsByPrescriberDispenserDate(self):
+    def test_return_terms_by_prescriber_dispenser_date(self):
         """
         Test querying against the prescriberDate index and returning prescDispDate records.
         """
@@ -533,7 +533,7 @@ class DynamoDbIndexTest(DynamoDbTest):
 
         self.assertEqual(expected, terms)
 
-    def testReturnTermsByPrescriberDate(self):
+    def test_return_terms_by_prescriber_date(self):
         """
         Test querying against the prescriberDate index and returning prescriberDate records.
         """
@@ -559,7 +559,7 @@ class DynamoDbIndexTest(DynamoDbTest):
 
         self.assertEqual(expected, terms)
 
-    def testReturnTermsByDispenserDate(self):
+    def test_return_terms_by_dispenser_date(self):
         """
         Test querying against the dispenserDate index and returning dispenserDate records.
         """
@@ -585,7 +585,7 @@ class DynamoDbIndexTest(DynamoDbTest):
 
         self.assertEqual(expected, terms)
 
-    def testItemsWithoutBatchClaimIdNotAddedToClaimIdIndex(self):
+    def test_items_without_batch_claim_id_not_added_to_claim_id_index(self):
         """
         Test claimId index doesn't contain any items without a batchClaimId attribute.
         """
@@ -614,7 +614,7 @@ class DynamoDbIndexTest(DynamoDbTest):
         items = self.datastore.client.query_index(GSI.CLAIM_ID.name, keyConditionExpression, None)
         self.assertEqual(len(items), 1)
 
-    def testQueryNextActivityDate(self):
+    def test_query_next_activity_date(self):
         """
         Test querying against the nextActivityDate index and returning lists of prescription keys.
         """
@@ -631,7 +631,7 @@ class DynamoDbIndexTest(DynamoDbTest):
         flat = [i for generator in actual for i in generator]
         self.assertEqual(len(flat), 3)
 
-    def testQueryNextActivitySameDate(self):
+    def test_query_next_activity_same_date(self):
         """
         Test querying against the nextActivityDate index and
         returning lists of prescription keys when dates are the same.
@@ -652,14 +652,14 @@ class DynamoDbIndexTest(DynamoDbTest):
     # (a,) notation is to force a single item tuple as expected by parameterized.expand
     @parameterized.expand(
         [
-            (PrescriptionRecord.NEXTACTIVITY_EXPIRE,),
-            (PrescriptionRecord.NEXTACTIVITY_CREATENOCLAIM,),
-            (PrescriptionRecord.NEXTACTIVITY_DELETE,),
-            (PrescriptionRecord.NEXTACTIVITY_PURGE,),
-            (PrescriptionRecord.NEXTACTIVITY_READY,),
+            (fields.NEXTACTIVITY_EXPIRE,),
+            (fields.NEXTACTIVITY_CREATENOCLAIM,),
+            (fields.NEXTACTIVITY_DELETE,),
+            (fields.NEXTACTIVITY_PURGE,),
+            (fields.NEXTACTIVITY_READY,),
         ]
     )
-    def testQueryNextActivityDateAllActivities(self, nextActivity):
+    def test_query_next_activity_date_all_activities(self, nextActivity):
         """
         Test query works against all next activities
         """
@@ -676,7 +676,7 @@ class DynamoDbIndexTest(DynamoDbTest):
         flat = [i for generator in actual for i in generator]
         self.assertEqual(flat, [prescriptionId])
 
-    def testQueryNextActivityDateShards(self):
+    def test_query_next_activity_date_shards(self):
         """
         Test query works against records on all shards
         """
@@ -709,7 +709,7 @@ class DynamoDbIndexTest(DynamoDbTest):
 
         self.assertEqual(expected, consumed)
 
-    def testQueryClaimNotificationStoreTime(self):
+    def test_query_claim_notification_store_time(self):
         """
         Test querying against the claimNotificationStoreTime index and returning lists of document keys.
         """
@@ -743,7 +743,7 @@ class DynamoDbIndexTest(DynamoDbTest):
 
         self.assertEqual(actual, expected)
 
-    def testQueryClaimNotificationStoreTimeBoundaries(self):
+    def test_query_claim_notification_store_time_boundaries(self):
         """
         Test querying against the claimNotificationStoreTime index and returning lists of document keys.
         Creates two documents relating to each boundary argument. Asserts that one of each pair is returned.
@@ -780,7 +780,7 @@ class DynamoDbIndexTest(DynamoDbTest):
 
         self.assertEqual(actual, expected)
 
-    def testGetDateRangeForQuery(self):
+    def test_get_date_range_for_query(self):
         """
         Test method for creating dates to query indexes against.
         Method is inclusive, so slightly less than one day gives both relevant days.
@@ -801,7 +801,7 @@ class DynamoDbIndexTest(DynamoDbTest):
             ["queryNextActivityDate", [], [], lambda x: f"_{x}"],
         ]
     )
-    def testInvalidRanges(self, index, preargs, postargs, inputFormatter=None):
+    def test_invalid_ranges(self, index, preargs, postargs, inputFormatter=None):
         """
         Test querying against indexes with invalid ranges.
         """
@@ -813,7 +813,7 @@ class DynamoDbIndexTest(DynamoDbTest):
 
         self.assertEqual(list(getattr(self.datastore.indexes, index)(*args)), [])
 
-    def testQueryBatchClaimIdSequenceNumber(self):
+    def test_query_batch_claim_id_sequence_number(self):
         """
         Test querying against the claimIdSequenceNumber(Nwssp) indexes and returning lists of batch claim IDs.
         """
@@ -852,7 +852,7 @@ class DynamoDbIndexTest(DynamoDbTest):
             [("20240911121314", "20240912131415"), ("20240911121314", "20240912131415")],
         ]
     )
-    def testPadOrTrimDate(self, inputDates, expectedDates):
+    def test_pad_or_trim_date(self, inputDates, expectedDates):
         """
         Test padding or trimming dates used in index queries.
         """
@@ -866,7 +866,7 @@ class DynamoDbIndexTest(DynamoDbTest):
         self.assertEqual(expectedEndDate, actualEndDate)
 
     @patch("random.randint")
-    def testLastModifiedIndex(self, patchedRandint):
+    def test_last_modified_index(self, patchedRandint):
         """
         Test lastModified index by calling directly. It is not used from application code.
         """
