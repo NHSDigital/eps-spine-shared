@@ -8,7 +8,7 @@ on:
 jobs:
   pr_title_format_check:
     name: PR Title Format Check
-    uses: NHSDigital/eps-common-workflows/.github/workflows/pr_title_check.yml@41e3450a9869f278be0e431a4b47b5c77bd55559
+    uses: NHSDigital/eps-common-workflows/.github/workflows/pr_title_check.yml@ab87da0052b9145a3e6fdcf08b14eb0e90a6856b
 
   get_asdf_version:
     name: Get asdf Version
@@ -26,7 +26,7 @@ jobs:
   quality_checks:
     name: Quality Checks
     needs: get_asdf_version
-    uses: NHSDigital/eps-common-workflows/.github/workflows/quality-checks.yml@41e3450a9869f278be0e431a4b47b5c77bd55559
+    uses: NHSDigital/eps-common-workflows/.github/workflows/quality-checks.yml@ab87da0052b9145a3e6fdcf08b14eb0e90a6856b
     with:
       asdfVersion: ${{ needs.get_asdf_version.outputs.version }}
       reinstall_poetry: true
@@ -35,7 +35,7 @@ jobs:
   tag_release:
     name: Tag Release (Dry Run)
     needs: get_asdf_version
-    uses: NHSDigital/eps-common-workflows/.github/workflows/tag-release.yml@41e3450a9869f278be0e431a4b47b5c77bd55559
+    uses: NHSDigital/eps-common-workflows/.github/workflows/tag-release.yml@ab87da0052b9145a3e6fdcf08b14eb0e90a6856b
     with:
       asdfVersion: ${{ needs.get_asdf_version.outputs.version }}
       branch_name: ${{ github.event.pull_request.head.ref }}
@@ -45,7 +45,7 @@ jobs:
   dependabot_auto_approve_and_merge:
     name: Dependabot Auto Approve and Merge
     needs: quality_checks
-    uses: NHSDigital/eps-common-workflows/.github/workflows/dependabot-auto-approve-and-merge.yml@41e3450a9869f278be0e431a4b47b5c77bd55559
+    uses: NHSDigital/eps-common-workflows/.github/workflows/dependabot-auto-approve-and-merge.yml@ab87da0052b9145a3e6fdcf08b14eb0e90a6856b
     secrets:
       AUTOMERGE_APP_ID: ${{ secrets.AUTOMERGE_APP_ID }}
       AUTOMERGE_PEM: ${{ secrets.AUTOMERGE_PEM }}
