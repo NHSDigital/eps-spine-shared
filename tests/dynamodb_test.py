@@ -71,15 +71,14 @@ def create_dynamodb_table():
                 "pk",
                 "sk",
                 "batchClaimId",
+                "claimNotificationStoreDate",
                 "creationDatetime",
                 "dispenserOrg",
-                "docRefTitle",
                 "nextActivity",
                 "nextActivityDate",
                 "nhsNumber",
                 "nominatedPharmacy",
                 "prescriberOrg",
-                "prescriptionId",
                 "storeTime",
                 "_lm_day",
             ]
@@ -91,7 +90,6 @@ def create_dynamodb_table():
                 "sequenceNumber",
                 "sequenceNumberNwssp",
                 "_riak_lm",
-                "_riak_tombstone",
             ]
         ],
         GlobalSecondaryIndexes=[
@@ -131,16 +129,6 @@ def create_dynamodb_table():
                 "nextActivityDate",
             ),
             create_gsi(
-                "storeTimeDocRefTitle",
-                "docRefTitle",
-                "storeTime",
-            ),
-            create_gsi(
-                "prescriptionId",
-                "prescriptionId",
-                "sk",
-            ),
-            create_gsi(
                 "claimIdSequenceNumber",
                 "sequenceNumber",
             ),
@@ -154,9 +142,9 @@ def create_dynamodb_table():
                 "_riak_lm",
             ),
             create_gsi(
-                "tombstones",
-                "sk",
-                "_riak_tombstone",
+                "claimNotificationStoreTime",
+                "claimNotificationStoreDate",
+                "storeTime",
             ),
         ],
     )
