@@ -2,7 +2,7 @@ import json
 import os.path
 from datetime import datetime, timedelta
 from unittest.case import TestCase
-from unittest.mock import MagicMock, Mock
+from unittest.mock import MagicMock
 
 from eps_spine_shared.common.prescription import fields
 from eps_spine_shared.common.prescription.record import PrescriptionRecord
@@ -44,20 +44,6 @@ def load_test_example_json(mock_log_object, filename):
     prescription.create_record_from_store(prescription_dict)
 
     return prescription
-
-
-class MockInteractionWorker(object):
-    """
-    Mock interaction worker
-    """
-
-    def __init__(self):
-        mock = Mock()
-        attrs = {"write_log.return_value": None}
-        mock.configure_mock(**attrs)
-        self.logObject = mock
-
-        self.servicesDict = {"Style Sheets": None}
 
 
 class PrescriptionRecordTest(TestCase):

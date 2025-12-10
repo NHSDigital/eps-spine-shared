@@ -14,6 +14,7 @@ from eps_spine_shared.errors import (
     EpsErrorBase,
     EpsSystemError,
 )
+from eps_spine_shared.logger import EpsLogger
 from eps_spine_shared.nhsfundamentals.timeutilities import TimeFormats
 from eps_spine_shared.spinecore.baseutilities import handleEncodingOddities, quoted
 from eps_spine_shared.spinecore.changelog import PrescriptionsChangeLogProcessor
@@ -39,7 +40,7 @@ class PrescriptionRecord(object):
         """
         The basic attributes of an epsRecord
         """
-        self.log_object = log_object
+        self.log_object = EpsLogger(log_object)
         self.internal_id = internal_id
         self.nad_generator = NextActivityGenerator(log_object, internal_id)
         self.pending_instance_change = None

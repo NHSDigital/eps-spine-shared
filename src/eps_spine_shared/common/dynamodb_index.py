@@ -16,6 +16,7 @@ from eps_spine_shared.common.dynamodb_common import (
     SortKey,
 )
 from eps_spine_shared.common.prescription.record import PrescriptionStatus
+from eps_spine_shared.logger import EpsLogger
 from eps_spine_shared.nhsfundamentals.timeutilities import TimeFormats
 
 
@@ -28,7 +29,7 @@ class EpsDynamoDbIndex:
         """
         Instantiate the DynamoDB client.
         """
-        self.log_object = log_object
+        self.log_object = EpsLogger(log_object)
         self.client = client
 
     def nhs_number_date(self, range_start, range_end, term_regex):

@@ -30,7 +30,7 @@ class MockLogObject(object):
             "logReference": log_reference,
             "errorList": error_list,
             "logRowDict": log_row_dict,
-            "severityThresholdOverried": severity_threshold_override,
+            "severityThresholdOverride": severity_threshold_override,
             "processName": process_name,
         }
         self._log_records.append(log_record)
@@ -39,6 +39,9 @@ class MockLogObject(object):
 
         if log_reference in self.__expectations:
             self.__expectations.remove(log_reference)
+
+    # Alias for Spine compatibility
+    writeLog = write_log
 
     def was_logged(self, log_reference):
         """

@@ -22,6 +22,7 @@ from eps_spine_shared.common.dynamodb_common import (
     SortKey,
 )
 from eps_spine_shared.errors import EpsNoCredentialsErrorWithRetry
+from eps_spine_shared.logger import EpsLogger
 
 
 class EpsDynamoDbClient:
@@ -41,7 +42,7 @@ class EpsDynamoDbClient:
         """
         Instantiate the DynamoDB client.
         """
-        self.log_object = log_object
+        self.log_object = EpsLogger(log_object)
         self.table_name = table_name
         self.aws_endpoint_url = aws_endpoint_url
         self.role_arn = role_arn

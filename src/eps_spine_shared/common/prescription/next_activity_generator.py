@@ -2,6 +2,7 @@ import datetime
 
 from eps_spine_shared.common.prescription import fields
 from eps_spine_shared.common.prescription.statuses import PrescriptionStatus
+from eps_spine_shared.logger import EpsLogger
 from eps_spine_shared.nhsfundamentals.timeutilities import TimeFormats
 
 
@@ -77,7 +78,7 @@ class NextActivityGenerator(object):
     FIELD_RELEASE_VERSION = "releaseVersion"
 
     def __init__(self, log_object, internal_id):
-        self.log_object = log_object
+        self.log_object = EpsLogger(log_object)
         self.internal_id = internal_id
 
         # Map between prescription status and method for calculating index values

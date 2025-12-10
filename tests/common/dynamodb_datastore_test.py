@@ -478,7 +478,7 @@ class DynamoDbDataStoreTest(DynamoDbTest):
         with self.assertRaises(expected_error_type):
             self.datastore.insert_eps_document_object(self.internal_id, None, document)
 
-        log_value = self.datastore.log_object.get_logged_value("DDB0031", "error")
+        log_value = self.datastore.log_object.logger.get_logged_value("DDB0031", "error")
         self.assertEqual(log_value, expected_log_value)
 
     def test_document_encode_error(self):
@@ -497,7 +497,7 @@ class DynamoDbDataStoreTest(DynamoDbTest):
         with self.assertRaises(TypeError):
             self.datastore.return_document_for_process(self.internal_id, document_key)
 
-        was_logged = self.datastore.log_object.was_logged("DDB0032")
+        was_logged = self.datastore.log_object.logger.was_logged("DDB0032")
         self.assertTrue(was_logged)
 
     def test_batch_claim_xml_decode_error(self):
@@ -516,7 +516,7 @@ class DynamoDbDataStoreTest(DynamoDbTest):
         with self.assertRaises(TypeError):
             self.datastore.fetch_batch_claim(self.internal_id, batch_claim_key)
 
-        was_logged = self.datastore.log_object.was_logged("DDB0033")
+        was_logged = self.datastore.log_object.logger.was_logged("DDB0033")
         self.assertTrue(was_logged)
 
     def test_record_expire_at_datetime_format(self):

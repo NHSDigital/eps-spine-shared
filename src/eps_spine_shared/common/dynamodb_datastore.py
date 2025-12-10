@@ -24,6 +24,7 @@ from eps_spine_shared.common.dynamodb_common import (
     replace_decimals,
 )
 from eps_spine_shared.common.dynamodb_index import EpsDynamoDbIndex, PrescriptionStatus
+from eps_spine_shared.logger import EpsLogger
 from eps_spine_shared.nhsfundamentals.timeutilities import (
     TimeFormats,
     convertSpineDate,
@@ -90,16 +91,16 @@ class EpsDynamoDbDataStore:
         """
         Instantiate the DynamoDB client.
         """
-        self.log_object = log_object
+        self.log_object = EpsLogger(log_object)
         self.client = EpsDynamoDbClient(
-            self.log_object,
+            log_object,
             aws_endpoint_url,
             table_name,
             role_arn,
             role_session_name,
             sts_endpoint_url,
         )
-        self.indexes = EpsDynamoDbIndex(self.log_object, self.client)
+        self.indexes = EpsDynamoDbIndex(log_object, self.client)
 
     def base64_decode_document_content(self, internal_id, document):
         """

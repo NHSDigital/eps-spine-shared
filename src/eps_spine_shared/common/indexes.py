@@ -1,4 +1,5 @@
 from eps_spine_shared.errors import EpsSystemError
+from eps_spine_shared.logger import EpsLogger
 from eps_spine_shared.nhsfundamentals.timeutilities import timeNowAsString
 
 INDEX_NHSNUMBER_DATE = "nhsNumberDate_bin"
@@ -44,7 +45,7 @@ class EpsIndexFactory(object):
         activity index
         requires test_prescribing_sites - used to differentiate for claims
         """
-        self.log_object = log_object
+        self.log_object = EpsLogger(log_object)
         self.internal_id = internal_id
         self.test_prescribing_sites = test_prescribing_sites
         self.nad_reference = nad_reference
