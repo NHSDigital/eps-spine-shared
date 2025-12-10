@@ -82,11 +82,11 @@ class PrescriptionIssue(object):
             self.update_status(newStatus, parent_prescription)
 
             if currentStatus in PrescriptionStatus.UNACTIONED_STATES:
-                parent_prescription.logObject.write_log(
+                parent_prescription.log_object.write_log(
                     "EPS0616",
                     None,
                     {
-                        "internalID": parent_prescription.internalID,
+                        "internalID": parent_prescription.internal_id,
                         "previousStatus": currentStatus,
                         "releaseVersion": parent_prescription.get_release_version(),
                         "prescriptionID": str(parent_prescription.return_prescription_id()),
@@ -97,11 +97,11 @@ class PrescriptionIssue(object):
         for lineItem in self.line_items:
             lineItem.expire(parent_prescription)
 
-        parent_prescription.logObject.write_log(
+        parent_prescription.log_object.write_log(
             "EPS0403",
             None,
             {
-                "internalID": parent_prescription.internalID,
+                "internalID": parent_prescription.internal_id,
             },
         )
 
