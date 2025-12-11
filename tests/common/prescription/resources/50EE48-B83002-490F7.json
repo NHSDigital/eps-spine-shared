@@ -1,0 +1,775 @@
+{
+  "documents": [
+    "201311290117241541325_A247DB_14",
+    "20131204131437137297_674307_1081759534",
+    "20140107172529139127_718E63_1081759534",
+    "Notification_20140107172529139127_718E63_1081759534"
+  ],
+  "patient": {
+    "lowerAgeLimit": "20041228",
+    "birthTime": "19881229",
+    "nhsNumber": "9446370914",
+    "higherAgeLimit": "20481229"
+  },
+  "changeLog": {
+    "07D09C01-441D-4D55-9386-CF790F225885": {
+      "Response Parameters": {
+        "responseText": "\"Release Request Successful\"",
+        "lowerAgeLimit": "\"20041228\"",
+        "prescriptionMaxRepeats": "\"12\"",
+        "lineItem1MaxRepeats": "\"12\"",
+        "responseAction": "\"not-provided-migrated\"",
+        "refToMessageID": "\"07D09C01-441D-4D55-9386-CF790F225885\"",
+        "refToEventID": "\"07D09C01-441D-4D55-9386-CF790F225885\"",
+        "timeStampAck": "\"20130517084623\"",
+        "prescriptionCurrentInstance": "\"3\"",
+        "versionCode": "\"V3NPfIT4.2.00\"",
+        "lineItem1Status": "\"0007\"",
+        "prescriptionStatus": "\"0001\"",
+        "lineItem1StatusDisplayName": "\"To Be Dispensed\"",
+        "fromASID": "\"not-provided-migrated\"",
+        "toASID": "\"935002902515\"",
+        "higherAgeLimit": "\"20481229\"",
+        "serviceASID": "\"not-provided-migrated\"",
+        "messageID": "\"07D09C01-441D-4D55-9386-CF790F225885\"",
+        "prescriptionID": "\"50EE48-B83002-490F7Q\"",
+        "lineItem1CurrentInstance": "\"3\"",
+        "prescriptionStatusDisplayName": "\"To Be Dispensed\"",
+        "timeStampSent": "\"20130517084623\"",
+        "messageMigratedFromSpine1": "\"true\""
+      },
+      "agentSystemSDS": "805017560014",
+      "fromStatus": "0001",
+      "toStatus": "0002",
+      "Source XSLT": "not-provided-migrated",
+      "agentPerson": "not-provided-migratedsetAgentPersonSDSPerson",
+      "interactionID": "PORX_IN060102UK30",
+      "timePreparedForUpdate": "20130517084623"
+    },
+    "A247DB87-FF0E-3715-B59E-2090CCF61E32": {
+      "Response Parameters": {
+        "responseText": "\"Prescription upload successful\"",
+        "timeStampAck": "\"20130128120100\"",
+        "toASID": "\"276827251543\"",
+        "fromASID": "\"not-provided-migrated\"",
+        "serviceASID": "\"not-provided-migrated\"",
+        "timeStampSent": "\"20130128120100\"",
+        "versionCode": "\"V3NPfIT4.2.00\"",
+        "responseAction": "\"not-provided-migrated\"",
+        "messageID": "\"A247DB87-FF0E-3715-B59E-2090CCF61E32\"",
+        "refToEventID": "\"A247DB87-FF0E-3715-B59E-2090CCF61E32\"",
+        "refToMessageID": "\"A247DB87-FF0E-3715-B59E-2090CCF61E32\"",
+        "prescriptionID": "\"50EE48-B83002-490F7Q\"",
+        "messageMigratedFromSpine1": "\"true\""
+      },
+      "agentSystemSDS": "805017560014",
+      "fromStatus": false,
+      "toStatus": "0001",
+      "Source XSLT": "not-provided-migrated",
+      "agentPerson": "not-provided-migratedsetAgentPersonSDSPerson",
+      "interactionID": "PORX_IN020101UK31",
+      "timePreparedForUpdate": "20130128142413"
+    },
+    "B6D0F8C5-A656-4289-95A0-AECA9EB18459": {
+      "Response Parameters": {
+        "lineItem1StatusDisplayName": "\"To Be Dispensed\"",
+        "priorPreviousIssueDate": "\"20130424143714\"",
+        "lowerAgeLimit": "\"20041228\"",
+        "prescriptionMaxRepeats": "\"12\"",
+        "prescriptionStatusDisplayName": "\"To Be Dispensed\"",
+        "higherAgeLimit": "\"20481229\"",
+        "lineItem1MaxRepeats": "\"12\"",
+        "prescriptionCurrentInstance": "\"3\"",
+        "lineItem1Status": "\"0007\"",
+        "prescriptionStatus": "\"0001\"",
+        "lineItem1CurrentInstance": "\"12\""
+      },
+      "agentSystemSDS": "935002902515",
+      "fromStatus": "0001",
+      "toStatus": "0002",
+      "Source XSLT": "parentPrescription2_Release.xsl",
+      "agentPerson": "330051032515",
+      "interactionID": "PORX_IN060102UK30",
+      "timePreparedForUpdate": "20131202095154"
+    },
+    "F5A95426-F05A-464F-B493-489DBDAD3564": {
+      "Response Parameters": {
+        "responseText": "\"Dispense notification successful\"",
+        "timeStampAck": "\"20131204T131437.137\"",
+        "refToMessageID": "\"F5A95426-F05A-464F-B493-489DBDAD3564\"",
+        "toASID": "\"935002902515\"",
+        "fromASID": "\"428081423512\"",
+        "serviceASID": "\"618729461037\"",
+        "timeStampSent": "\"20131204131437\"",
+        "versionCode": "\"V4NPfIT4.2.00\"",
+        "responseAction": "\"MCCI_IN010000UK13\"",
+        "messageID": "\"9DD01822-C76E-4DC4-86B6-F5890DABA4A3\"",
+        "toPartyKey": "\"YEA-801248\"",
+        "fromPartyKey": "\"YGM94-810145\"",
+        "prescriptionID": "\"50EE48-B83002-490F7Q\"",
+        "refToEventID": "\"B92512E4-7E22-4D70-B27B-8FE88E6BE5E9\""
+      },
+      "agentSystemSDS": "935002902515",
+      "fromStatus": "0002",
+      "toStatus": "0006",
+      "Source XSLT": "requestSuccessResponse_MCAI_MT040101UK03.xsl",
+      "agentPerson": "330051032515",
+      "interactionID": "PORX_IN080101UK31",
+      "timePreparedForUpdate": "20131204131437"
+    },
+    "D3975194-1074-4030-91EE-1B405AA1C73B": {
+      "Response Parameters": {
+        "responseText": "\"Dispense claim successful\"",
+        "timeStampAck": "\"20140107T172529.139\"",
+        "refToMessageID": "\"D3975194-1074-4030-91EE-1B405AA1C73B\"",
+        "toASID": "\"935002902515\"",
+        "fromASID": "\"428081423512\"",
+        "serviceASID": "\"618729461037\"",
+        "timeStampSent": "\"20140107172529\"",
+        "versionCode": "\"V4NPfIT4.2.00\"",
+        "responseAction": "\"MCCI_IN010000UK13\"",
+        "messageID": "\"666281BE-9C6A-4C10-BDAC-BADEC55F29B8\"",
+        "toPartyKey": "\"YEA-801248\"",
+        "fromPartyKey": "\"YGM94-810145\"",
+        "prescriptionID": "\"50EE48-B83002-490F7Q\"",
+        "refToEventID": "\"F80E196A-7B56-4A7C-BAFE-7693215DEA1B\""
+      },
+      "agentSystemSDS": "935002902515",
+      "fromStatus": "9000",
+      "toStatus": "0000",
+      "Source XSLT": "requestSuccessResponse_MCAI_MT040101UK03.xsl",
+      "agentPerson": "330051032515",
+      "interactionID": "PORX_IN090101UK31",
+      "timePreparedForUpdate": "20140107172529"
+    },
+    "0B9177AB-C0D0-400F-8583-D7C37FAA2F10": {
+      "Response Parameters": {
+        "responseText": "\"Dispense Proposal Return Successful\"",
+        "timeStampAck": "\"20130517123119\"",
+        "toASID": "\"935002902515\"",
+        "fromASID": "\"not-provided-migrated\"",
+        "serviceASID": "\"not-provided-migrated\"",
+        "timeStampSent": "\"20130517123119\"",
+        "versionCode": "\"V3NPfIT4.2.00\"",
+        "responseAction": "\"not-provided-migrated\"",
+        "messageID": "\"0B9177AB-C0D0-400F-8583-D7C37FAA2F10\"",
+        "refToEventID": "\"0B9177AB-C0D0-400F-8583-D7C37FAA2F10\"",
+        "refToMessageID": "\"0B9177AB-C0D0-400F-8583-D7C37FAA2F10\"",
+        "prescriptionID": "\"50EE48-B83002-490F7Q\"",
+        "messageMigratedFromSpine1": "\"true\""
+      },
+      "agentSystemSDS": "805017560014",
+      "fromStatus": "0002",
+      "toStatus": "0001",
+      "Source XSLT": "not-provided-migrated",
+      "agentPerson": "not-provided-migratedsetAgentPersonSDSPerson",
+      "interactionID": "PORX_IN100101UK31",
+      "timePreparedForUpdate": "20130517123119"
+    }
+  },
+  "indexes": {
+    "prescribingSiteStatus_bin": [
+      "B83002_0000",
+      "B83002_0008",
+      "B83002_9000"
+    ],
+    "nextActivityNAD_bin": [
+      "ready_20131227"
+    ],
+    "prescDispDate_bin": [
+      "B83002|FA740|20130128120100|R2|0000",
+      "B83002|FA740|20130128120100|R2|0008",
+      "B83002|FA740|20130128120100|R2|9000"
+    ],
+    "nhsNumberPrescDispDate_bin": [
+      "9446370914|B83002|FA740|20130128120100|R2|0000",
+      "9446370914|B83002|FA740|20130128120100|R2|0008",
+      "9446370914|B83002|FA740|20130128120100|R2|9000"
+    ],
+    "dispensingSiteStatus_bin": [
+      "FA740_0008"
+    ],
+    "nomPharmStatus_bin": [
+      "FA740_0000",
+      "FA740_0008",
+      "FA740_9000"
+    ],
+    "prescriberDate_bin": [
+      "B83002|20130128120100|R2|0000",
+      "B83002|20130128120100|R2|0008",
+      "B83002|20130128120100|R2|9000"
+    ],
+    "nhsNumber_bin": [
+      "9446370914"
+    ],
+    "nhsNumberDate_bin": [
+      "9446370914|20130128120100|R2|0000",
+      "9446370914|20130128120100|R2|0008",
+      "9446370914|20130128120100|R2|9000"
+    ],
+    "nhsNumberPrescriberDate_bin": [
+      "9446370914|B83002|20130128120100|R2|0000",
+      "9446370914|B83002|20130128120100|R2|0008",
+      "9446370914|B83002|20130128120100|R2|9000"
+    ],
+    "dispenserDate_bin": [
+      "FA740|20130128120100|R2|0000",
+      "FA740|20130128120100|R2|0008",
+      "FA740|20130128120100|R2|9000"
+    ],
+    "nhsNumberDispenserDate_bin": [
+      "9446370914|FA740|20130128120100|R2|0000",
+      "9446370914|FA740|20130128120100|R2|0008",
+      "9446370914|FA740|20130128120100|R2|9000"
+    ]
+  },
+  "instances": {
+    "3": {
+      "completionDate": "20131204",
+      "claim": {
+        "historicClaimGUIDs": false,
+        "claimStatus": "claimed",
+        "historicDispenseClaimMsgRef": false,
+        "dispenseClaimMsgRef": "20140107172529139127_718E63_1081759534",
+        "batchID": false,
+        "claimReceivedDate": "20140107",
+        "claimGUID": "F80E196A-7B56-4A7C-BAFE-7693215DEA1B",
+        "claimRebuild": false,
+        "batchNumber": false
+      },
+      "nominatedDownloadDate": "20130517",
+      "lineItems": [
+        {
+          "maxRepeats": "12",
+          "status": "0001",
+          "previousStatus": "0008",
+          "order": 1,
+          "ID": "D459547E-3C98-403B-E040-950AE073319B"
+        }
+      ],
+      "lastDispenseStatus": "0006",
+      "dispense": {
+        "lastDispenseNotificationMsgRef": "20131204131437137297_674307_1081759534",
+        "lastDispenseNotificationGuid": "B92512E4-7E22-4D70-B27B-8FE88E6BE5E9",
+        "lastDispenseDate": "20131204",
+        "dispensingOrganization": "FA740"
+      },
+      "nextActivity": {
+        "date": "20140116",
+        "activity": "delete"
+      },
+      "previousIssueDate": "20130424143714",
+      "cancellations": [],
+      "dispenseHistory": {
+        "release": {
+          "completionDate": false,
+          "dispense": {
+            "lastDispenseNotificationMsgRef": false,
+            "dispensingOrganization": "FA740",
+            "lastDispenseDate": "20131202",
+            "lastDispenseNotificationGuid": false
+          },
+          "lineItems": [
+            {
+              "maxRepeats": "12",
+              "status": "0008",
+              "previousStatus": "0008",
+              "order": 1,
+              "ID": "D459547E-3C98-403B-E040-950AE073319B"
+            }
+          ],
+          "prescriptionStatus": "0001",
+          "lastDispenseStatus": false
+        },
+        "B92512E4-7E22-4D70-B27B-8FE88E6BE5E9": {
+          "completionDate": false,
+          "dispense": {
+            "lastDispenseNotificationMsgRef": false,
+            "dispensingOrganization": "FA740",
+            "lastDispenseDate": "20131202",
+            "lastDispenseNotificationGuid": false
+          },
+          "lineItems": [
+            {
+              "maxRepeats": "12",
+              "status": "0008",
+              "previousStatus": "0007",
+              "order": 1,
+              "ID": "D459547E-3C98-403B-E040-950AE073319B"
+            }
+          ],
+          "prescriptionStatus": "0002",
+          "lastDispenseStatus": false
+        }
+      },
+      "instanceNumber": "3",
+      "dispenseHistoryprescriptionStatus": false,
+      "releaseDate": "20131202",
+      "dispenseWindowHighDate": "20140127",
+      "dispenseWindowLowDate": "20130128",
+      "previousStatus": "0006",
+      "releaseRequestMsgRef": "20131202095154407105_877E02_1081759534",
+      "expiryDate": null,
+      "prescriptionStatus": "0008"
+    },
+    "4": {
+      "completionDate": false,
+      "claim": {
+        "historicClaimGUIDs": false,
+        "claimStatus": false,
+        "historicDispenseClaimMsgRef": false,
+        "dispenseClaimMsgRef": false,
+        "batchID": false,
+        "claimReceivedDate": false,
+        "claimGUID": false,
+        "claimRebuild": false,
+        "batchNumber": false
+      },
+      "nominatedDownloadDate": "20131227",
+      "lineItems": [
+        {
+          "maxRepeats": "12",
+          "status": "0007",
+          "previousStatus": false,
+          "order": 1,
+          "ID": "D459547E-3C98-403B-E040-950AE073319B"
+        }
+      ],
+      "lastDispenseStatus": false,
+      "dispense": {
+        "lastDispenseNotificationMsgRef": false,
+        "lastDispenseNotificationGuid": false,
+        "lastDispenseDate": false,
+        "dispensingOrganization": false
+      },
+      "nextActivity": {
+        "date": "20131227",
+        "activity": "ready"
+      },
+      "previousIssueDate": "20131204131440",
+      "cancellations": [],
+      "dispenseHistory": {},
+      "instanceNumber": "4",
+      "dispenseHistoryprescriptionStatus": false,
+      "releaseDate": false,
+      "dispenseWindowHighDate": "20130128",
+      "dispenseWindowLowDate": "20131204",
+      "previousStatus": "9000",
+      "releaseRequestMsgRef": false,
+      "expiryDate": "20140128",
+      "prescriptionStatus": "0000"
+    },
+    "5": {
+      "completionDate": false,
+      "claim": {
+        "historicClaimGUIDs": false,
+        "claimStatus": false,
+        "historicDispenseClaimMsgRef": false,
+        "dispenseClaimMsgRef": false,
+        "batchID": false,
+        "claimReceivedDate": false,
+        "claimGUID": false,
+        "claimRebuild": false,
+        "batchNumber": false
+      },
+      "nominatedDownloadDate": false,
+      "lineItems": [
+        {
+          "maxRepeats": "12",
+          "status": "0007",
+          "previousStatus": false,
+          "order": 1,
+          "ID": "D459547E-3C98-403B-E040-950AE073319B"
+        }
+      ],
+      "lastDispenseStatus": false,
+      "dispense": {
+        "lastDispenseNotificationMsgRef": false,
+        "lastDispenseNotificationGuid": false,
+        "lastDispenseDate": false,
+        "dispensingOrganization": false
+      },
+      "nextActivity": {
+        "date": "20140128",
+        "activity": "expire"
+      },
+      "previousIssueDate": false,
+      "cancellations": [],
+      "dispenseHistory": {},
+      "instanceNumber": "5",
+      "dispenseHistoryprescriptionStatus": false,
+      "releaseDate": false,
+      "dispenseWindowHighDate": "20130128",
+      "dispenseWindowLowDate": "20130128",
+      "previousStatus": false,
+      "releaseRequestMsgRef": false,
+      "expiryDate": "20140128",
+      "prescriptionStatus": "9000"
+    },
+    "6": {
+      "completionDate": false,
+      "claim": {
+        "historicClaimGUIDs": false,
+        "claimStatus": false,
+        "historicDispenseClaimMsgRef": false,
+        "dispenseClaimMsgRef": false,
+        "batchID": false,
+        "claimReceivedDate": false,
+        "claimGUID": false,
+        "claimRebuild": false,
+        "batchNumber": false
+      },
+      "nominatedDownloadDate": false,
+      "lineItems": [
+        {
+          "maxRepeats": "12",
+          "status": "0007",
+          "previousStatus": false,
+          "order": 1,
+          "ID": "D459547E-3C98-403B-E040-950AE073319B"
+        }
+      ],
+      "lastDispenseStatus": false,
+      "dispense": {
+        "lastDispenseNotificationMsgRef": false,
+        "lastDispenseNotificationGuid": false,
+        "lastDispenseDate": false,
+        "dispensingOrganization": false
+      },
+      "nextActivity": {
+        "date": "20140128",
+        "activity": "expire"
+      },
+      "previousIssueDate": false,
+      "cancellations": [],
+      "dispenseHistory": {},
+      "instanceNumber": "6",
+      "dispenseHistoryprescriptionStatus": false,
+      "releaseDate": false,
+      "dispenseWindowHighDate": "20130128",
+      "dispenseWindowLowDate": "20130128",
+      "previousStatus": false,
+      "releaseRequestMsgRef": false,
+      "expiryDate": "20140128",
+      "prescriptionStatus": "9000"
+    },
+    "7": {
+      "completionDate": false,
+      "claim": {
+        "historicClaimGUIDs": false,
+        "claimStatus": false,
+        "historicDispenseClaimMsgRef": false,
+        "dispenseClaimMsgRef": false,
+        "batchID": false,
+        "claimReceivedDate": false,
+        "claimGUID": false,
+        "claimRebuild": false,
+        "batchNumber": false
+      },
+      "nominatedDownloadDate": false,
+      "lineItems": [
+        {
+          "maxRepeats": "12",
+          "status": "0007",
+          "previousStatus": false,
+          "order": 1,
+          "ID": "D459547E-3C98-403B-E040-950AE073319B"
+        }
+      ],
+      "lastDispenseStatus": false,
+      "dispense": {
+        "lastDispenseNotificationMsgRef": false,
+        "lastDispenseNotificationGuid": false,
+        "lastDispenseDate": false,
+        "dispensingOrganization": false
+      },
+      "nextActivity": {
+        "date": "20140128",
+        "activity": "expire"
+      },
+      "previousIssueDate": false,
+      "cancellations": [],
+      "dispenseHistory": {},
+      "instanceNumber": "7",
+      "dispenseHistoryprescriptionStatus": false,
+      "releaseDate": false,
+      "dispenseWindowHighDate": "20130128",
+      "dispenseWindowLowDate": "20130128",
+      "previousStatus": false,
+      "releaseRequestMsgRef": false,
+      "expiryDate": "20140128",
+      "prescriptionStatus": "9000"
+    },
+    "8": {
+      "completionDate": false,
+      "claim": {
+        "historicClaimGUIDs": false,
+        "claimStatus": false,
+        "historicDispenseClaimMsgRef": false,
+        "dispenseClaimMsgRef": false,
+        "batchID": false,
+        "claimReceivedDate": false,
+        "claimGUID": false,
+        "claimRebuild": false,
+        "batchNumber": false
+      },
+      "nominatedDownloadDate": false,
+      "lineItems": [
+        {
+          "maxRepeats": "12",
+          "status": "0007",
+          "previousStatus": false,
+          "order": 1,
+          "ID": "D459547E-3C98-403B-E040-950AE073319B"
+        }
+      ],
+      "lastDispenseStatus": false,
+      "dispense": {
+        "lastDispenseNotificationMsgRef": false,
+        "lastDispenseNotificationGuid": false,
+        "lastDispenseDate": false,
+        "dispensingOrganization": false
+      },
+      "nextActivity": {
+        "date": "20140128",
+        "activity": "expire"
+      },
+      "previousIssueDate": false,
+      "cancellations": [],
+      "dispenseHistory": {},
+      "instanceNumber": "8",
+      "dispenseHistoryprescriptionStatus": false,
+      "releaseDate": false,
+      "dispenseWindowHighDate": "20130128",
+      "dispenseWindowLowDate": "20130128",
+      "previousStatus": false,
+      "releaseRequestMsgRef": false,
+      "expiryDate": "20140128",
+      "prescriptionStatus": "9000"
+    },
+    "9": {
+      "completionDate": false,
+      "claim": {
+        "historicClaimGUIDs": false,
+        "claimStatus": false,
+        "historicDispenseClaimMsgRef": false,
+        "dispenseClaimMsgRef": false,
+        "batchID": false,
+        "claimReceivedDate": false,
+        "claimGUID": false,
+        "claimRebuild": false,
+        "batchNumber": false
+      },
+      "nominatedDownloadDate": false,
+      "lineItems": [
+        {
+          "maxRepeats": "12",
+          "status": "0007",
+          "previousStatus": false,
+          "order": 1,
+          "ID": "D459547E-3C98-403B-E040-950AE073319B"
+        }
+      ],
+      "lastDispenseStatus": false,
+      "dispense": {
+        "lastDispenseNotificationMsgRef": false,
+        "lastDispenseNotificationGuid": false,
+        "lastDispenseDate": false,
+        "dispensingOrganization": false
+      },
+      "nextActivity": {
+        "date": "20140128",
+        "activity": "expire"
+      },
+      "previousIssueDate": false,
+      "cancellations": [],
+      "dispenseHistory": {},
+      "instanceNumber": "9",
+      "dispenseHistoryprescriptionStatus": false,
+      "releaseDate": false,
+      "dispenseWindowHighDate": "20130128",
+      "dispenseWindowLowDate": "20130128",
+      "previousStatus": false,
+      "releaseRequestMsgRef": false,
+      "expiryDate": "20140128",
+      "prescriptionStatus": "9000"
+    },
+    "10": {
+      "completionDate": false,
+      "claim": {
+        "historicClaimGUIDs": false,
+        "claimStatus": false,
+        "historicDispenseClaimMsgRef": false,
+        "dispenseClaimMsgRef": false,
+        "batchID": false,
+        "claimReceivedDate": false,
+        "claimGUID": false,
+        "claimRebuild": false,
+        "batchNumber": false
+      },
+      "nominatedDownloadDate": false,
+      "lineItems": [
+        {
+          "maxRepeats": "12",
+          "status": "0007",
+          "previousStatus": false,
+          "order": 1,
+          "ID": "D459547E-3C98-403B-E040-950AE073319B"
+        }
+      ],
+      "lastDispenseStatus": false,
+      "dispense": {
+        "lastDispenseNotificationMsgRef": false,
+        "lastDispenseNotificationGuid": false,
+        "lastDispenseDate": false,
+        "dispensingOrganization": false
+      },
+      "nextActivity": {
+        "date": "20140128",
+        "activity": "expire"
+      },
+      "previousIssueDate": false,
+      "cancellations": [],
+      "dispenseHistory": {},
+      "instanceNumber": "10",
+      "dispenseHistoryprescriptionStatus": false,
+      "releaseDate": false,
+      "dispenseWindowHighDate": "20130128",
+      "dispenseWindowLowDate": "20130128",
+      "previousStatus": false,
+      "releaseRequestMsgRef": false,
+      "expiryDate": "20140128",
+      "prescriptionStatus": "9000"
+    },
+    "11": {
+      "completionDate": false,
+      "claim": {
+        "historicClaimGUIDs": false,
+        "claimStatus": false,
+        "historicDispenseClaimMsgRef": false,
+        "dispenseClaimMsgRef": false,
+        "batchID": false,
+        "claimReceivedDate": false,
+        "claimGUID": false,
+        "claimRebuild": false,
+        "batchNumber": false
+      },
+      "nominatedDownloadDate": false,
+      "lineItems": [
+        {
+          "maxRepeats": "12",
+          "status": "0007",
+          "previousStatus": false,
+          "order": 1,
+          "ID": "D459547E-3C98-403B-E040-950AE073319B"
+        }
+      ],
+      "lastDispenseStatus": false,
+      "dispense": {
+        "lastDispenseNotificationMsgRef": false,
+        "lastDispenseNotificationGuid": false,
+        "lastDispenseDate": false,
+        "dispensingOrganization": false
+      },
+      "nextActivity": {
+        "date": "20140128",
+        "activity": "expire"
+      },
+      "previousIssueDate": false,
+      "cancellations": [],
+      "dispenseHistory": {},
+      "instanceNumber": "11",
+      "dispenseHistoryprescriptionStatus": false,
+      "releaseDate": false,
+      "dispenseWindowHighDate": "20130128",
+      "dispenseWindowLowDate": "20130128",
+      "previousStatus": false,
+      "releaseRequestMsgRef": false,
+      "expiryDate": "20140128",
+      "prescriptionStatus": "9000"
+    },
+    "12": {
+      "completionDate": false,
+      "claim": {
+        "historicClaimGUIDs": false,
+        "claimStatus": false,
+        "historicDispenseClaimMsgRef": false,
+        "dispenseClaimMsgRef": false,
+        "batchID": false,
+        "claimReceivedDate": false,
+        "claimGUID": false,
+        "claimRebuild": false,
+        "batchNumber": false
+      },
+      "nominatedDownloadDate": false,
+      "lineItems": [
+        {
+          "maxRepeats": "12",
+          "status": "0007",
+          "previousStatus": false,
+          "order": 1,
+          "ID": "D459547E-3C98-403B-E040-950AE073319B"
+        }
+      ],
+      "lastDispenseStatus": false,
+      "dispense": {
+        "lastDispenseNotificationMsgRef": false,
+        "lastDispenseNotificationGuid": false,
+        "lastDispenseDate": false,
+        "dispensingOrganization": false
+      },
+      "nextActivity": {
+        "date": "20140128",
+        "activity": "expire"
+      },
+      "previousIssueDate": false,
+      "cancellations": [],
+      "dispenseHistory": {},
+      "instanceNumber": "12",
+      "dispenseHistoryprescriptionStatus": false,
+      "releaseDate": false,
+      "dispenseWindowHighDate": "20130128",
+      "dispenseWindowLowDate": "20130128",
+      "previousStatus": false,
+      "releaseRequestMsgRef": false,
+      "expiryDate": "20140128",
+      "prescriptionStatus": "9000"
+    }
+  },
+  "prescription": {
+    "prescriptionTreatmentType": "0003",
+    "unsuccessfulCancellations": false,
+    "daysSupply": 28,
+    "prescriptionTime": "20130128120100",
+    "hl7": {
+      "eventID": "A247DB87-FF0E-3715-B59E-2090CCF61E32",
+      "agentPersonSDSRole": "not-provided-migratedsetAgentPersonSDSRole",
+      "agentPersonSDSPerson": "not-provided-migratedsetAgentPersonSDSPerson",
+      "agentSystemSDS1CodeSystem": "1.2.826.0.1285.0.2.0.107",
+      "fromASID": "276827251543",
+      "toASID": "not-provided-migrated",
+      "messageID": "A247DB87-FF0E-3715-B59E-2090CCF61E32",
+      "agentSystemSDS2": "not-provided-migratedsetAgentSystemSDS2",
+      "agentSystemSDS1": "805017560014",
+      "agentPersonSDSTarget": "not-provided-migratedsetAgentPersonSDSTarget",
+      "interactionID": "PORX_IN020101UK31",
+      "agentPersonSDSCodeSystem": "not-provided-migratedsetAgentPersonSDSCodeSystem",
+      "messageVersion": "V3NPfIT4.2.00"
+    },
+    "pendingCancellations": false,
+    "signedTime": "20130128120100",
+    "prescriptionPresent": true,
+    "prescriptionID": "50EE48-B83002-490F7Q",
+    "maxRepeats": 12,
+    "currentInstance": "4",
+    "prescriptionMsgRef": "201311290117241541325_A247DB_14",
+    "prescribingOrganization": "B83002",
+    "migratedFromSpine1": true
+  },
+  "nomination": {
+    "nominatedPerformerType": "P1",
+    "nominatedPerformer": "FA740",
+    "nominated": true,
+    "nominationHistory": []
+  }
+}
