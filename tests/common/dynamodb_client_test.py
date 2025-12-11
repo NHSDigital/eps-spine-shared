@@ -8,7 +8,7 @@ from eps_spine_shared.common.dynamodb_common import Key, ProjectedAttribute, Sor
 from tests.dynamodb_test import DynamoDbTest
 
 
-class DynamoDbClientTest(DynamoDbTest):
+class EpsDynamoDbClientTest(DynamoDbTest):
     """
     Tests relating to DynamoDbClient.
     """

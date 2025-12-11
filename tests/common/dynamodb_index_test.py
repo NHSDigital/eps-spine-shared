@@ -34,7 +34,7 @@ from tests.dynamodb_test import (
 )
 
 
-class DynamoDbIndexTest(DynamoDbTest):
+class EpsDynamoDbIndexTest(DynamoDbTest):
     """
     Tests relating to DynamoDbIndex.
     """

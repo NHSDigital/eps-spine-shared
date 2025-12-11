@@ -29,7 +29,7 @@ from tests.dynamodb_test import DynamoDbTest
 from tests.mock_logger import MockLogObject
 
 
-class DynamoDbDataStoreTest(DynamoDbTest):
+class EpsDynamoDbDataStoreTest(DynamoDbTest):
     """
     Tests relating to DynamoDbDataStore.
     """
