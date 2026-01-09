@@ -30,7 +30,7 @@ class EpsDynamoDbClientTest(DynamoDbTest):
         expected = {
             "itemType": "DEF",
             "key": key,
-            "size": 169,
+            "size": 177,
             "table": self.datastore.client.table_name,
             "internalID": internal_id,
         }
@@ -56,7 +56,7 @@ class EpsDynamoDbClientTest(DynamoDbTest):
         expected = {
             "itemType": SortKey.RECORD.value,
             "key": key,
-            "size": 184,
+            "size": 192,
             "table": self.datastore.client.table_name,
             "internalID": internal_id,
         }
@@ -79,7 +79,7 @@ class EpsDynamoDbClientTest(DynamoDbTest):
         expected = {
             "itemType": SortKey.DOCUMENT.value,
             "key": key,
-            "size": 264,
+            "size": 272,
             "table": self.datastore.client.table_name,
             "internalID": internal_id,
         }
@@ -101,7 +101,7 @@ class EpsDynamoDbClientTest(DynamoDbTest):
         expected = {
             "itemType": SortKey.DOCUMENT.value,
             "key": key,
-            "size": 193,
+            "size": 201,
             "table": self.datastore.client.table_name,
             "internalID": internal_id,
         }
@@ -126,7 +126,7 @@ class EpsDynamoDbClientTest(DynamoDbTest):
         expected = {
             "itemType": SortKey.CLAIM.value,
             "key": key,
-            "size": 226,
+            "size": 234,
             "table": self.datastore.client.table_name,
             "internalID": internal_id,
         }
@@ -141,7 +141,7 @@ class EpsDynamoDbClientTest(DynamoDbTest):
         """
         key = str(uuid4())
         bodies = [
-            ({"a": 1, "b": True}, 169),
+            ({"a": 1, "b": True}, 177),
             ({"a": 1, "b": True, "responseDetails": {"XML": b"<xml />"}}, 40),
         ]
 
