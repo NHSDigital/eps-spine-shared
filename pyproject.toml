@@ -17,17 +17,17 @@ dependencies = ["boto3 (>=1.26.159,<2.0.0)", "botocore (>=1.29.159,<1.30.0)", "s
 packages = [{include = "eps_spine_shared", from = "src"}]
 
 [tool.poetry.group.dev.dependencies]
-black = "^25.11"
-coverage = "^7.12.0"
+black = "^25.12"
+coverage = "^7.13.1"
 flake8 = "^7.0"
 flake8-bugbear = "^25.11"
-isort = "^7.0"
-pip-licenses = "^5.0"
-pre-commit = "^4.0"
-pytest = "^9.0"
-parameterized = "^0.9.0"
 freezegun = "^1.5.5"
+isort = "^7.0"
 moto = "^5.1.18"
+parameterized = "^0.9.0"
+pip-licenses = "^5.0"
+pre-commit = "^4.5"
+pytest = "^9.0"
 
 [build-system]
 requires = ["poetry-core>=2.0.0"]
