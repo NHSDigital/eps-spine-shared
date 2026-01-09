@@ -10,21 +10,24 @@ authors = [
     {name = "Jack Spagnoli", email = "jack.spagnoli1@nhs.net"},
 ]
 readme = "README.md"
-requires-python = "==3.12.12"
-dependencies = []
+requires-python = "==3.10.12"
+dependencies = ["boto3 (>=1.26.159,<2.0.0)", "botocore (>=1.29.159,<1.30.0)", "simplejson (>=3.17.2,<4.0.0)", "python-dateutil (>=2.7.0.post0,<3.0.0)", "six (>=1.5,<2.0.0)"]
 
 [tool.poetry]
 packages = [{include = "eps_spine_shared", from = "src"}]
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^9.0"
+black = "^25.12"
 coverage = "^7.13.1"
 flake8 = "^7.0"
 flake8-bugbear = "^25.11"
-black = "^25.12"
+freezegun = "^1.5.5"
 isort = "^7.0"
-pre-commit = "^4.5"
+moto = "^5.1.18"
+parameterized = "^0.9.0"
 pip-licenses = "^5.0"
+pre-commit = "^4.5"
+pytest = "^9.0"
 
 [build-system]
 requires = ["poetry-core>=2.0.0"]
@@ -32,7 +35,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-python_files = ["test_*.py"]
+python_files = ["test_*.py", "*_test.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
 
@@ -44,8 +47,3 @@ target-version = ["py312"]
 profile = "black"
 line_length = 100
 known_first_party = ["eps_spine_shared"]
-
-[tool.flake8]
-max-line-length = 100
-extend-ignore = ["E203", "W503"]
-max-complexity = 10
