@@ -30,7 +30,8 @@ jobs:
     with:
       asdfVersion: ${{ needs.get_asdf_version.outputs.version }}
       reinstall_poetry: true
-      run_sonar: false
+    secrets:
+      SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
   tag_release:
     name: Tag Release (Dry Run)
