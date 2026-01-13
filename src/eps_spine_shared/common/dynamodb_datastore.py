@@ -27,8 +27,8 @@ from eps_spine_shared.common.dynamodb_index import EpsDynamoDbIndex, Prescriptio
 from eps_spine_shared.logger import EpsLogger
 from eps_spine_shared.nhsfundamentals.timeutilities import (
     TimeFormats,
-    convertSpineDate,
-    timeNowAsString,
+    convert_spine_date,
+    time_now_as_string,
 )
 
 
@@ -142,7 +142,7 @@ class EpsDynamoDbDataStore:
         If the record next activity is delete or purge, use the nextActivity and nextActivityDate
         to calculate its expireAt (ttl) value, otherwise fall-back to the default of 18 months.
         """
-        creation_datetime = convertSpineDate(
+        creation_datetime = convert_spine_date(
             creation_datetime_string, TimeFormats.STANDARD_DATE_TIME_FORMAT
         )
         creation_datetime_utc = datetime.combine(
@@ -159,7 +159,7 @@ class EpsDynamoDbDataStore:
 
         delta = relativedelta() if next_activity.lower() == "purge" else relativedelta(months=12)
 
-        next_activity_datetime = convertSpineDate(
+        next_activity_datetime = convert_spine_date(
             next_activity_date_str, TimeFormats.STANDARD_DATE_FORMAT
         )
         next_activity_datetime_utc = datetime.combine(
@@ -326,7 +326,7 @@ class EpsDynamoDbDataStore:
         """
         Insert EPS WorkList object into the configured table.
         """
-        work_list_indexes = {self.INDEX_WORKLISTDATE: [timeNowAsString()]}
+        work_list_indexes = {self.INDEX_WORKLISTDATE: [time_now_as_string()]}
         if index:
             work_list_indexes = index
 
@@ -640,7 +640,7 @@ class EpsDynamoDbDataStore:
         claim_id_index_terms = batch_claim["Claim ID List"]
         handle_time_index_term = batch_claim["Handle Time"]
         sequence_number = batch_claim["Sequence Number"]
-        index_scn_value = f"{timeNowAsString()}|{sequence_number}"
+        index_scn_value = f"{time_now_as_string()}|{sequence_number}"
 
         nwssp = "Nwssp Sequence Number" in batch_claim
         nwssp_sequence_number = batch_claim.get("Nwssp Sequence Number")
