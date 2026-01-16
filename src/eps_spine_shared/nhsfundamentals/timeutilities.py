@@ -45,20 +45,20 @@ def _guess_common_datetime_format(time_string, raise_error_if_unknown=False):
             Determines the action when the format cannot be determined.
             False (default) will return None, True will raise an error.
     """
-    format = None
+    time_format = None
     if len(time_string) == 19:
         try:
             datetime.strptime(time_string, TimeFormats.EBXML_FORMAT)
-            format = TimeFormats.EBXML_FORMAT
+            time_format = TimeFormats.EBXML_FORMAT
         except ValueError:
-            format = TimeFormats.STANDARD_DATE_TIME_UTC_ZONE_FORMAT
+            time_format = TimeFormats.STANDARD_DATE_TIME_UTC_ZONE_FORMAT
     else:
-        format = _TIMEFORMAT_LENGTH_MAP.get(len(time_string), None)
+        time_format = _TIMEFORMAT_LENGTH_MAP.get(len(time_string), None)
 
-    if not format and raise_error_if_unknown:
+    if not time_format and raise_error_if_unknown:
         raise ValueError("Could not determine datetime format of '{}'".format(time_string))
 
-    return format
+    return time_format
 
 
 def convert_spine_date(date_string, date_format=None):
@@ -68,8 +68,8 @@ def convert_spine_date(date_string, date_format=None):
     """
     if date_format:
         try:
-            dateObject = datetime.strptime(date_string, date_format)
-            return dateObject
+            date_object = datetime.strptime(date_string, date_format)
+            return date_object
         except ValueError:
             pass
 

@@ -36,7 +36,7 @@ class ChangeLogProcessor(object):
     INVALID_SCN = -1
 
     @classmethod
-    def log_for_general_update(cls, sCN, internal_id=None, xslt=None, rsp_parameters=None):
+    def log_for_general_update(cls, scn, internal_id=None, xslt=None, rsp_parameters=None):
         """
         Add a general change log update, nothing specific to a domain
         """
@@ -46,7 +46,7 @@ class ChangeLogProcessor(object):
         logOfChange = {}
         _timeOfChange = datetime.datetime.now().strftime(TimeFormats.STANDARD_DATE_TIME_FORMAT)
         logOfChange[cls.TIMESTAMP] = _timeOfChange
-        logOfChange[cls.SCN] = sCN
+        logOfChange[cls.SCN] = scn
         logOfChange[cls.INTERNAL_ID] = internal_id
         logOfChange[cls.XSLT] = xslt
         logOfChange[cls.RSP_PARAMS] = rsp_parameters
@@ -330,15 +330,17 @@ class PrescriptionsChangeLogProcessor(ChangeLogProcessor):
         )
         log_of_change[cls.AGENT_ROLE_PROFILE_CODE_ID] = update_context.agentRoleProfileCodeId
         log_of_change[cls.AGENT_PERSON_ROLE] = update_context.agentPersonRole
-        orgCode = update_context.agentOrganization
-        hasDispenserCode = hasattr(update_context, "dispenserCode") and update_context.dispenserCode
+        org_code = update_context.agentOrganization
+        has_dispenser_code = (
+            hasattr(update_context, "dispenserCode") and update_context.dispenserCode
+        )
         if (
-            not orgCode
-            and hasDispenserCode
+            not org_code
+            and has_dispenser_code
             and cls.REGEX_ALPHANUMERIC8.match(update_context.dispenserCode)
         ):
-            orgCode = update_context.dispenserCode
-        log_of_change[cls.AGENT_PERSON_ORG_CODE] = orgCode
+            org_code = update_context.dispenserCode
+        log_of_change[cls.AGENT_PERSON_ORG_CODE] = org_code
 
         # To help with troubleshooting, the following change entries are added
         pre_change_issue_statuses = update_context.epsRecord.return_prechange_issue_status_dict()
@@ -372,10 +374,10 @@ class PrescriptionsChangeLogProcessor(ChangeLogProcessor):
         """
         inverted_change_log = {}
         max_scn = 0
-        for guid, changeLogEntry in change_log.items():
-            _SCN = int(changeLogEntry.get(cls.SCN, cls.INVALID_SCN))
-            inverted_change_log[_SCN] = (guid, changeLogEntry.get(cls.INTERACTION_ID))
-            max_scn = max(max_scn, _SCN)
+        for guid, change_log_entry in change_log.items():
+            scn = int(change_log_entry.get(cls.SCN, cls.INVALID_SCN))
+            inverted_change_log[scn] = (guid, change_log_entry.get(cls.INTERACTION_ID))
+            max_scn = max(max_scn, scn)
         if max_scn <= prune_point:
             # Don't make any changes
             return

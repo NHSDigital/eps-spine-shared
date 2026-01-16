@@ -26,15 +26,15 @@ class ChangeLogProcessorTest(unittest.TestCase):
         """
         test producing a general log with empty inputs
         """
-        logOfChange = ChangeLogProcessor.log_for_general_update(1)
-        del logOfChange["Timestamp"]
+        log_of_change = ChangeLogProcessor.log_for_general_update(1)
+        del log_of_change["Timestamp"]
 
         expected_log = {}
         expected_log["SCN"] = 1
         expected_log["InternalID"] = None
         expected_log["Source XSLT"] = None
         expected_log["Response Parameters"] = {}
-        self.assertEqual(logOfChange, expected_log)
+        self.assertEqual(log_of_change, expected_log)
 
     def test_pruning_of_change_log(self):
         """
@@ -181,28 +181,33 @@ class ChangeLogProcessorTest(unittest.TestCase):
         """
         test retrieval of all GUIDS that have the highest SCN in the changeLog entry
         """
-        changeLog = {"ABCD": {"SCN": 1}, "IJKL": {"SCN": 3}, "EFGH": {"SCN": 2}}
-        guidList = sorted(ChangeLogProcessor.get_max_scn_guids(changeLog))
-        self.assertEqual(guidList, ["IJKL"])
+        change_log = {"ABCD": {"SCN": 1}, "IJKL": {"SCN": 3}, "EFGH": {"SCN": 2}}
+        guid_list = sorted(ChangeLogProcessor.get_max_scn_guids(change_log))
+        self.assertEqual(guid_list, ["IJKL"])
 
-        changeLog = {"ABCD": {"SCN": 1}, "EFGH": {"SCN": 2}, "IJKL": {"SCN": 3}, "ZZZZ": {"SCN": 3}}
-        guidList = ChangeLogProcessor.get_max_scn_guids(changeLog)
-        guidList.sort()
-        self.assertEqual(guidList, ["IJKL", "ZZZZ"])
+        change_log = {
+            "ABCD": {"SCN": 1},
+            "EFGH": {"SCN": 2},
+            "IJKL": {"SCN": 3},
+            "ZZZZ": {"SCN": 3},
+        }
+        guid_list = ChangeLogProcessor.get_max_scn_guids(change_log)
+        guid_list.sort()
+        self.assertEqual(guid_list, ["IJKL", "ZZZZ"])
 
-        changeLog = {"ABCD": {}, "EFGH": {}}
-        guidList = ChangeLogProcessor.get_max_scn_guids(changeLog)
-        guidList.sort()
-        self.assertEqual(guidList, ["ABCD", "EFGH"])
+        change_log = {"ABCD": {}, "EFGH": {}}
+        guid_list = ChangeLogProcessor.get_max_scn_guids(change_log)
+        guid_list.sort()
+        self.assertEqual(guid_list, ["ABCD", "EFGH"])
 
-        changeLog = {"ABCD": {}, "EFGH": {}, "IJKL": {"SCN": 3}}
-        guidList = ChangeLogProcessor.get_max_scn_guids(changeLog)
-        guidList.sort()
-        self.assertEqual(guidList, ["IJKL"])
+        change_log = {"ABCD": {}, "EFGH": {}, "IJKL": {"SCN": 3}}
+        guid_list = ChangeLogProcessor.get_max_scn_guids(change_log)
+        guid_list.sort()
+        self.assertEqual(guid_list, ["IJKL"])
 
-        changeLog = {}
-        guidList = ChangeLogProcessor.get_max_scn_guids(changeLog)
-        self.assertEqual(guidList, [])
+        change_log = {}
+        guid_list = ChangeLogProcessor.get_max_scn_guids(change_log)
+        self.assertEqual(guid_list, [])
 
     def test_get_all_guids(self):
         """
