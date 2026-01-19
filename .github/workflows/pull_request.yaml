@@ -8,7 +8,7 @@ on:
 jobs:
   pr_title_format_check:
     name: PR Title Format Check
-    uses: NHSDigital/eps-common-workflows/.github/workflows/pr_title_check.yml@9791a77de7b005056b4ddfb9789306f5179f53da
+    uses: NHSDigital/eps-common-workflows/.github/workflows/pr_title_check.yml@a2edde3fb0e9816a25a5ba4923b4d509db83f552
 
   get_asdf_version:
     name: Get asdf Version
