@@ -16,7 +16,7 @@ from eps_spine_shared.errors import (
 )
 from eps_spine_shared.logger import EpsLogger
 from eps_spine_shared.nhsfundamentals.timeutilities import TimeFormats
-from eps_spine_shared.spinecore.baseutilities import handleEncodingOddities, quoted
+from eps_spine_shared.spinecore.baseutilities import handle_encoding_oddities, quoted
 from eps_spine_shared.spinecore.changelog import PrescriptionsChangeLogProcessor
 
 
@@ -158,7 +158,7 @@ class PrescriptionRecord(object):
         event_log[PrescriptionsChangeLogProcessor.SCN] = self.get_scn()
         length_before = len(self.prescription_record.get(fields.FIELD_CHANGE_LOG, []))
         try:
-            PrescriptionsChangeLogProcessor.updateChangeLog(
+            PrescriptionsChangeLogProcessor.update_change_log(
                 self.prescription_record, event_log, message_id, self.SCN_MAX
             )
         except Exception as e:  # noqa: BLE001
@@ -901,7 +901,7 @@ class PrescriptionRecord(object):
             _cancellation_reasons = str(cancellation_status)
 
             _cancellation_id = _cancellation.get(fields.FIELD_CANCELLATION_ID, [])
-            _scn = PrescriptionsChangeLogProcessor.getSCN(
+            _scn = PrescriptionsChangeLogProcessor.get_scn(
                 self.prescription_record["changeLog"].get(_cancellation_id, {})
             )
             for _cancellation_reason in _cancellation.get(fields.FIELD_REASONS, []):
@@ -909,7 +909,7 @@ class PrescriptionRecord(object):
                 if _subsequent_reason:
                     _cancellation_reasons += "; "
                 _subsequent_reason = True
-                _cancellation_reasons += str(handleEncodingOddities(_cancellation_text))
+                _cancellation_reasons += str(handle_encoding_oddities(_cancellation_text))
 
             if (
                 _cancellation.get(fields.FIELD_CANCELLATION_TARGET) == "Prescription"

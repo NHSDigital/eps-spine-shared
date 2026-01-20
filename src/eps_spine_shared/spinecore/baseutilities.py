@@ -3,7 +3,7 @@ import unicodedata
 import six
 
 
-def handleEncodingOddities(text, attemptEscapedReplacement=False):
+def handle_encoding_oddities(text, attempt_escaped_replacement=False):
     """
     Strip accents and non-ascii characters from unicode strings
     """
@@ -26,7 +26,7 @@ def handleEncodingOddities(text, attemptEscapedReplacement=False):
             # if replacement is not requested, use composed characters
             # and replace them with question marks when encoding to ascii.
             # This is only done if using the fallback latin1 encoding as a last resort
-            if not attemptEscapedReplacement:
+            if not attempt_escaped_replacement:
                 form = "NFKC"
                 mode = "replace"
 
@@ -40,4 +40,4 @@ def quoted(value):
     try:
         return '"' + str(value) + '"'
     except (UnicodeEncodeError, UnicodeDecodeError):
-        return '"' + handleEncodingOddities(value) + '"'
+        return '"' + handle_encoding_oddities(value) + '"'

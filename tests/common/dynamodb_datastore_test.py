@@ -579,6 +579,115 @@ class EpsDynamoDbDataStoreTest(DynamoDbTest):
         expire_at = built_record["expireAt"]
         self.assertEqual(expire_at, expected_timestamp)
 
+    def test_record_expire_at_next_activity_delete(self):
+        """
+        Test that the expireAt will be calculated based on the nextActivityDate
+        when a record has a next activity of delete.
+        """
+        prescription_id, nhs_number = self.get_new_record_keys()
+
+        record = self.get_record(nhs_number, "20260101101112")
+        record["indexes"]["nextActivityNAD_bin"] = ["delete_20260101"]
+
+        expected_timestamp = int(
+            datetime(year=2027, month=1, day=1, tzinfo=timezone.utc).timestamp()
+        )
+
+        built_record = self.datastore.build_record(prescription_id, record, None, None)
+
+        expire_at = built_record["expireAt"]
+        self.assertEqual(expire_at, expected_timestamp)
+
+    def test_record_expire_at_next_activity_purge(self):
+        """
+        Test that the expireAt will be calculated based on the nextActivityDate
+        when a record has a next activity of purge.
+        """
+        prescription_id, nhs_number = self.get_new_record_keys()
+
+        record = self.get_record(nhs_number, "20260101101112")
+        record["indexes"]["nextActivityNAD_bin"] = ["purge_20260101"]
+
+        expected_timestamp = int(
+            datetime(year=2026, month=1, day=1, tzinfo=timezone.utc).timestamp()
+        )
+
+        built_record = self.datastore.build_record(prescription_id, record, None, None)
+
+        expire_at = built_record["expireAt"]
+        self.assertEqual(expire_at, expected_timestamp)
+
+    def test_record_expire_at_no_date_element(self):
+        """
+        Test that the expireAt will be set to default when a record has a next activity of purge
+        but no date element in nextActivityNAD_bin.
+        """
+        prescription_id, nhs_number = self.get_new_record_keys()
+
+        date_time = datetime(
+            year=2025,
+            month=9,
+            day=11,
+            hour=10,
+            minute=11,
+            second=12,
+            microsecond=123456,
+            tzinfo=timezone.utc,
+        )
+        date_string = datetime.strftime(date_time, TimeFormats.STANDARD_DATE_FORMAT)
+        record = self.get_record(nhs_number, date_string)
+        record["indexes"]["nextActivityNAD_bin"] = ["purge"]
+
+        expected_timestamp = int(
+            datetime(year=2027, month=3, day=11, tzinfo=timezone.utc).timestamp()
+        )
+
+        built_record = self.datastore.build_record(prescription_id, record, None, None)
+
+        expire_at = built_record["expireAt"]
+        self.assertEqual(expire_at, expected_timestamp)
+
+    def test_record_expire_at_max_date(self):
+        """
+        Test that the expireAt will be set to default when a record has a next activity of purge
+        but the date element in nextActivityNAD_bin is the max date of 99991231.
+        """
+        prescription_id, nhs_number = self.get_new_record_keys()
+
+        date_time = datetime(
+            year=2025,
+            month=9,
+            day=11,
+            hour=10,
+            minute=11,
+            second=12,
+            microsecond=123456,
+            tzinfo=timezone.utc,
+        )
+        date_string = datetime.strftime(date_time, TimeFormats.STANDARD_DATE_FORMAT)
+        record = self.get_record(nhs_number, date_string)
+        record["indexes"]["nextActivityNAD_bin"] = ["purge_99991231"]
+
+        expected_timestamp = int(
+            datetime(year=2027, month=3, day=11, tzinfo=timezone.utc).timestamp()
+        )
+
+        built_record = self.datastore.build_record(prescription_id, record, None, None)
+
+        expire_at = built_record["expireAt"]
+        self.assertEqual(expire_at, expected_timestamp)
+
+    @parameterized.expand([("delete_20260101", "delete", "20260101"), ("delete", "delete", None)])
+    def test_parse_next_activity_nad(self, next_activity_nad, expected_activity, expected_date):
+        """
+        Test parsing nextActivityNAD_bin to obtain nextActivity and nextActivityDate.
+        """
+        indexes = {"nextActivityNAD_bin": [next_activity_nad]}
+        next_activity, _, next_activity_date = self.datastore.parse_next_activity_nad(indexes)
+
+        self.assertEqual(next_activity, expected_activity)
+        self.assertEqual(next_activity_date, expected_date)
+
     def test_document_expire_at(self):
         """
         Test that the expireAt attribute added to a document

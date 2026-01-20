@@ -36,156 +36,154 @@ class ChangeLogProcessor(object):
     INVALID_SCN = -1
 
     @classmethod
-    def logForGeneralUpdate(cls, sCN, internalID=None, xslt=None, rspParameters=None):
+    def log_for_general_update(cls, scn, internal_id=None, xslt=None, rsp_parameters=None):
         """
         Add a general change log update, nothing specific to a domain
         """
-        if not rspParameters:
-            rspParameters = {}
+        if not rsp_parameters:
+            rsp_parameters = {}
 
         logOfChange = {}
         _timeOfChange = datetime.datetime.now().strftime(TimeFormats.STANDARD_DATE_TIME_FORMAT)
         logOfChange[cls.TIMESTAMP] = _timeOfChange
-        logOfChange[cls.SCN] = sCN
-        logOfChange[cls.INTERNAL_ID] = internalID
+        logOfChange[cls.SCN] = scn
+        logOfChange[cls.INTERNAL_ID] = internal_id
         logOfChange[cls.XSLT] = xslt
-        logOfChange[cls.RSP_PARAMS] = rspParameters
+        logOfChange[cls.RSP_PARAMS] = rsp_parameters
         return logOfChange
 
     @classmethod
-    def updateChangeLog(cls, record, newLog, messageID, prunePoint=None):
+    def update_change_log(cls, record, new_log, message_id, prune_point=None):
         """
         Take a change log from the record, add the new log to it, and prune to the prune
         point
         """
-        if not prunePoint:
-            prunePoint = cls.PRUNE_POINT
+        if not prune_point:
+            prune_point = cls.PRUNE_POINT
 
-        changeLog = record.get(cls.RECORD_CHANGELOG_REF, {})
-        changeLog[messageID] = newLog
+        change_log = record.get(cls.RECORD_CHANGELOG_REF, {})
+        change_log[message_id] = new_log
+        cls.prune_change_log(change_log, prune_point)
 
-        cls.pruneChangeLog(changeLog, prunePoint)
-
-        record[cls.RECORD_CHANGELOG_REF] = changeLog
+        record[cls.RECORD_CHANGELOG_REF] = change_log
         return record
 
     @classmethod
-    def pruneChangeLog(cls, changeLog, prunePoint):
+    def prune_change_log(cls, change_log, prune_point):
         """
         Prune to the prune point
         """
-        if prunePoint != cls.DO_NOT_PRUNE:
-            _, _highestSCN = cls.getHighestSCN(changeLog)
-            if _highestSCN != cls.INVALID_SCN:
-                _scnToPrune = _highestSCN - prunePoint
-                pruneList = []
-                for guid, changeLogEntry in changeLog.items():
-                    _entrySCN = int(changeLogEntry.get(cls.SCN, cls.INVALID_SCN))
-                    if _entrySCN < _scnToPrune:
-                        pruneList.append(guid)
-
-                for guid in pruneList:
-                    del changeLog[guid]
-
-    @classmethod
-    def getHighestSCN(cls, changeLog):
-        """
-        Return the (guid, scn) from the first changeLog found with the highest SCN
-        """
-        (highestGUID, highestSCN) = (None, cls.INVALID_SCN)
-        for _guid in changeLog:
-            _scn = int(changeLog[_guid].get(cls.SCN, cls.INVALID_SCN))
-            if _scn > highestSCN:
-                highestGUID = _guid
-                highestSCN = _scn
-        return (highestGUID, highestSCN)
+        if prune_point != cls.DO_NOT_PRUNE:
+            _, highest_scn = cls.get_highest_scn(change_log)
+            if highest_scn != cls.INVALID_SCN:
+                scn_to_prune = highest_scn - prune_point
+                prune_list = []
+                for guid, change_log_entry in change_log.items():
+                    entry_scn = int(change_log_entry.get(cls.SCN, cls.INVALID_SCN))
+                    if entry_scn < scn_to_prune:
+                        prune_list.append(guid)
+                for guid in prune_list:
+                    del change_log[guid]
 
     @classmethod
-    def getSCN(cls, changeLogEntry):
+    def get_highest_scn(cls, change_log):
         """
-        Retrieve the SCN as an int from the provided changeLog entry
+        Return the (guid, scn) from the first change_log found with the highest SCN
         """
-        scnNumber = int(changeLogEntry.get(cls.SCN, cls.INVALID_SCN))
-        return scnNumber
+        (highest_guid, highest_scn) = (None, cls.INVALID_SCN)
+        for guid in change_log:
+            scn = int(change_log[guid].get(cls.SCN, cls.INVALID_SCN))
+            if scn > highest_scn:
+                highest_guid = guid
+                highest_scn = scn
+        return (highest_guid, highest_scn)
 
     @classmethod
-    def listSCNs(cls, changeLog):
+    def get_scn(cls, change_log_entry):
         """
-        Performs list comprehension on the changeLog dictionary to retrieve all the SCNs from changeLog
+        Retrieve the SCN as an int from the provided change_log entry
+        """
+        scn_number = int(change_log_entry.get(cls.SCN, cls.INVALID_SCN))
+        return scn_number
 
-        Duplicates will be present and changeLog entries with no SCN will be represented with the
+    @classmethod
+    def list_scns(cls, change_log):
+        """
+        Performs list comprehension on the change_log dictionary to retrieve all the SCNs from change_log
+
+        Duplicates will be present and change_log entries with no SCN will be represented with the
         INVALID_SCN constant
         """
-        scnNumberList = [cls.getSCN(changeLog[x]) for x in changeLog]
-        return scnNumberList
+        scn_number_list = [cls.get_scn(change_log[x]) for x in change_log]
+        return scn_number_list
 
     @classmethod
-    def getMaxSCN(cls, changeLog):
+    def get_max_scn(cls, change_log):
         """
-        Return the highest SCN value from the provided changeLog
+        Return the highest SCN value from the provided change_log
         """
-        scnNumberList = cls.listSCNs(changeLog)
-        if not scnNumberList:
+        scn_number_list = cls.list_scns(change_log)
+        if not scn_number_list:
             return cls.INVALID_SCN
-        highestSCN = max(scnNumberList)
-        return highestSCN
+        highest_scn = max(scn_number_list)
+        return highest_scn
 
     @classmethod
-    def getAllGuidsForSCN(cls, changeLog, searchScn):
+    def get_all_guids_for_scn(cls, change_log, search_scn):
         """
-        For the provided SCN return the GUID Keys of all the changeLog entries that have that SCN
+        For the provided SCN return the GUID Keys of all the change_log entries that have that SCN
 
         Usually this will be a single GUID, but in the case of tickled records there can be multiple.
         """
-        searchScn = int(searchScn)
-        guidList = [k for k in changeLog if cls.getSCN(changeLog[k]) == searchScn]
-        return guidList
+        search_scn = int(search_scn)
+        guid_list = [k for k in change_log if cls.get_scn(change_log[k]) == search_scn]
+        return guid_list
 
     @classmethod
-    def getMaxSCNGuids(cls, changeLog):
+    def get_max_scn_guids(cls, change_log):
         """
-        Finds the highest SCN in the changeLog and returns all the GUIDs that have that SCN
+        Finds the highest SCN in the change_log and returns all the GUIDs that have that SCN
         """
-        highestSCN = cls.getMaxSCN(changeLog)
-        guidList = cls.getAllGuidsForSCN(changeLog, highestSCN)
-        return guidList
+        highest_scn = cls.get_max_scn(change_log)
+        guid_list = cls.get_all_guids_for_scn(change_log, highest_scn)
+        return guid_list
 
     @classmethod
-    def getAllGuids(cls, changeLog):
+    def get_all_guids(cls, change_log):
         """
-        Return a list of all the GUID keys from the provided changeLog
+        Return a list of all the GUID keys from the provided change_log
         """
-        return list(changeLog.keys())
+        return list(change_log.keys())
 
     @classmethod
-    def getLastChangeTime(cls, changeLog):
+    def get_last_change_time(cls, change_log):
         """
         Returns the last change time
         """
         try:
-            guid = cls.getMaxSCNGuids(changeLog)[0]
+            guid = cls.get_max_scn_guids(change_log)[0]
         except IndexError:
             return None
-        return changeLog[guid].get(cls.TIMESTAMP)
+        return change_log[guid].get(cls.TIMESTAMP)
 
     @classmethod
-    def setInitialChangeLog(cls, record, internalID, reasonGUID=None):
+    def set_initial_change_log(cls, record, internal_id, reason_guid=None):
         """
         If no change log is present set an initial change log on the record.  It may
         use a GUID as a key or a string explaining the reason for initiating the
         change log.
         """
-        changeLog = record.get(cls.RECORD_CHANGELOG_REF)
-        if changeLog:
+        change_log = record.get(cls.RECORD_CHANGELOG_REF)
+        if change_log:
             return
 
         scn = int(record.get(cls.RECORD_SCN_REF, cls.INITIAL_SCN))
-        if not reasonGUID:
-            reasonGUID = str(uuid.uuid4()).upper()
-        changeLog = {}
-        changeLog[reasonGUID] = cls.logForGeneralUpdate(scn, internalID)
+        if not reason_guid:
+            reason_guid = str(uuid.uuid4()).upper()
+        change_log = {}
+        change_log[reason_guid] = cls.log_for_general_update(scn, internal_id)
 
-        record[cls.RECORD_CHANGELOG_REF] = changeLog
+        record[cls.RECORD_CHANGELOG_REF] = change_log
 
 
 class DemographicsChangeLogProcessor(ChangeLogProcessor):
@@ -197,48 +195,48 @@ class DemographicsChangeLogProcessor(ChangeLogProcessor):
     RECORD_SCN_REF = "serialChangeNumber"
 
     @classmethod
-    def logForDomainUpdate(cls, updateContext, internalID):
+    def log_for_domain_update(cls, update_context, internal_id):
         """
         Create a change log for this expected change - requires attributes to be set on
         context object
         """
-        logOfChange = cls.logForGeneralUpdate(
-            updateContext.pdsRecord.get(cls.RECORD_SCN_REF, cls.INITIAL_SCN),
-            internalID,
-            updateContext.responseDetails.get(cls.XSLT),
-            updateContext.responseDetails.get(cls.RSP_PARAMS),
+        log_of_change = cls.log_for_general_update(
+            update_context.pdsRecord.get(cls.RECORD_SCN_REF, cls.INITIAL_SCN),
+            internal_id,
+            update_context.responseDetails.get(cls.XSLT),
+            update_context.responseDetails.get(cls.RSP_PARAMS),
         )
 
-        logOfChange[cls.SYS_SDS] = updateContext.agentSystem
-        logOfChange[cls.PRS_SDS] = updateContext.agentPerson
-        logOfChange[cls.UPDATES] = updateContext.updatesApplied
-        logOfChange[cls.NOTIFICATIONS] = updateContext.notificationsToQueue
-        return logOfChange
+        log_of_change[cls.SYS_SDS] = update_context.agentSystem
+        log_of_change[cls.PRS_SDS] = update_context.agentPerson
+        log_of_change[cls.UPDATES] = update_context.updatesApplied
+        log_of_change[cls.NOTIFICATIONS] = update_context.notificationsToQueue
+        return log_of_change
 
     @staticmethod
-    def getHighestGpLinksTransactionNumber(changeLog, sender, recipient):
+    def get_highest_gp_links_transaction_number(change_log, sender, recipient):
         """
         Return the highest GP Links transaction number which has been included in the change log, or None (if there
         aren't any).
         """
-        maxNumber = -1
+        max_number = -1
 
-        gpLinksKeyPattern = re.compile(
+        gp_links_key_pattern = re.compile(
             "^{}_{}_[0-9]+_[0-9]+_(?P<transactionNumber>[0-9]+)$".format(
                 sender.upper(), recipient.upper()
             )
         )
 
-        for key in changeLog.keys():  # noqa: SIM118
-            match = gpLinksKeyPattern.match(key)
+        for key in change_log.keys():  # noqa: SIM118
+            match = gp_links_key_pattern.match(key)
             # Ignore keys which aren't related to GP Links transactions
             if match is None:
                 continue
-            transactionNumber = int(match.group("transactionNumber"))
-            if transactionNumber > maxNumber:
-                maxNumber = transactionNumber
+            transaction_number = int(match.group("transactionNumber"))
+            if transaction_number > max_number:
+                max_number = transaction_number
 
-        return maxNumber
+        return max_number
 
 
 class PrescriptionsChangeLogProcessor(ChangeLogProcessor):
@@ -284,27 +282,27 @@ class PrescriptionsChangeLogProcessor(ChangeLogProcessor):
     REGEX_ALPHANUMERIC8 = re.compile(r"^[A-Za-z0-9\-]{1,8}$")
 
     @classmethod
-    def logForDomainUpdate(cls, updateContext, internalID):
+    def log_for_domain_update(cls, update_context, internal_id):
         """
         Create a change log for this expected change - requires attribute to be set on
         context object
         """
 
-        logOfChange = cls.logForGeneralUpdate(
-            updateContext.epsRecord.get_scn(),
-            internalID,
-            updateContext.responseDetails.get(cls.XSLT),
-            updateContext.responseDetails.get(cls.RSP_PARAMS),
+        log_of_change = cls.log_for_general_update(
+            update_context.epsRecord.get_scn(),
+            internal_id,
+            update_context.responseDetails.get(cls.XSLT),
+            update_context.responseDetails.get(cls.RSP_PARAMS),
         )
-        logOfChange = updateContext.workDescriptionObject.createInitialEventLog(logOfChange)
+        log_of_change = update_context.workDescriptionObject.createInitialEventLog(log_of_change)
 
-        _instance = (
-            str(updateContext.updateInstance)
-            if updateContext.updateInstance
-            else str(updateContext.instanceID)
+        instance = (
+            str(update_context.updateInstance)
+            if update_context.updateInstance
+            else str(update_context.instanceID)
         )
 
-        logOfChange[cls.TIME_PREPARED] = updateContext.handleTime.strftime(
+        log_of_change[cls.TIME_PREPARED] = update_context.handleTime.strftime(
             TimeFormats.STANDARD_DATE_TIME_FORMAT
         )
 
@@ -312,150 +310,99 @@ class PrescriptionsChangeLogProcessor(ChangeLogProcessor):
         # superceded by the INS_FROM_STATUS and INS_TO_STATUS fields set below.
         # The only reference to TO_STATUS seems to be in PrescriptionJsonQueryResponse.cfg
         # template used by the prescription detail view web service
-        logOfChange[cls.FROM_STATUS] = updateContext.epsRecord.return_previous_prescription_status(
-            updateContext.instanceID, False
+        log_of_change[cls.FROM_STATUS] = (
+            update_context.epsRecord.return_previous_prescription_status(
+                update_context.instanceID, False
+            )
         )
-        logOfChange[cls.TO_STATUS] = updateContext.epsRecord.return_prescription_status(
-            updateContext.instanceID, False
+        log_of_change[cls.TO_STATUS] = update_context.epsRecord.return_prescription_status(
+            update_context.instanceID, False
         )
 
         # Event history lines for UI
         # **** NOTE THAT THESE ARE WRONG, THEY REFER TO THE FINAL ISSUE, WHICH MAY NOT BE THE ISSUE THAT WAS UPDATED
-        logOfChange[cls.INSTANCE] = _instance
-        logOfChange[cls.INS_FROM_STATUS] = (
-            updateContext.epsRecord.return_previous_prescription_status(_instance, False)
+        log_of_change[cls.INSTANCE] = instance
+        log_of_change[cls.INS_FROM_STATUS] = (
+            update_context.epsRecord.return_previous_prescription_status(instance, False)
         )
-        logOfChange[cls.INS_TO_STATUS] = updateContext.epsRecord.return_prescription_status(
-            _instance, False
+        log_of_change[cls.INS_TO_STATUS] = update_context.epsRecord.return_prescription_status(
+            instance, False
         )
-        logOfChange[cls.AGENT_ROLE_PROFILE_CODE_ID] = updateContext.agentRoleProfileCodeId
-        logOfChange[cls.AGENT_PERSON_ROLE] = updateContext.agentPersonRole
-        orgCode = updateContext.agentOrganization
-        hasDispenserCode = hasattr(updateContext, "dispenserCode") and updateContext.dispenserCode
+        log_of_change[cls.AGENT_ROLE_PROFILE_CODE_ID] = update_context.agentRoleProfileCodeId
+        log_of_change[cls.AGENT_PERSON_ROLE] = update_context.agentPersonRole
+        org_code = update_context.agentOrganization
+        has_dispenser_code = (
+            hasattr(update_context, "dispenserCode") and update_context.dispenserCode
+        )
         if (
-            not orgCode
-            and hasDispenserCode
-            and cls.REGEX_ALPHANUMERIC8.match(updateContext.dispenserCode)
+            not org_code
+            and has_dispenser_code
+            and cls.REGEX_ALPHANUMERIC8.match(update_context.dispenserCode)
         ):
-            orgCode = updateContext.dispenserCode
-        logOfChange[cls.AGENT_PERSON_ORG_CODE] = orgCode
+            org_code = update_context.dispenserCode
+        log_of_change[cls.AGENT_PERSON_ORG_CODE] = org_code
 
-        # To help with troubleshooting, the following change entris are added
-        _preChangeIssueStatuses = updateContext.epsRecord.return_prechange_issue_status_dict()
-        _postChangeIssueStatuses = updateContext.epsRecord.create_issue_current_status_dict()
-        logOfChange[cls.PRE_CHANGE_STATUS_DICT] = _preChangeIssueStatuses
-        logOfChange[cls.POST_CHANGE_STATUS_DICT] = _postChangeIssueStatuses
-        logOfChange[cls.CHANGED_ISSUES_LIST] = updateContext.epsRecord.return_changed_issue_list(
-            _preChangeIssueStatuses, _postChangeIssueStatuses, None, updateContext.changedIssuesList
+        # To help with troubleshooting, the following change entries are added
+        pre_change_issue_statuses = update_context.epsRecord.return_prechange_issue_status_dict()
+        post_change_issue_statuses = update_context.epsRecord.create_issue_current_status_dict()
+        log_of_change[cls.PRE_CHANGE_STATUS_DICT] = pre_change_issue_statuses
+        log_of_change[cls.POST_CHANGE_STATUS_DICT] = post_change_issue_statuses
+        log_of_change[cls.CHANGED_ISSUES_LIST] = update_context.epsRecord.return_changed_issue_list(
+            pre_change_issue_statuses,
+            post_change_issue_statuses,
+            None,
+            update_context.changedIssuesList,
         )
         # To help with troubleshooting, the following currentIssue values are added
-        logOfChange[cls.PRE_CHANGE_CURRENT_ISSUE] = (
-            updateContext.epsRecord.return_prechange_current_issue()
+        log_of_change[cls.PRE_CHANGE_CURRENT_ISSUE] = (
+            update_context.epsRecord.return_prechange_current_issue()
         )
-        logOfChange[cls.POST_CHANGE_CURRENT_ISSUE] = updateContext.epsRecord.current_issue_number
-        if hasattr(updateContext, cls.TOUCHED) and updateContext.touched:
-            logOfChange[cls.TOUCHED] = updateContext.touched
+        log_of_change[cls.POST_CHANGE_CURRENT_ISSUE] = update_context.epsRecord.current_issue_number
+        if hasattr(update_context, cls.TOUCHED) and update_context.touched:
+            log_of_change[cls.TOUCHED] = update_context.touched
 
-        return logOfChange
+        return log_of_change
 
     @classmethod
-    def pruneChangeLog(cls, changeLog, prunePoint):
+    def prune_change_log(cls, change_log, prune_point):
         """
-        Prune if other the  prune point
         Prune the change log where there is a series of change log entries for the same
         interactionID - and the change is neither recent nor part of the early history
 
-        The intention if we get a repeating interaction we don't continue to explode the
+        The intention is that if we get a repeating interaction we don't continue to explode the
         changeLog with all the history
         """
-        invertedChangeLog = {}
-        maxSCN = 0
-        for guid, changeLogEntry in changeLog.items():
-            _SCN = int(changeLogEntry.get(cls.SCN, cls.INVALID_SCN))
-            invertedChangeLog[_SCN] = (guid, changeLogEntry.get(cls.INTERACTION_ID))
-            maxSCN = max(maxSCN, _SCN)
-
-        if maxSCN <= prunePoint:
+        inverted_change_log = {}
+        max_scn = 0
+        for guid, change_log_entry in change_log.items():
+            scn = int(change_log_entry.get(cls.SCN, cls.INVALID_SCN))
+            inverted_change_log[scn] = (guid, change_log_entry.get(cls.INTERACTION_ID))
+            max_scn = max(max_scn, scn)
+        if max_scn <= prune_point:
             # Don't make any changes
             return
 
-        _iclSCNKeys = list(invertedChangeLog.keys())
-        _iclSCNKeys.sort(reverse=True)
-        _guidsToPrune = []
-        for _iclSCN in _iclSCNKeys:
-            if _iclSCN > (maxSCN - cls.MIN_RECENTHISTORY) or _iclSCN < cls.MIN_INITIALHISTORY:
+        icl_scn_keys = list(inverted_change_log.keys())
+        icl_scn_keys.sort(reverse=True)
+        guids_to_prune = []
+        for icl_scn in icl_scn_keys:
+            if icl_scn > (max_scn - cls.MIN_RECENTHISTORY) or icl_scn < cls.MIN_INITIALHISTORY:
                 continue
-            _thisIntID = invertedChangeLog.get(_iclSCN, (None, None))[1]
-            (_previousGUID, _previousIntID) = invertedChangeLog.get(_iclSCN - 1, (None, None))
-            _oneBeforeIntID = invertedChangeLog.get(_iclSCN - 2, (None, None))[1]
+            this_int_id = inverted_change_log.get(icl_scn, (None, None))[1]
+            (previous_guid, previous_int_id) = inverted_change_log.get(icl_scn - 1, (None, None))
+            one_before_int_id = inverted_change_log.get(icl_scn - 2, (None, None))[1]
             if (
-                _thisIntID
-                and _thisIntID in cls.REPEATING_ACTIONS
-                and _thisIntID == _previousIntID
-                and _previousIntID == _oneBeforeIntID
+                this_int_id
+                and this_int_id in cls.REPEATING_ACTIONS
+                and this_int_id == previous_int_id
+                and previous_int_id == one_before_int_id
             ):
-                _guidsToPrune.append(_previousGUID)
+                guids_to_prune.append(previous_guid)
 
-        for guid in _guidsToPrune:
-            del changeLog[guid]
+        for guid in guids_to_prune:
+            del change_log[guid]
 
-        if len(changeLog) > prunePoint:
+        if len(change_log) > prune_point:
             # If we have breached the prune point but can't safely prune - stop before
             # The un-pruned record becomes an issue
             raise EpsSystemError(EpsSystemError.SYSTEM_FAILURE)
-
-
-class ClinicalsChangeLogProcessor(ChangeLogProcessor):
-    """
-    Change Log Processor specifically for clinicals patient records
-    """
-
-    SYS_SDS = "agentSystemSDS"
-    PRS_SDS = "agentPerson"
-    PRUNE_POINT = 48
-
-    @classmethod
-    def logForDomainUpdate(cls, updateContext, internalID, interactionID=None):
-        """
-        Create a change log for this expected change - requires attributes to be set on
-        context object
-        """
-        logOfChange = cls.logForGeneralUpdate(
-            updateContext.patientRecord.get_scn(),
-            internalID,
-            updateContext.responseDetails.get(cls.XSLT),
-            updateContext.responseDetails.get(cls.RSP_PARAMS),
-        )
-
-        logOfChange[cls.TIME_PREPARED] = updateContext.handleTime.strftime(
-            TimeFormats.STANDARD_DATE_TIME_FORMAT
-        )
-        logOfChange[cls.INTERACTION_ID] = interactionID
-        logOfChange[cls.SYS_SDS] = updateContext.agentSystem
-        logOfChange[cls.PRS_SDS] = updateContext.agentPerson
-        return logOfChange
-
-    @classmethod
-    def logForNotificationUpdate(cls, interactionID, updateTime, scn, internalID):
-        """
-        Create a change log for this expected change from a notification worker - doesn't use
-        context and sets a subset of the items used by logForDomainUpdate
-        """
-        logOfChange = cls.logForGeneralUpdate(scn, internalID)
-        logOfChange[cls.TIME_PREPARED] = updateTime.strftime(TimeFormats.STANDARD_DATE_TIME_FORMAT)
-        logOfChange[cls.INTERACTION_ID] = interactionID
-        return logOfChange
-
-    @classmethod
-    def logForTickleClinicalRecord(cls, updateContext, interactionID, internalID):
-        """
-        Create a change log for this expected change from a notification worker - doesn't use
-        context and sets a subset of the items used by logForDomainUpdate
-        """
-        logOfChange = cls.logForGeneralUpdate(updateContext.patientRecord.get_scn(), internalID)
-        logOfChange[cls.TIME_PREPARED] = updateContext.handleTime.strftime(
-            TimeFormats.STANDARD_DATE_TIME_FORMAT
-        )
-        logOfChange[cls.INTERACTION_ID] = interactionID
-        logOfChange[cls.SYS_SDS] = "SYSTEM"
-        return logOfChange

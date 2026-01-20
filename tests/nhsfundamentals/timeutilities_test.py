@@ -6,9 +6,9 @@ from parameterized.parameterized import parameterized
 
 from eps_spine_shared.nhsfundamentals.timeutilities import (
     TimeFormats,
-    _guessCommonDateTimeFormat,
-    convertSpineDate,
-    timeNowAsString,
+    _guess_common_datetime_format,
+    convert_spine_date,
+    time_now_as_string,
 )
 
 
@@ -25,13 +25,13 @@ class TimeUtilitiesTests(TestCase):
             ("gmt_start", "2021-10-31 02:00:00", "20211031020000"),
         ]
     )
-    def testTimeNowAsString(self, _, utcNow, expected):
+    def test_time_now_as_string(self, _, utc_now, expected):
         """
-        Check timeNowAsString returns standard spine format by default matching UTC time.
+        Check time_now_as_string returns standard spine format by default matching UTC time.
         """
-        with mock.patch("eps_spine_shared.nhsfundamentals.timeutilities.now") as mockNow:
-            mockNow.return_value = datetime.strptime(utcNow, "%Y-%m-%d %H:%M:%S")
-            result = timeNowAsString()
+        with mock.patch("eps_spine_shared.nhsfundamentals.timeutilities.now") as mock_now:
+            mock_now.return_value = datetime.strptime(utc_now, "%Y-%m-%d %H:%M:%S")
+            result = time_now_as_string()
             self.assertEqual(expected, result)
 
     @parameterized.expand(
@@ -55,64 +55,64 @@ class TimeUtilitiesTests(TestCase):
             ("other", "202", None),
         ]
     )
-    def testGuessCommonDateTimeFormat_Default(self, _, timeString, expected):
+    def test_guess_common_datetime_format_default(self, _, time_string, expected):
         """
         Check time format determined from date time string using default settings
         """
-        result = _guessCommonDateTimeFormat(timeString)
+        result = _guess_common_datetime_format(time_string)
         self.assertEqual(expected, result)
 
-    def testGuessCommonDateTimeFormat_NoneIfUnknown(self):
+    def test_guess_common_datetime_format_none_if_unknown(self):
         """
         Check time format determined from date time string specifying to return none if could not be determined
         """
-        result = _guessCommonDateTimeFormat("202", False)
+        result = _guess_common_datetime_format("202", False)
         self.assertIsNone(result)
 
-    def testGuessCommonDateTimeFormat_ErrorIfUnknown_FormatUnknown(self):
+    def test_guess_common_datetime_format_error_if_unknown_format_unknown(self):
         """
         Check time format determined from date time string with an unknown format, with raise error true
         """
         with self.assertRaises(ValueError):
-            _ = _guessCommonDateTimeFormat("202", True)
+            _ = _guess_common_datetime_format("202", True)
 
-    def testGuessCommonDateTimeFormat_ErrorIfUnknown_FormatKnown(self):
+    def test_guess_common_datetime_format_error_if_unknown_format_known(self):
         """
         Check time format determined from date time string with a known format, with raise error true
         """
-        result = _guessCommonDateTimeFormat("2020", True)
+        result = _guess_common_datetime_format("2020", True)
         self.assertEqual(TimeFormats.STANDARD_DATE_FORMAT_YEAR_ONLY, result)
 
 
 class DateFormatTest(TestCase):
     """
-    There is a safety method called convertSpineDate which will convert a date string if
+    There is a safety method called convert_spine_date which will convert a date string if
     there is doubt over the actual format being used
     """
 
-    def _formatTester(self, dateFormat, withFormat=False):
+    def _format_tester(self, date_format, with_format=False):
         """
         Test the format of a date
         """
-        _now = datetime.now()
-        _nowAsString = _now.strftime(dateFormat)
-        if withFormat:
-            _newNow = convertSpineDate(_nowAsString, dateFormat)
+        now = datetime.now()
+        now_as_string = now.strftime(date_format)
+        if with_format:
+            new_now = convert_spine_date(now_as_string, date_format)
         else:
-            _newNow = convertSpineDate(_nowAsString)
+            new_now = convert_spine_date(now_as_string)
 
-        if _newNow > _now:
-            return _newNow - _now
-        return _now - _newNow
+        if new_now > now:
+            return new_now - now
+        return now - new_now
 
-    def testEbxml(self):
+    def test_ebxml(self):
         """
         TimeFormats.EBXML_FORMAT
         """
-        delta = self._formatTester(TimeFormats.EBXML_FORMAT)
+        delta = self._format_tester(TimeFormats.EBXML_FORMAT)
         self.assertLessEqual(delta.seconds, 1)
 
-    def testStandardUTC(self):
+    def test_standard_utc(self):
         """
         STANDARD_DATE_TIME_UTC_ZONE_FORMAT = '%Y%m%d%H%M%S+0000'
         STANDARD_DATE_TIME_FORMAT = '%Y%m%d%H%M%S'
@@ -125,40 +125,40 @@ class DateFormatTest(TestCase):
         DAY_MONTH_YEAR_WITH_SLASHES_FORMAT = '%d/%m/%Y'
         TWO_DIGIT_YEAR_AND_WEEK_FORMAT = '%y%W'
         """
-        delta = self._formatTester(TimeFormats.STANDARD_DATE_TIME_UTC_ZONE_FORMAT)
+        delta = self._format_tester(TimeFormats.STANDARD_DATE_TIME_UTC_ZONE_FORMAT)
         self.assertLessEqual(delta.seconds, 1)
 
-    def testStandardDT(self):
+    def test_standard_dt(self):
         """
         The value of STANDARD_DATE_TIME_FORMAT = '%Y%m%d%H%M%S'
         """
-        delta = self._formatTester(TimeFormats.STANDARD_DATE_TIME_FORMAT)
+        delta = self._format_tester(TimeFormats.STANDARD_DATE_TIME_FORMAT)
         self.assertLessEqual(delta.seconds, 1)
 
-    def testStandardDTMS(self):
+    def test_standard_dt_ms(self):
         """
         The value of SPINE_DATETIME_MS_FORMAT = '%Y%m%d%H%M%S.%f'
         """
-        delta = self._formatTester(TimeFormats.SPINE_DATETIME_MS_FORMAT)
+        delta = self._format_tester(TimeFormats.SPINE_DATETIME_MS_FORMAT)
         self.assertLessEqual(delta.seconds, 1)
 
-    def testStandardHL7(self):
+    def test_standard_hl7(self):
         """
         The value of HL7_DATETIME_FORMAT = '%Y%m%dT%H%M%S.%f'
         """
-        delta = self._formatTester(TimeFormats.HL7_DATETIME_FORMAT)
+        delta = self._format_tester(TimeFormats.HL7_DATETIME_FORMAT)
         self.assertLessEqual(delta.seconds, 1)
 
-    def testStandardDate(self):
+    def test_standard_date(self):
         """
         The value of SPINE_DATE_FORMAT = '%Y%m%d'
         """
-        delta = self._formatTester(TimeFormats.SPINE_DATE_FORMAT)
+        delta = self._format_tester(TimeFormats.SPINE_DATE_FORMAT)
         self.assertLessEqual(delta.days, 1)
 
-    def testStandardDT_withFormat(self):
+    def test_standard_dt_with_format(self):
         """
         The value of STANDARD_DATE_TIME_FORMAT = '%Y%m%d%H%M%S'
         """
-        delta = self._formatTester(TimeFormats.STANDARD_DATE_TIME_FORMAT, True)
+        delta = self._format_tester(TimeFormats.STANDARD_DATE_TIME_FORMAT, True)
         self.assertLessEqual(delta.seconds, 1)

@@ -154,7 +154,6 @@ class EpsDynamoDbIndex:
         """
         Build terms from items returned by the index query.
         """
-        # POC - Project the body into the index and do away with 'terms' altogether.
         terms = []
         for item in items:
             index_terms = item.get(ProjectedAttribute.INDEXES.name, {}).get(index_name.lower())
@@ -163,7 +162,6 @@ class EpsDynamoDbIndex:
             [
                 terms.append((index_term, item[Key.PK.name]))
                 for index_term in index_terms
-                # POC - term_regex can be replaced by filter expressions for status and releaseVersion.
                 if ((not term_regex) or re.search(term_regex, index_term))
             ]
         return terms

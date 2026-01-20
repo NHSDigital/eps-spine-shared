@@ -34,54 +34,54 @@ _TIMEFORMAT_LENGTH_MAP = {
 }
 
 
-def _guessCommonDateTimeFormat(timeString, raiseErrorIfUnknown=False):
+def _guess_common_datetime_format(time_string, raise_error_if_unknown=False):
     """
     Guess the date time format from the commonly used list
 
     Args:
-        timeString (str):
+        time_string (str):
             The datetime string to try determine the format of.
-        raiseErrorIfUnknown (bool):
+        raise_error_if_unknown (bool):
             Determines the action when the format cannot be determined.
             False (default) will return None, True will raise an error.
     """
-    _format = None
-    if len(timeString) == 19:
+    time_format = None
+    if len(time_string) == 19:
         try:
-            datetime.strptime(timeString, TimeFormats.EBXML_FORMAT)
-            _format = TimeFormats.EBXML_FORMAT
+            datetime.strptime(time_string, TimeFormats.EBXML_FORMAT)
+            time_format = TimeFormats.EBXML_FORMAT
         except ValueError:
-            _format = TimeFormats.STANDARD_DATE_TIME_UTC_ZONE_FORMAT
+            time_format = TimeFormats.STANDARD_DATE_TIME_UTC_ZONE_FORMAT
     else:
-        _format = _TIMEFORMAT_LENGTH_MAP.get(len(timeString), None)
+        time_format = _TIMEFORMAT_LENGTH_MAP.get(len(time_string), None)
 
-    if not _format and raiseErrorIfUnknown:
-        raise ValueError("Could not determine datetime format of '{}'".format(timeString))
+    if not time_format and raise_error_if_unknown:
+        raise ValueError("Could not determine datetime format of '{}'".format(time_string))
 
-    return _format
+    return time_format
 
 
-def convertSpineDate(dateString, dateFormat=None):
+def convert_spine_date(date_string, date_format=None):
     """
     Try to convert a Spine date using the passed format - if it fails - try the most
     appropriate
     """
-    if dateFormat:
+    if date_format:
         try:
-            dateObject = datetime.strptime(dateString, dateFormat)
-            return dateObject
+            date_object = datetime.strptime(date_string, date_format)
+            return date_object
         except ValueError:
             pass
 
-    dateFormat = _guessCommonDateTimeFormat(dateString, raiseErrorIfUnknown=True)
-    return datetime.strptime(dateString, dateFormat)
+    date_format = _guess_common_datetime_format(date_string, raise_error_if_unknown=True)
+    return datetime.strptime(date_string, date_format)
 
 
-def timeNowAsString(_dateFormat=TimeFormats.STANDARD_DATE_TIME_FORMAT):
+def time_now_as_string(date_format=TimeFormats.STANDARD_DATE_TIME_FORMAT):
     """
     Return the current date and time as a string in standard format
     """
-    return now().strftime(_dateFormat)
+    return now().strftime(date_format)
 
 
 def now():

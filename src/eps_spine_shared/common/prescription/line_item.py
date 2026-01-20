@@ -85,17 +85,17 @@ class PrescriptionLineItem(object):
 
         :type parent_prescription: PrescriptionRecord
         """
-        currentStatus = self.status
-        if currentStatus not in LineItemStatus.EXPIRY_IMMUTABLE_STATES:
-            newStatus = LineItemStatus.EXPIRY_LOOKUP[currentStatus]
-            self.update_status(newStatus)
+        current_status = self.status
+        if current_status not in LineItemStatus.EXPIRY_IMMUTABLE_STATES:
+            new_status = LineItemStatus.EXPIRY_LOOKUP[current_status]
+            self.update_status(new_status)
             parent_prescription.logObject.write_log(
                 "EPS0072b",
                 None,
                 {
-                    "internalID": parent_prescription.internalID,
+                    "internalID": parent_prescription.internal_id,
                     "lineItemChanged": self.id,
-                    "previousStatus": currentStatus,
-                    "newStatus": newStatus,
+                    "previousStatus": current_status,
+                    "newStatus": new_status,
                 },
             )
