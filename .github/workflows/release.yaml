@@ -34,7 +34,6 @@ jobs:
       asdfVersion: ${{ needs.get_asdf_version.outputs.version }}
       branch_name: main
       dry_run: true
-      publish_package: false
 
   build:
     name: Build Package and Upload as Artifact
@@ -80,4 +79,3 @@ jobs:
       extra_artifact_run_id: ${{ github.run_id }}
       extra_artifact_repository: ${{ github.repository }}
       dry_run: false
-      publish_package: false
