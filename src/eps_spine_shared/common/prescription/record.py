@@ -2969,7 +2969,7 @@ class PrescriptionRecord(object):
         for line_item in self.current_issue.line_items:
             line_item_ref = "lineItem" + str(line_item.order)
             item_status = (
-                line_item.previousStatus
+                line_item.previous_status
                 if line_item.status == LineItemStatus.WITH_DISPENSER
                 else line_item.status
             )
