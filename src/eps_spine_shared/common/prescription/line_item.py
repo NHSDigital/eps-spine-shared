@@ -93,7 +93,7 @@ class PrescriptionLineItem(object):
                 "EPS0072b",
                 None,
                 {
-                    "internalID": parent_prescription.internalID,
+                    "internalID": parent_prescription.internal_id,
                     "lineItemChanged": self.id,
                     "previousStatus": currentStatus,
                     "newStatus": newStatus,
