@@ -560,7 +560,7 @@ class EpsDynamoDbDataStore:
                     self.client.insert_items(internal_id, [item], is_update, False)
                     break
                 except EpsDataStoreError as e:
-                    if e.errorTopic == EpsDataStoreError.CONDITIONAL_UPDATE_FAILURE and tries < 25:
+                    if e.error_topic == EpsDataStoreError.CONDITIONAL_UPDATE_FAILURE and tries < 25:
                         sequence_number = item[Attribute.SEQUENCE_NUMBER.name]
                         item[Attribute.SEQUENCE_NUMBER.name] = (
                             sequence_number + 1 if sequence_number < max_sequence_number else 1
