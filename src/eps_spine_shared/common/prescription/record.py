@@ -404,7 +404,7 @@ class PrescriptionRecord(object):
             {"internalID": self.internal_id, "prescriptionID": self.id, "issue": issue_number},
         )
         # Re-raise this as SpineBusinessError with equivalent errorCode from ErrorBase1722.
-        raise EpsBusinessError(EpsErrorBase.PRESCRIPTION_NOT_FOUND)
+        raise EpsBusinessError(EpsErrorBase.MISSING_ISSUE)
 
     @property
     def id(self):
