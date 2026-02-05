@@ -12,7 +12,7 @@ from eps_spine_shared.common.prescription.single_prescribe import SinglePrescrib
 from eps_spine_shared.common.prescription.types import PrescriptionTreatmentType
 from eps_spine_shared.errors import EpsSystemError
 from eps_spine_shared.nhsfundamentals.timeutilities import TimeFormats
-from tests.mock_logger import MockLogObject
+from eps_spine_shared.testing.mock_logger import MockLogObject
 
 
 def load_test_example_json(mock_log_object, filename):

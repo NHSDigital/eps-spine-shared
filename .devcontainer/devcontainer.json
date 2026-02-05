@@ -28,11 +28,11 @@
                 "ms-python.flake8",
                 "eamodio.gitlens",
                 "github.vscode-pull-request-github",
-                "dbaeumer.vscode-eslint",
                 "lfm.vscode-makefile-term",
                 "streetsidesoftware.code-spell-checker",
                 "timonwong.shellcheck",
-                "github.vscode-github-actions"
+                "github.vscode-github-actions",
+                "tamasfe.even-better-toml"
             ],
             "settings": {
                 "python.defaultInterpreterPath": "/home/vscode/.asdf/shims/python",

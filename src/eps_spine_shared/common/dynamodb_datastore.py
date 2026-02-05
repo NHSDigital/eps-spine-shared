@@ -102,6 +102,12 @@ class EpsDynamoDbDataStore:
         )
         self.indexes = EpsDynamoDbIndex(log_object, self.client)
 
+    def testConnection(self):
+        """
+        Placeholder test connection, returns constant value
+        """
+        return True
+
     def base64_decode_document_content(self, internal_id, document):
         """
         base64 decode document content in order to store as binary type in DynamoDB.
@@ -554,7 +560,7 @@ class EpsDynamoDbDataStore:
                     self.client.insert_items(internal_id, [item], is_update, False)
                     break
                 except EpsDataStoreError as e:
-                    if e.errorTopic == EpsDataStoreError.CONDITIONAL_UPDATE_FAILURE and tries < 25:
+                    if e.error_topic == EpsDataStoreError.CONDITIONAL_UPDATE_FAILURE and tries < 25:
                         sequence_number = item[Attribute.SEQUENCE_NUMBER.name]
                         item[Attribute.SEQUENCE_NUMBER.name] = (
                             sequence_number + 1 if sequence_number < max_sequence_number else 1

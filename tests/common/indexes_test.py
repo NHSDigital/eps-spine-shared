@@ -11,7 +11,7 @@ from eps_spine_shared.common.prescription.repeat_dispense import RepeatDispenseR
 from eps_spine_shared.common.prescription.repeat_prescribe import RepeatPrescribeRecord
 from eps_spine_shared.common.prescription.single_prescribe import SinglePrescribeRecord
 from eps_spine_shared.common.prescription.types import PrescriptionTreatmentType
-from tests.mock_logger import MockLogObject
+from eps_spine_shared.testing.mock_logger import MockLogObject
 
 
 def get_nad_references():
