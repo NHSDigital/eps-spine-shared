@@ -158,7 +158,7 @@ class PrescriptionRecord(object):
         event_log[PrescriptionsChangeLogProcessor.SCN] = self.get_scn()
         length_before = len(self.prescription_record.get(fields.FIELD_CHANGE_LOG, []))
         try:
-            PrescriptionsChangeLogProcessor.updateChangeLog(
+            PrescriptionsChangeLogProcessor.update_change_log(
                 self.prescription_record, event_log, message_id, self.SCN_MAX
             )
         except Exception as e:  # noqa: BLE001
@@ -901,7 +901,7 @@ class PrescriptionRecord(object):
             _cancellation_reasons = str(cancellation_status)
 
             _cancellation_id = _cancellation.get(fields.FIELD_CANCELLATION_ID, [])
-            _scn = PrescriptionsChangeLogProcessor.getSCN(
+            _scn = PrescriptionsChangeLogProcessor.get_scn(
                 self.prescription_record["changeLog"].get(_cancellation_id, {})
             )
             for _cancellation_reason in _cancellation.get(fields.FIELD_REASONS, []):

@@ -78,6 +78,7 @@ class EpsDynamoDbDataStore:
     NOTIFICATION_PREFIX = "Notification_"
     STORE_TIME_DOC_REF_TITLE_PREFIX = "NominatedReleaseRequestMsgRef"
     DEFAULT_EXPIRY_DAYS = 56
+    MAX_NEXT_ACTIVITY_DATE = "99991231"
 
     def __init__(
         self,
@@ -134,6 +135,41 @@ class EpsDynamoDbDataStore:
 
         return int((from_datetime + delta).timestamp())
 
+    def calculate_record_expire_at(
+        self, next_activity, next_activity_date_str, creation_datetime_string
+    ):
+        """
+        If the record next activity is delete or purge, use the nextActivity and nextActivityDate
+        to calculate its expireAt (ttl) value, otherwise fall-back to the default of 18 months.
+        """
+        creation_datetime = convert_spine_date(
+            creation_datetime_string, TimeFormats.STANDARD_DATE_TIME_FORMAT
+        )
+        creation_datetime_utc = datetime.combine(
+            creation_datetime.date(), creation_datetime.time(), timezone.utc
+        )
+        default_expire_at = self.get_expire_at(relativedelta(months=18), creation_datetime_utc)
+
+        if (
+            next_activity.lower() not in ["delete", "purge"]
+            or not next_activity_date_str
+            or next_activity_date_str == self.MAX_NEXT_ACTIVITY_DATE
+        ):
+            return default_expire_at
+
+        delta = relativedelta() if next_activity.lower() == "purge" else relativedelta(months=12)
+
+        next_activity_datetime = convert_spine_date(
+            next_activity_date_str, TimeFormats.STANDARD_DATE_FORMAT
+        )
+        next_activity_datetime_utc = datetime.combine(
+            next_activity_datetime.date(), next_activity_datetime.time(), timezone.utc
+        )
+
+        next_activity_expire_at = self.get_expire_at(delta, next_activity_datetime_utc)
+
+        return min(next_activity_expire_at, default_expire_at)
+
     def build_document(self, internal_id, document, index):
         """
         Build EPS Document object to be inserted into DynamoDB.
@@ -182,6 +218,22 @@ class EpsDynamoDbDataStore:
             return index
         return {key.lower(): index[key] for key in index}
 
+    def parse_next_activity_nad(self, indexes):
+        """
+        Split nextActivityNAD string into sharded next activity and its date.
+        """
+        next_activity_nad = indexes["nextActivityNAD_bin"][0]
+        next_activity_nad_split = next_activity_nad.split("_")
+
+        next_activity = next_activity_nad_split[0]
+        next_activity_date_str = (
+            next_activity_nad_split[1] if len(next_activity_nad_split) == 2 else None
+        )
+
+        shard = randint(1, NEXT_ACTIVITY_DATE_PARTITIONS)
+
+        return next_activity, shard, next_activity_date_str
+
     def build_record(self, prescription_id, record, record_type, indexes):
         """
         Build EPS Record object to be inserted into DynamoDB.
@@ -192,36 +244,34 @@ class EpsDynamoDbDataStore:
             indexes = record["indexes"]
         instances = record["instances"].values()
 
-        next_activity_nad = indexes["nextActivityNAD_bin"][0]
-        next_activity_nad_split = next_activity_nad.split("_")
-        next_activity = next_activity_nad_split[0]
-        next_activity_is_purge = next_activity.lower() == "purge"
-
-        next_activity_shard = randint(1, NEXT_ACTIVITY_DATE_PARTITIONS)
-        sharded_next_activity = f"{next_activity}.{next_activity_shard}"
+        next_activity, shard, next_activity_date_str = self.parse_next_activity_nad(indexes)
 
         scn = record["SCN"]
 
         compressed_record = zlib.compress(simplejson.dumps(record).encode("utf-8"))
 
+        creation_datetime_string = record["prescription"]["prescriptionTime"]
+
+        expire_at = self.calculate_record_expire_at(
+            next_activity, next_activity_date_str, creation_datetime_string
+        )
+
         item = {
             Key.PK.name: record_key,
             Key.SK.name: SortKey.RECORD.value,
             ProjectedAttribute.BODY.name: compressed_record,
-            Attribute.NEXT_ACTIVITY.name: sharded_next_activity,
+            Attribute.NEXT_ACTIVITY.name: f"{next_activity}.{shard}",
             ProjectedAttribute.SCN.name: scn,
             ProjectedAttribute.INDEXES.name: self.convert_index_keys_to_lower_case(indexes),
+            ProjectedAttribute.EXPIRE_AT.name: expire_at,
         }
-        if len(next_activity_nad_split) == 2:
-            item[Attribute.NEXT_ACTIVITY_DATE.name] = next_activity_nad_split[1]
+        if next_activity_date_str:
+            item[Attribute.NEXT_ACTIVITY_DATE.name] = next_activity_date_str
 
-        if next_activity_is_purge:
+        if next_activity.lower() == "purge":
             return item
 
-        # POC - Leverage methods in PrescriptionRecord to get some/all of these.
-        creation_datetime_string = record["prescription"]["prescriptionTime"]
         nhs_number = record["patient"]["nhsNumber"]
-
         prescriber_org = record["prescription"]["prescribingOrganization"]
 
         statuses = list(set([instance["prescriptionStatus"] for instance in instances]))
@@ -240,21 +290,12 @@ class EpsDynamoDbDataStore:
 
         nominated_pharmacy = record.get("nomination", {}).get("nominatedPerformer")
 
-        creation_datetime = convert_spine_date(
-            creation_datetime_string, TimeFormats.STANDARD_DATE_TIME_FORMAT
-        )
-        creation_datetime_utc = datetime.combine(
-            creation_datetime.date(), creation_datetime.time(), timezone.utc
-        )
-        expire_at = self.get_expire_at(relativedelta(months=18), creation_datetime_utc)
-
         item_update = {
             Attribute.CREATION_DATETIME.name: creation_datetime_string,
             Attribute.NHS_NUMBER.name: nhs_number,
             Attribute.PRESCRIBER_ORG.name: prescriber_org,
             ProjectedAttribute.STATUS.name: status,
             Attribute.IS_READY.name: int(is_ready),
-            ProjectedAttribute.EXPIRE_AT.name: expire_at,
         }
         if dispenser_org:
             item[Attribute.DISPENSER_ORG.name] = dispenser_org
