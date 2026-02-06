@@ -4,3 +4,7 @@ id-token: write
 # Test data
 "agentSystemSDS1CodeSystem": *
 "cancellationResponseCodeSystem": *
+
+# Misc
+CODESYSTEM*
+Error base*
