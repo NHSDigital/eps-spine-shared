@@ -138,6 +138,22 @@ class EpsDynamoDbIndexTest(DynamoDbTest):
 
         self.assertEqual(len(terms), 1)
 
+    def test_build_terms_with_cleared_indexes(self):
+        """
+        Test that items with cleared indexes attributes (only nextActivityNAD_bin) aren't included by buildTerms.
+        """
+        items = [
+            {
+                Key.PK.name: self.generate_prescription_id(),
+                ProjectedAttribute.INDEXES.name: {
+                    indexes.INDEX_NEXTACTIVITY.lower(): ["purge_20260101"]
+                },
+            }
+        ]
+        terms = self.datastore.indexes.build_terms(items, indexes.INDEX_NHSNUMBER_DATE, None)
+
+        self.assertEqual(len(terms), 0)
+
     def test_return_terms_by_nhs_number_date(self):
         """
         Test querying against the nhsNumberDate index and returning nhsNumberDate records.
