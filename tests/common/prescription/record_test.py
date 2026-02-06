@@ -11,7 +11,7 @@ from eps_spine_shared.common.prescription.repeat_prescribe import RepeatPrescrib
 from eps_spine_shared.common.prescription.single_prescribe import SinglePrescribeRecord
 from eps_spine_shared.common.prescription.types import PrescriptionTreatmentType
 from eps_spine_shared.errors import EpsSystemError
-from eps_spine_shared.nhsfundamentals.timeutilities import TimeFormats
+from eps_spine_shared.nhsfundamentals.time_utilities import TimeFormats
 from tests.mock_logger import MockLogObject
 
 

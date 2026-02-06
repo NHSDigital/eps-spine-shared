@@ -3,7 +3,7 @@ import re
 import uuid
 
 from eps_spine_shared.errors import EpsSystemError
-from eps_spine_shared.nhsfundamentals.timeutilities import TimeFormats
+from eps_spine_shared.nhsfundamentals.time_utilities import TimeFormats
 
 
 class ChangeLogProcessor(object):

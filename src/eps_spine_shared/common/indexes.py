@@ -1,6 +1,6 @@
 from eps_spine_shared.errors import EpsSystemError
 from eps_spine_shared.logger import EpsLogger
-from eps_spine_shared.nhsfundamentals.timeutilities import timeNowAsString
+from eps_spine_shared.nhsfundamentals.time_utilities import time_now_as_string
 
 INDEX_NHSNUMBER_DATE = "nhsNumberDate_bin"
 INDEX_NHSNUMBER_PRDATE = "nhsNumberPrescriberDate_bin"
@@ -243,4 +243,4 @@ class EpsIndexFactory(object):
         """
         See build_indexes
         """
-        index_dict[INDEX_DELTA] = [timeNowAsString() + SEPERATOR + str(eps_record.get_scn())]
+        index_dict[INDEX_DELTA] = [time_now_as_string() + SEPERATOR + str(eps_record.get_scn())]

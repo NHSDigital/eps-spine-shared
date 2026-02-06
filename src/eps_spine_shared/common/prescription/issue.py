@@ -4,7 +4,7 @@ from eps_spine_shared.common.prescription import fields
 from eps_spine_shared.common.prescription.claim import PrescriptionClaim
 from eps_spine_shared.common.prescription.line_item import PrescriptionLineItem
 from eps_spine_shared.common.prescription.statuses import PrescriptionStatus
-from eps_spine_shared.nhsfundamentals.timeutilities import TimeFormats
+from eps_spine_shared.nhsfundamentals.time_utilities import TimeFormats
 
 
 class PrescriptionIssue(object):

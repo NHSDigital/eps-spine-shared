@@ -24,7 +24,7 @@ from eps_spine_shared.common.dynamodb_common import (
 )
 from eps_spine_shared.common.dynamodb_datastore import EpsDynamoDbDataStore
 from eps_spine_shared.common.prescription.record import PrescriptionStatus
-from eps_spine_shared.nhsfundamentals.timeutilities import TimeFormats
+from eps_spine_shared.nhsfundamentals.time_utilities import TimeFormats
 from tests.dynamodb_test import DynamoDbTest
 from tests.mock_logger import MockLogObject
 

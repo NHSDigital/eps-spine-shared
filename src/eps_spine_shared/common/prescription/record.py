@@ -15,8 +15,8 @@ from eps_spine_shared.errors import (
     EpsSystemError,
 )
 from eps_spine_shared.logger import EpsLogger
-from eps_spine_shared.nhsfundamentals.timeutilities import TimeFormats
-from eps_spine_shared.spinecore.baseutilities import handleEncodingOddities, quoted
+from eps_spine_shared.nhsfundamentals.time_utilities import TimeFormats
+from eps_spine_shared.spinecore.base_utilities import handle_encoding_oddities, quoted
 from eps_spine_shared.spinecore.changelog import PrescriptionsChangeLogProcessor
 
 
@@ -909,7 +909,7 @@ class PrescriptionRecord(object):
                 if _subsequent_reason:
                     _cancellation_reasons += "; "
                 _subsequent_reason = True
-                _cancellation_reasons += str(handleEncodingOddities(_cancellation_text))
+                _cancellation_reasons += str(handle_encoding_oddities(_cancellation_text))
 
             if (
                 _cancellation.get(fields.FIELD_CANCELLATION_TARGET) == "Prescription"

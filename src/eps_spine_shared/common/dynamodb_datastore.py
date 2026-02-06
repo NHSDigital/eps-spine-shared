@@ -25,10 +25,10 @@ from eps_spine_shared.common.dynamodb_common import (
 )
 from eps_spine_shared.common.dynamodb_index import EpsDynamoDbIndex, PrescriptionStatus
 from eps_spine_shared.logger import EpsLogger
-from eps_spine_shared.nhsfundamentals.timeutilities import (
+from eps_spine_shared.nhsfundamentals.time_utilities import (
     TimeFormats,
-    convertSpineDate,
-    timeNowAsString,
+    convert_spine_date,
+    time_now_as_string,
 )
 
 
@@ -240,7 +240,7 @@ class EpsDynamoDbDataStore:
 
         nominated_pharmacy = record.get("nomination", {}).get("nominatedPerformer")
 
-        creation_datetime = convertSpineDate(
+        creation_datetime = convert_spine_date(
             creation_datetime_string, TimeFormats.STANDARD_DATE_TIME_FORMAT
         )
         creation_datetime_utc = datetime.combine(
@@ -285,7 +285,7 @@ class EpsDynamoDbDataStore:
         """
         Insert EPS WorkList object into the configured table.
         """
-        work_list_indexes = {self.INDEX_WORKLISTDATE: [timeNowAsString()]}
+        work_list_indexes = {self.INDEX_WORKLISTDATE: [time_now_as_string()]}
         if index:
             work_list_indexes = index
 
@@ -599,7 +599,7 @@ class EpsDynamoDbDataStore:
         claim_id_index_terms = batch_claim["Claim ID List"]
         handle_time_index_term = batch_claim["Handle Time"]
         sequence_number = batch_claim["Sequence Number"]
-        index_scn_value = f"{timeNowAsString()}|{sequence_number}"
+        index_scn_value = f"{time_now_as_string()}|{sequence_number}"
 
         nwssp = "Nwssp Sequence Number" in batch_claim
         nwssp_sequence_number = batch_claim.get("Nwssp Sequence Number")
