@@ -32,7 +32,6 @@ from eps_spine_shared.validation.constants import (
     PERFORMER_TYPELIST,
     R1,
     REGEX_ALPHANUMERIC8,
-    REGEX_ALPHANUMERIC12,
     REGEX_GUID,
     REGEX_INTEGER12,
     REGEX_NUMERIC15,
@@ -727,34 +726,6 @@ class PrescriptionsValidator:
             raise EpsValidationError(supp_info) from value_error
 
         context.output_fields.add(attribute_name)
-
-    def _check_prescriber_details(self, context: ValidationContext):
-        """
-        Validate prescriber details (not required beyond validation)
-        """
-
-        if not REGEX_ALPHANUMERIC8.match(context.msg_output[message_vocab.AGENT_PERSON]):
-            self.log_object.write_log(
-                "EPS0323a",
-                None,
-                dict(
-                    {
-                        "internalID": self.internal_id,
-                        "prescribingGpCode": context.msg_output[message_vocab.AGENT_PERSON],
-                    }
-                ),
-            )
-            if not REGEX_ALPHANUMERIC12.match(context.msg_output[message_vocab.AGENT_PERSON]):
-                raise EpsValidationError(message_vocab.AGENT_PERSON + " has invalid format")
-
-        context.output_fields.add(message_vocab.AGENT_PERSON)
-
-    def _check_hcpl_org(self, context: ValidationContext):
-        """
-        This is an org only found in EPS2 prescriber details
-        """
-        if not REGEX_ALPHANUMERIC8.match(context.msg_output[message_vocab.HCPLORG]):
-            raise EpsValidationError(message_vocab.HCPLORG + " has invalid format")
 
     def _check_prescription_treatment_type(self, context: ValidationContext):
         """

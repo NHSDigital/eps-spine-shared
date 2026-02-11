@@ -267,7 +267,8 @@ class AbstractErrorBaseEntry(object):
         self.allow_supplementary_info = allow_supplementary_info
         self.error_level = error_level
 
-    @abc.abstractproperty
+    @property
+    @abc.abstractmethod
     def error_type(self):
         """
         Error type
