@@ -3044,6 +3044,7 @@ class PrescriptionRecord(object):
         new_current_issue_number = False
         for i in range(self.current_issue_number, self.max_repeats + 1):
             try:
+                self.prescriptionRecord[fields.FIELD_INSTANCES][str(i)]
                 new_current_issue_number = i
                 break
             except KeyError:
