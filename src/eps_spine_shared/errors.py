@@ -53,7 +53,7 @@ if onSpine:
         def __init__(self, *args):
             raise SpineBusinessError(*args)
 
-    class EpsErrorBase(Enum):
+    class EpsErrorBase:
         """
         Wrapper for ErrorBases
         """
