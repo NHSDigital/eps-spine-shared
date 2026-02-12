@@ -37,21 +37,21 @@ class EpsNoCredentialsErrorWithRetry(NoCredentialsError):
 
 if onSpine:
 
-    class EpsSystemError(SpineSystemError):
+    class EpsSystemError:
         """
         Wrapper for SpineSystemError
         """
 
         def __init__(self, *args):
-            super(EpsSystemError, self).__init__(*args)
+            raise SpineSystemError(*args)
 
-    class EpsBusinessError(SpineBusinessError):
+    class EpsBusinessError:
         """
         Wrapper for SpineBusinessError
         """
 
         def __init__(self, *args):
-            super(EpsBusinessError, self).__init__(*args)
+            raise SpineBusinessError(*args)
 
     class EpsErrorBase(Enum):
         """
