@@ -25,49 +25,6 @@ class CreatePrescriptionValidatorTest(unittest.TestCase):
         self.context = ValidationContext()
 
 
-class TestCheckPrescriberDetails(CreatePrescriptionValidatorTest):
-    def test_8_char_alphanumeric(self):
-        self.context.msg_output[message_vocab.AGENT_PERSON] = "ABCD1234"
-        self.validator.check_prescriber_details(self.context)
-
-        self.assertIn(message_vocab.AGENT_PERSON, self.context.output_fields)
-        self.assertFalse(self.validator.log_object.logger.was_logged("EPS0323a"))
-
-    def test_12_char_alphanumeric(self):
-        self.context.msg_output[message_vocab.AGENT_PERSON] = "ABCD12345678"
-        self.validator.check_prescriber_details(self.context)
-
-        self.assertIn(message_vocab.AGENT_PERSON, self.context.output_fields)
-        self.assertTrue(self.validator.log_object.logger.was_logged("EPS0323a"))
-
-    def test_too_long_raises_error(self):
-        self.context.msg_output[message_vocab.AGENT_PERSON] = "ABCD123456789"
-
-        with self.assertRaises(EpsValidationError) as cm:
-            self.validator.check_prescriber_details(self.context)
-
-        self.assertEqual(str(cm.exception), message_vocab.AGENT_PERSON + " has invalid format")
-        self.assertTrue(
-            self.validator.log_object.logger.was_multiple_value_logged(
-                "EPS0323a", {"internalID": self.internal_id, "prescribingGpCode": "ABCD123456789"}
-            )
-        )
-
-    def test_special_chars_raises_error(self):
-        self.context.msg_output[message_vocab.AGENT_PERSON] = "ABC@1234"
-
-        with self.assertRaises(EpsValidationError) as cm:
-            self.validator.check_prescriber_details(self.context)
-
-        self.assertEqual(str(cm.exception), message_vocab.AGENT_PERSON + " has invalid format")
-
-    def test_adds_to_output_fields(self):
-        self.context.msg_output[message_vocab.AGENT_PERSON] = "ABCD1234"
-        self.validator.check_prescriber_details(self.context)
-
-        self.assertIn(message_vocab.AGENT_PERSON, self.context.output_fields)
-
-
 class TestCheckHcplOrg(CreatePrescriptionValidatorTest):
     def test_valid_hcpl_org(self):
         self.context.msg_output[message_vocab.HCPLORG] = "ORG12345"
@@ -78,8 +35,7 @@ class TestCheckHcplOrg(CreatePrescriptionValidatorTest):
 
         with self.assertRaises(EpsValidationError) as cm:
             self.validator.check_hcpl_org(self.context)
-
-        self.assertEqual(str(cm.exception), message_vocab.HCPLORG + " has invalid format")
+            self.assertEqual(str(cm.exception), message_vocab.HCPLORG + " has invalid format")
 
 
 class TestCheckSignedTime(CreatePrescriptionValidatorTest):
@@ -194,9 +150,7 @@ class TestCheckRepeatDispenseWindow(CreatePrescriptionValidatorTest):
             self.validator.check_repeat_dispense_window(self.context, self.handle_time)
             self.assertEqual(
                 str(cm.exception),
-                "daysSupplyValidHigh is more than "
-                + str(constants.MAX_FUTURESUPPLYMONTHS)
-                + " months beyond current day",
+                f"daysSupplyValidHigh is more than {str(constants.MAX_FUTURESUPPLYMONTHS)} months beyond current day",
             )
 
     def test_high_date_in_the_past(self):
@@ -216,6 +170,49 @@ class TestCheckRepeatDispenseWindow(CreatePrescriptionValidatorTest):
             self.assertEqual(str(cm.exception), "daysSupplyValidLow is after daysSupplyValidHigh")
 
 
+class TestCheckPrescriberDetails(CreatePrescriptionValidatorTest):
+    def test_8_char_alphanumeric(self):
+        self.context.msg_output[message_vocab.AGENT_PERSON] = "ABCD1234"
+        self.validator.check_prescriber_details(self.context)
+
+        self.assertIn(message_vocab.AGENT_PERSON, self.context.output_fields)
+        self.assertFalse(self.validator.log_object.logger.was_logged("EPS0323a"))
+
+    def test_12_char_alphanumeric(self):
+        self.context.msg_output[message_vocab.AGENT_PERSON] = "ABCD12345678"
+        self.validator.check_prescriber_details(self.context)
+
+        self.assertIn(message_vocab.AGENT_PERSON, self.context.output_fields)
+        self.assertTrue(self.validator.log_object.logger.was_logged("EPS0323a"))
+
+    def test_too_long_raises_error(self):
+        self.context.msg_output[message_vocab.AGENT_PERSON] = "ABCD123456789"
+
+        with self.assertRaises(EpsValidationError) as cm:
+            self.validator.check_prescriber_details(self.context)
+
+        self.assertEqual(str(cm.exception), message_vocab.AGENT_PERSON + " has invalid format")
+        self.assertTrue(
+            self.validator.log_object.logger.was_multiple_value_logged(
+                "EPS0323a", {"internalID": self.internal_id, "prescribingGpCode": "ABCD123456789"}
+            )
+        )
+
+    def test_special_chars_raises_error(self):
+        self.context.msg_output[message_vocab.AGENT_PERSON] = "ABC@1234"
+
+        with self.assertRaises(EpsValidationError) as cm:
+            self.validator.check_prescriber_details(self.context)
+
+        self.assertEqual(str(cm.exception), message_vocab.AGENT_PERSON + " has invalid format")
+
+    def test_adds_to_output_fields(self):
+        self.context.msg_output[message_vocab.AGENT_PERSON] = "ABCD1234"
+        self.validator.check_prescriber_details(self.context)
+
+        self.assertIn(message_vocab.AGENT_PERSON, self.context.output_fields)
+
+
 class TestCheckPatientName(CreatePrescriptionValidatorTest):
     def test_adds_to_output_fields(self):
         self.validator.check_patient_name(self.context)
@@ -224,3 +221,12 @@ class TestCheckPatientName(CreatePrescriptionValidatorTest):
         self.assertIn(message_vocab.SUFFIX, self.context.output_fields)
         self.assertIn(message_vocab.GIVEN, self.context.output_fields)
         self.assertIn(message_vocab.FAMILY, self.context.output_fields)
+
+
+class TestCheckPrescriptionTreatmentType(CreatePrescriptionValidatorTest):
+    def test_unrecognised_treatment_type_raises_error(self):
+        self.context.msg_output[message_vocab.TREATMENTTYPE] = "9999"
+
+        with self.assertRaises(EpsValidationError) as cm:
+            self.validator.check_prescription_treatment_type(self.context)
+            self.assertEqual(str(cm.exception), "Unrecognised treatment type: 9999")

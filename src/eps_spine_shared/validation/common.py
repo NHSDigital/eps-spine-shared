@@ -36,7 +36,6 @@ from eps_spine_shared.validation.constants import (
     REGEX_ROLECODE,
     STATUS_ACUTE,
     STATUS_REPEAT,
-    TREATMENT_TYPELIST,
     WITHDRAW_RSONLIST,
     WITHDRAW_TYPELIST,
 )
@@ -712,15 +711,6 @@ class PrescriptionsValidator:
             raise EpsValidationError(supp_info) from value_error
 
         context.output_fields.add(attribute_name)
-
-    def _check_prescription_treatment_type(self, context: ValidationContext):
-        """
-        Validate treatment type
-        """
-        if context.msg_output[message_vocab.TREATMENTTYPE] not in TREATMENT_TYPELIST:
-            supp_info = message_vocab.TREATMENTTYPE + " is not of expected type"
-            raise EpsValidationError(supp_info)
-        context.output_fields.add(message_vocab.TREATMENTTYPE)
 
     def _check_prescription_type(self, context: ValidationContext):
         """
