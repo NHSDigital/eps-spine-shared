@@ -712,19 +712,6 @@ class PrescriptionsValidator:
 
         context.output_fields.add(attribute_name)
 
-    def _check_prescription_type(self, context: ValidationContext):
-        """
-        Validate the prescriptionType
-        """
-        _prescType = context.msg_output.get(message_vocab.PRESCTYPE)
-        if _prescType not in self.PRESC_TYPELIST:
-            self.log_object.write_log(
-                "EPS0619", None, {"internalID": self.internal_id, "prescType": _prescType}
-            )
-            context.msg_output[message_vocab.PRESCTYPE] = "NotProvided"
-
-        context.output_fields.add(message_vocab.PRESCTYPE)
-
     def _check_repeat_dispense_instances(self, context: ValidationContext):
         """
         Repeat dispense instances is an integer range found within repeat dispense

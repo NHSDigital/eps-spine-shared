@@ -230,3 +230,12 @@ class TestCheckPrescriptionTreatmentType(CreatePrescriptionValidatorTest):
         with self.assertRaises(EpsValidationError) as cm:
             self.validator.check_prescription_treatment_type(self.context)
             self.assertEqual(str(cm.exception), "Unrecognised treatment type: 9999")
+
+
+class TestCheckPrescriptionType(CreatePrescriptionValidatorTest):
+    def test_unrecognised_prescription_type(self):
+        self.context.msg_output[message_vocab.PRESCTYPE] = "9999"
+        self.validator.check_prescription_type(self.context)
+
+        self.assertEqual(self.context.msg_output[message_vocab.PRESCTYPE], "NotProvided")
+        self.assertIn(message_vocab.PRESCTYPE, self.context.output_fields)

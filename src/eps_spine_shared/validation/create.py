@@ -135,3 +135,16 @@ class CreatePrescriptionValidator(PrescriptionsValidator):
             supp_info = message_vocab.TREATMENTTYPE + " is not of expected type"
             raise EpsValidationError(supp_info)
         context.output_fields.add(message_vocab.TREATMENTTYPE)
+
+    def check_prescription_type(self, context: ValidationContext):
+        """
+        Validate the prescriptionType
+        """
+        presc_type = context.msg_output.get(message_vocab.PRESCTYPE)
+        if presc_type not in constants.PRESC_TYPELIST:
+            self.log_object.write_log(
+                "EPS0619", None, {"internalID": self.internal_id, "prescType": presc_type}
+            )
+            context.msg_output[message_vocab.PRESCTYPE] = "NotProvided"
+
+        context.output_fields.add(message_vocab.PRESCTYPE)
