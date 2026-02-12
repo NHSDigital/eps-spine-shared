@@ -121,3 +121,12 @@ class CreatePrescriptionValidator(PrescriptionsValidator):
             > context.msg_output[message_vocab.DAYS_SUPPLY_HIGH]
         ):
             raise EpsValidationError("daysSupplyValid low is after daysSupplyValidHigh")
+
+    def check_patient_name(self, context: ValidationContext):
+        """
+        Adds patient name to the context output_fields
+        """
+        context.output_fields.add(message_vocab.PREFIX)
+        context.output_fields.add(message_vocab.SUFFIX)
+        context.output_fields.add(message_vocab.GIVEN)
+        context.output_fields.add(message_vocab.FAMILY)

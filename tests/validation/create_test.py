@@ -214,3 +214,13 @@ class TestCheckRepeatDispenseWindow(CreatePrescriptionValidatorTest):
         with self.assertRaises(EpsValidationError) as cm:
             self.validator.check_repeat_dispense_window(self.context, self.handle_time)
             self.assertEqual(str(cm.exception), "daysSupplyValidLow is after daysSupplyValidHigh")
+
+
+class TestCheckPatientName(CreatePrescriptionValidatorTest):
+    def test_adds_to_output_fields(self):
+        self.validator.check_patient_name(self.context)
+
+        self.assertIn(message_vocab.PREFIX, self.context.output_fields)
+        self.assertIn(message_vocab.SUFFIX, self.context.output_fields)
+        self.assertIn(message_vocab.GIVEN, self.context.output_fields)
+        self.assertIn(message_vocab.FAMILY, self.context.output_fields)

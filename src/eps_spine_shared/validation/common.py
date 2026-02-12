@@ -223,15 +223,6 @@ class PrescriptionsValidator:
             return True
         return False
 
-    def _check_patient_name(self, context: ValidationContext):
-        """
-        Adds patient name to the context output_fields
-        """
-        context.output_fields.add(message_vocab.PREFIX)
-        context.output_fields.add(message_vocab.SUFFIX)
-        context.output_fields.add(message_vocab.GIVEN)
-        context.output_fields.add(message_vocab.FAMILY)
-
     def _check_organisation_and_roles(self, context: ValidationContext):
         """
         Check the organisation and role information is of the correct format
