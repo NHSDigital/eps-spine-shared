@@ -765,13 +765,13 @@ class EpsDynamoDbDataStore:
 
     @timer
     def return_pids_due_for_next_activity(
-        self, _internal_id, next_activity_start, next_activity_end
+        self, _internal_id, next_activity_start, next_activity_end, shard=None
     ):
         """
         Returns all the epsRecord keys for prescriptions whose nextActivity is the same as that provided,
         and whose next activity date is within the date range provided.
         """
-        return self.indexes.query_next_activity_date(next_activity_start, next_activity_end)
+        return self.indexes.query_next_activity_date(next_activity_start, next_activity_end, shard)
 
     @timer
     def return_prescription_ids_for_nom_pharm(self, _internal_id, nominated_pharmacy_index_term):
