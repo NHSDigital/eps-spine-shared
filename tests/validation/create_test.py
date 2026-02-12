@@ -239,3 +239,89 @@ class TestCheckPrescriptionType(CreatePrescriptionValidatorTest):
 
         self.assertEqual(self.context.msg_output[message_vocab.PRESCTYPE], "NotProvided")
         self.assertIn(message_vocab.PRESCTYPE, self.context.output_fields)
+
+
+class TestCheckRepeatDispenseInstances(CreatePrescriptionValidatorTest):
+    def setUp(self):
+        super().setUp()
+        self.context.msg_output[message_vocab.TREATMENTTYPE] = constants.STATUS_REPEAT_DISP
+
+    def test_acute_prescription_without_repeat_values(self):
+        self.context.msg_output[message_vocab.TREATMENTTYPE] = constants.STATUS_ACUTE
+        self.context.msg_output[message_vocab.REPEATLOW] = None
+        self.context.msg_output[message_vocab.REPEATHIGH] = None
+
+        self.validator.check_repeat_dispense_instances(self.context)
+
+        self.assertNotIn(message_vocab.REPEATLOW, self.context.output_fields)
+        self.assertNotIn(message_vocab.REPEATHIGH, self.context.output_fields)
+
+    def test_non_acute_without_repeat_values_raises_error(self):
+        self.context.msg_output[message_vocab.REPEATLOW] = None
+        self.context.msg_output[message_vocab.REPEATHIGH] = None
+
+        with self.assertRaises(EpsValidationError) as cm:
+            self.validator.check_repeat_dispense_instances(self.context)
+            self.assertIn("must both be provided", str(cm.exception))
+
+    @parameterized.expand(
+        [
+            ("1", "abc", message_vocab.REPEATHIGH),
+            ("abc", "1", message_vocab.REPEATLOW),
+        ]
+    )
+    def test_repeat_high_or_low_not_integer_raises_error(
+        self, low_value, high_value, incorrect_field
+    ):
+        self.context.msg_output[message_vocab.REPEATLOW] = low_value
+        self.context.msg_output[message_vocab.REPEATHIGH] = high_value
+
+        with self.assertRaises(EpsValidationError) as cm:
+            self.validator.check_repeat_dispense_instances(self.context)
+            self.assertEqual(str(cm.exception), incorrect_field + " is not an integer")
+
+    def test_repeat_low_not_one_raises_error(self):
+        self.context.msg_output[message_vocab.REPEATLOW] = "2"
+        self.context.msg_output[message_vocab.REPEATHIGH] = "6"
+
+        with self.assertRaises(EpsValidationError) as cm:
+            self.validator.check_repeat_dispense_instances(self.context)
+            self.assertEqual(str(cm.exception), message_vocab.REPEATLOW + " must be 1")
+
+    def test_repeat_high_exceeds_max_raises_error(self):
+        self.context.msg_output[message_vocab.REPEATLOW] = "1"
+        self.context.msg_output[message_vocab.REPEATHIGH] = str(
+            constants.MAX_PRESCRIPTIONREPEATS + 1
+        )
+
+        with self.assertRaises(EpsValidationError) as cm:
+            self.validator.check_repeat_dispense_instances(self.context)
+            self.assertIn("must not be over configured maximum", str(cm.exception))
+
+    def test_repeat_low_greater_than_high_raises_error(self):
+        self.context.msg_output[message_vocab.REPEATLOW] = "1"
+        self.context.msg_output[message_vocab.REPEATHIGH] = "0"
+
+        with self.assertRaises(EpsValidationError) as cm:
+            self.validator.check_repeat_dispense_instances(self.context)
+            self.assertIn("is greater than", str(cm.exception))
+
+    def test_repeat_prescription_with_multiple_instances_logs_warning(self):
+        self.context.msg_output[message_vocab.TREATMENTTYPE] = constants.STATUS_REPEAT
+        self.context.msg_output[message_vocab.REPEATLOW] = "1"
+        self.context.msg_output[message_vocab.REPEATHIGH] = "6"
+
+        self.validator.check_repeat_dispense_instances(self.context)
+
+        self.assertTrue(self.validator.log_object.logger.was_logged("EPS0509"))
+        self.assertIn(message_vocab.REPEATLOW, self.context.output_fields)
+        self.assertIn(message_vocab.REPEATHIGH, self.context.output_fields)
+
+    def test_valid_repeat_dispense_instances(self):
+        self.context.msg_output[message_vocab.REPEATLOW] = "1"
+        self.context.msg_output[message_vocab.REPEATHIGH] = "6"
+
+        self.validator.check_repeat_dispense_instances(self.context)
+
+        self.assertIn(message_vocab.REPEATLOW, self.context.output_fields)
+        self.assertIn(message_vocab.REPEATHIGH, self.context.output_fields)

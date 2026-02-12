@@ -148,3 +148,61 @@ class CreatePrescriptionValidator(PrescriptionsValidator):
             context.msg_output[message_vocab.PRESCTYPE] = "NotProvided"
 
         context.output_fields.add(message_vocab.PRESCTYPE)
+
+    def check_repeat_dispense_instances(self, context: ValidationContext):
+        """
+        Repeat dispense instances is an integer range found within repeat dispense
+        prescriptions to articulate the number of instances.  Low must be 1!
+        """
+        if not (
+            context.msg_output.get(message_vocab.REPEATLOW)
+            and context.msg_output.get(message_vocab.REPEATHIGH)
+        ):
+            if context.msg_output[message_vocab.TREATMENTTYPE] == constants.STATUS_ACUTE:
+                return
+            supp_info = message_vocab.REPEATHIGH + " and " + message_vocab.REPEATLOW
+            supp_info += " values must both be provided if not Acute prescription"
+            raise EpsValidationError(supp_info)
+
+        if not constants.REGEX_INTEGER12.match(context.msg_output[message_vocab.REPEATHIGH]):
+            supp_info = message_vocab.REPEATHIGH + " is not an integer"
+            raise EpsValidationError(supp_info)
+        if not constants.REGEX_INTEGER12.match(context.msg_output[message_vocab.REPEATLOW]):
+            supp_info = message_vocab.REPEATLOW + " is not an integer"
+            raise EpsValidationError(supp_info)
+
+        context.msg_output[message_vocab.REPEATLOW] = int(
+            context.msg_output[message_vocab.REPEATLOW]
+        )
+        context.msg_output[message_vocab.REPEATHIGH] = int(
+            context.msg_output[message_vocab.REPEATHIGH]
+        )
+        if context.msg_output[message_vocab.REPEATLOW] != 1:
+            supp_info = message_vocab.REPEATLOW + " must be 1"
+            raise EpsValidationError(supp_info)
+        if context.msg_output[message_vocab.REPEATHIGH] > constants.MAX_PRESCRIPTIONREPEATS:
+            supp_info = message_vocab.REPEATHIGH + " must not be over configured "
+            supp_info += "maximum of " + str(constants.MAX_PRESCRIPTIONREPEATS)
+            raise EpsValidationError(supp_info)
+        if (
+            context.msg_output[message_vocab.REPEATHIGH]
+            < context.msg_output[message_vocab.REPEATLOW]
+        ):
+            supp_info = message_vocab.REPEATLOW + " is greater than " + message_vocab.REPEATHIGH
+            raise EpsValidationError(supp_info)
+        if (
+            context.msg_output[message_vocab.REPEATHIGH] != 1
+            and context.msg_output[message_vocab.TREATMENTTYPE] == constants.STATUS_REPEAT
+        ):
+            self.log_object.write_log(
+                "EPS0509",
+                None,
+                {
+                    "internalID": self.internal_id,
+                    "target": "Prescription",
+                    "maxRepeats": context.msg_output[message_vocab.REPEATHIGH],
+                },
+            )
+
+        context.output_fields.add(message_vocab.REPEATLOW)
+        context.output_fields.add(message_vocab.REPEATHIGH)

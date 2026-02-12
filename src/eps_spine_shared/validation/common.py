@@ -22,7 +22,6 @@ from eps_spine_shared.spinecore.schematron import SimpleReportSchematronApplier
 from eps_spine_shared.validation import message_vocab
 from eps_spine_shared.validation.constants import (
     MAX_LINEITEMS,
-    MAX_PRESCRIPTIONREPEATS,
     NOT_DISPENSED,
     PERFORMER_TYPELIST,
     R1,
@@ -711,64 +710,6 @@ class PrescriptionsValidator:
             raise EpsValidationError(supp_info) from value_error
 
         context.output_fields.add(attribute_name)
-
-    def _check_repeat_dispense_instances(self, context: ValidationContext):
-        """
-        Repeat dispense instances is an integer range found within repeat dispense
-        prescriptions to articulate the number of instances.  Low must be 1!
-        """
-        if not (
-            context.msg_output.get(message_vocab.REPEATLOW)
-            and context.msg_output.get(message_vocab.REPEATHIGH)
-        ):
-            if context.msg_output[message_vocab.TREATMENTTYPE] == STATUS_ACUTE:
-                return
-            supp_info = message_vocab.REPEATHIGH + " and " + message_vocab.REPEATLOW
-            supp_info += " values must both be provided if not Acute prescription"
-            raise EpsValidationError(supp_info)
-
-        if not REGEX_INTEGER12.match(context.msg_output[message_vocab.REPEATHIGH]):
-            supp_info = message_vocab.REPEATHIGH + " is not an integer"
-            raise EpsValidationError(supp_info)
-        if not REGEX_INTEGER12.match(context.msg_output[message_vocab.REPEATLOW]):
-            supp_info = message_vocab.REPEATLOW + " is not an integer"
-            raise EpsValidationError(supp_info)
-
-        context.msg_output[message_vocab.REPEATLOW] = int(
-            context.msg_output[message_vocab.REPEATLOW]
-        )
-        context.msg_output[message_vocab.REPEATHIGH] = int(
-            context.msg_output[message_vocab.REPEATHIGH]
-        )
-        if context.msg_output[message_vocab.REPEATLOW] != 1:
-            supp_info = message_vocab.REPEATLOW + " must be 1"
-            raise EpsValidationError(supp_info)
-        if context.msg_output[message_vocab.REPEATHIGH] > MAX_PRESCRIPTIONREPEATS:
-            supp_info = message_vocab.REPEATHIGH + " must not be over configured "
-            supp_info += "maximum of " + str(MAX_PRESCRIPTIONREPEATS)
-            raise EpsValidationError(supp_info)
-        if (
-            context.msg_output[message_vocab.REPEATHIGH]
-            < context.msg_output[message_vocab.REPEATLOW]
-        ):
-            supp_info = message_vocab.REPEATLOW + " is greater than " + message_vocab.REPEATHIGH
-            raise EpsValidationError(supp_info)
-        if (
-            context.msg_output[message_vocab.REPEATHIGH] != 1
-            and context.msg_output[message_vocab.TREATMENTTYPE] == STATUS_REPEAT
-        ):
-            self.log_object.write_log(
-                "EPS0509",
-                None,
-                {
-                    "internalID": self.internal_id,
-                    "target": "Prescription",
-                    "maxRepeats": context.msg_output[message_vocab.REPEATHIGH],
-                },
-            )
-
-        context.output_fields.add(message_vocab.REPEATLOW)
-        context.output_fields.add(message_vocab.REPEATHIGH)
 
     def _check_birth_date(self, context: ValidationContext, handle_time):
         """
