@@ -206,3 +206,13 @@ class CreatePrescriptionValidator(PrescriptionsValidator):
 
         context.output_fields.add(message_vocab.REPEATLOW)
         context.output_fields.add(message_vocab.REPEATHIGH)
+
+    def check_birth_date(self, context: ValidationContext, handle_time):
+        """
+        Birth date must be a valid date, and must not be in the future
+        """
+        self._check_standard_date(context, message_vocab.BIRTHTIME)
+        now_as_string = handle_time.strftime(TimeFormats.STANDARD_DATE_TIME_FORMAT)
+        if context.msg_output[message_vocab.BIRTHTIME] > now_as_string:
+            supp_info = message_vocab.BIRTHTIME + " is in the future"
+            raise EpsValidationError(supp_info)

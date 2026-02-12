@@ -325,3 +325,29 @@ class TestCheckRepeatDispenseInstances(CreatePrescriptionValidatorTest):
 
         self.assertIn(message_vocab.REPEATLOW, self.context.output_fields)
         self.assertIn(message_vocab.REPEATHIGH, self.context.output_fields)
+
+
+class TestCheckBirthDate(CreatePrescriptionValidatorTest):
+    def setUp(self):
+        super().setUp()
+        self.handle_time = datetime(2026, 9, 11, 12, 34, 56)
+
+    def test_valid_birth_date(self):
+        self.context.msg_output[message_vocab.BIRTHTIME] = "20000101"
+        self.validator.check_birth_date(self.context, self.handle_time)
+
+        self.assertIn(message_vocab.BIRTHTIME, self.context.output_fields)
+
+    def test_birth_date_in_future_raises_error(self):
+        self.context.msg_output[message_vocab.BIRTHTIME] = "20260912"
+
+        with self.assertRaises(EpsValidationError) as cm:
+            self.validator.check_birth_date(self.context, self.handle_time)
+            self.assertEqual(str(cm.exception), message_vocab.BIRTHTIME + " is in the future")
+
+    def test_invalid_birth_date_format_raises_error(self):
+        self.context.msg_output[message_vocab.BIRTHTIME] = "2000010112"
+
+        with self.assertRaises(EpsValidationError) as cm:
+            self.validator.check_birth_date(self.context, self.handle_time)
+            self.assertEqual(str(cm.exception), message_vocab.BIRTHTIME + " has invalid format")
