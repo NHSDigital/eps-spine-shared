@@ -2,8 +2,6 @@ import datetime
 import sys
 import traceback
 
-from dateutil.relativedelta import relativedelta
-
 from eps_spine_shared.common.prescription.statuses import LineItemStatus
 from eps_spine_shared.errors import (
     EpsBusinessError,
@@ -23,7 +21,6 @@ from eps_spine_shared.nhsfundamentals.time_utilities import (
 from eps_spine_shared.spinecore.schematron import SimpleReportSchematronApplier
 from eps_spine_shared.validation import message_vocab
 from eps_spine_shared.validation.constants import (
-    MAX_FUTURESUPPLYMONTHS,
     MAX_LINEITEMS,
     MAX_PRESCRIPTIONREPEATS,
     NOT_DISPENSED,
@@ -39,7 +36,6 @@ from eps_spine_shared.validation.constants import (
     REGEX_ROLECODE,
     STATUS_ACUTE,
     STATUS_REPEAT,
-    STATUS_REPEAT_DISP,
     TREATMENT_TYPELIST,
     WITHDRAW_RSONLIST,
     WITHDRAW_TYPELIST,
@@ -834,51 +830,6 @@ class PrescriptionsValidator:
 
         context.output_fields.add(message_vocab.NOMPERFORMER)
         context.output_fields.add(message_vocab.NOMPERFORMER_TYPE)
-
-    def _check_repeat_dispense_window(self, context: ValidationContext, handle_time):
-        """
-        The overall time to cover the dispense of all repeated instances
-
-        Return immediately if not a repeat dispense, or if a repeat dispense and values
-        are missing
-        """
-        context.output_fields.add(message_vocab.DAYS_SUPPLY_LOW)
-        context.output_fields.add(message_vocab.DAYS_SUPPLY_HIGH)
-
-        max_supply_date = handle_time + relativedelta(months=+MAX_FUTURESUPPLYMONTHS)
-        max_supply_date_string = max_supply_date.strftime(TimeFormats.STANDARD_DATE_FORMAT)
-
-        if not context.msg_output[message_vocab.TREATMENTTYPE] == STATUS_REPEAT_DISP:
-            context.msg_output[message_vocab.DAYS_SUPPLY_LOW] = handle_time.strftime(
-                TimeFormats.STANDARD_DATE_FORMAT
-            )
-            context.msg_output[message_vocab.DAYS_SUPPLY_HIGH] = max_supply_date_string
-            return
-
-        if not (
-            context.msg_output.get(message_vocab.DAYS_SUPPLY_LOW)
-            and context.msg_output.get(message_vocab.DAYS_SUPPLY_HIGH)
-        ):
-            supp_info = "daysSupply effective time not provided but "
-            supp_info += "prescription treatment type is repeat"
-            raise EpsValidationError(supp_info)
-
-        self.check_standard_date(context, message_vocab.DAYS_SUPPLY_HIGH)
-        self.check_standard_date(context, message_vocab.DAYS_SUPPLY_LOW)
-
-        if context.msg_output[message_vocab.DAYS_SUPPLY_HIGH] > max_supply_date_string:
-            supp_info = "daysSupplyValidHigh is more than "
-            supp_info += str(MAX_FUTURESUPPLYMONTHS) + " months beyond current day"
-            raise EpsValidationError(supp_info)
-        if context.msg_output[message_vocab.DAYS_SUPPLY_HIGH] < handle_time.strftime(
-            TimeFormats.STANDARD_DATE_FORMAT
-        ):
-            raise EpsValidationError("daysSupplyValidHigh is in the past")
-        if (
-            context.msg_output[message_vocab.DAYS_SUPPLY_LOW]
-            > context.msg_output[message_vocab.DAYS_SUPPLY_HIGH]
-        ):
-            raise EpsValidationError("daysSupplyValid low is after daysSupplyValidHigh")
 
     def _check_dispenser_code(self, context: ValidationContext):
         """

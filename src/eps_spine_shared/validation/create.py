@@ -1,12 +1,17 @@
+from dateutil.relativedelta import relativedelta
+
 from eps_spine_shared.common.prescription.fields import DEFAULT_DAYSSUPPLY
 from eps_spine_shared.errors import EpsValidationError
+from eps_spine_shared.nhsfundamentals.time_utilities import TimeFormats
 from eps_spine_shared.validation import message_vocab
 from eps_spine_shared.validation.common import PrescriptionsValidator, ValidationContext
 from eps_spine_shared.validation.constants import (
     MAX_DAYSSUPPLY,
+    MAX_FUTURESUPPLYMONTHS,
     REGEX_ALPHANUMERIC8,
     REGEX_ALPHANUMERIC12,
     REGEX_INTEGER12,
+    STATUS_REPEAT_DISP,
 )
 
 
@@ -71,3 +76,48 @@ class CreatePrescriptionValidator(PrescriptionsValidator):
             context.msg_output[message_vocab.DAYS_SUPPLY] = days_supply
 
         context.output_fields.add(message_vocab.DAYS_SUPPLY)
+
+    def check_repeat_dispense_window(self, context: ValidationContext, handle_time):
+        """
+        The overall time to cover the dispense of all repeated instances
+
+        Return immediately if not a repeat dispense, or if a repeat dispense and values
+        are missing
+        """
+        context.output_fields.add(message_vocab.DAYS_SUPPLY_LOW)
+        context.output_fields.add(message_vocab.DAYS_SUPPLY_HIGH)
+
+        max_supply_date = handle_time + relativedelta(months=+MAX_FUTURESUPPLYMONTHS)
+        max_supply_date_string = max_supply_date.strftime(TimeFormats.STANDARD_DATE_FORMAT)
+
+        if not context.msg_output[message_vocab.TREATMENTTYPE] == STATUS_REPEAT_DISP:
+            context.msg_output[message_vocab.DAYS_SUPPLY_LOW] = handle_time.strftime(
+                TimeFormats.STANDARD_DATE_FORMAT
+            )
+            context.msg_output[message_vocab.DAYS_SUPPLY_HIGH] = max_supply_date_string
+            return
+
+        if not (
+            context.msg_output.get(message_vocab.DAYS_SUPPLY_LOW)
+            and context.msg_output.get(message_vocab.DAYS_SUPPLY_HIGH)
+        ):
+            supp_info = "daysSupply effective time not provided but "
+            supp_info += "prescription treatment type is repeat"
+            raise EpsValidationError(supp_info)
+
+        self._check_standard_date(context, message_vocab.DAYS_SUPPLY_HIGH)
+        self._check_standard_date(context, message_vocab.DAYS_SUPPLY_LOW)
+
+        if context.msg_output[message_vocab.DAYS_SUPPLY_HIGH] > max_supply_date_string:
+            supp_info = "daysSupplyValidHigh is more than "
+            supp_info += str(MAX_FUTURESUPPLYMONTHS) + " months beyond current day"
+            raise EpsValidationError(supp_info)
+        if context.msg_output[message_vocab.DAYS_SUPPLY_HIGH] < handle_time.strftime(
+            TimeFormats.STANDARD_DATE_FORMAT
+        ):
+            raise EpsValidationError("daysSupplyValidHigh is in the past")
+        if (
+            context.msg_output[message_vocab.DAYS_SUPPLY_LOW]
+            > context.msg_output[message_vocab.DAYS_SUPPLY_HIGH]
+        ):
+            raise EpsValidationError("daysSupplyValid low is after daysSupplyValidHigh")

@@ -1,13 +1,13 @@
 import unittest
+from datetime import datetime
 from unittest.mock import MagicMock
 
 from parameterized import parameterized
 
 from eps_spine_shared.errors import EpsValidationError
 from eps_spine_shared.logger import EpsLogger
-from eps_spine_shared.validation import message_vocab
+from eps_spine_shared.validation import constants, message_vocab
 from eps_spine_shared.validation.common import ValidationContext
-from eps_spine_shared.validation.constants import MAX_DAYSSUPPLY
 from eps_spine_shared.validation.create import CreatePrescriptionValidator
 from tests.mock_logger import MockLogObject
 
@@ -139,8 +139,78 @@ class TestCheckDaysSupply(CreatePrescriptionValidatorTest):
             self.assertEqual(str(cm.exception), "daysSupply must be a non-zero integer")
 
     def test_exceeds_max(self):
-        self.context.msg_output[message_vocab.DAYS_SUPPLY] = str(MAX_DAYSSUPPLY + 1)
+        self.context.msg_output[message_vocab.DAYS_SUPPLY] = str(constants.MAX_DAYSSUPPLY + 1)
 
         with self.assertRaises(EpsValidationError) as cm:
             self.validator.check_days_supply(self.context)
-            self.assertEqual(str(cm.exception), "daysSupply cannot exceed " + str(MAX_DAYSSUPPLY))
+            self.assertEqual(
+                str(cm.exception), "daysSupply cannot exceed " + str(constants.MAX_DAYSSUPPLY)
+            )
+
+
+class TestCheckRepeatDispenseWindow(CreatePrescriptionValidatorTest):
+    def setUp(self):
+        super().setUp()
+        self.context.msg_output[message_vocab.TREATMENTTYPE] = constants.STATUS_REPEAT_DISP
+        self.handle_time = datetime(2026, 9, 11, 12, 34, 56)
+
+    def test_non_repeat(self):
+        self.context.msg_output[message_vocab.TREATMENTTYPE] = constants.STATUS_ACUTE
+        self.validator.check_repeat_dispense_window(self.context, self.handle_time)
+
+        self.assertEqual(self.context.msg_output[message_vocab.DAYS_SUPPLY_LOW], "20260911")
+        self.assertEqual(self.context.msg_output[message_vocab.DAYS_SUPPLY_HIGH], "20270911")
+
+        self.assertIn(message_vocab.DAYS_SUPPLY_LOW, self.context.output_fields)
+        self.assertIn(message_vocab.DAYS_SUPPLY_HIGH, self.context.output_fields)
+
+    def test_missing_low_and_high(self):
+        with self.assertRaises(EpsValidationError) as cm:
+            self.validator.check_repeat_dispense_window(self.context, self.handle_time)
+            self.assertEqual(
+                str(cm.exception),
+                "daysSupply effective time not provided but prescription treatment type is repeat",
+            )
+
+    @parameterized.expand(
+        [
+            ("20260911", "202709111", "daysSupplyValidHigh"),
+            ("202609111", "20270911", "daysSupplyValidLow"),
+        ]
+    )
+    def test_invalid_dates(self, low_date, high_date, incorrect_field):
+        self.context.msg_output[message_vocab.DAYS_SUPPLY_LOW] = low_date
+        self.context.msg_output[message_vocab.DAYS_SUPPLY_HIGH] = high_date
+
+        with self.assertRaises(EpsValidationError) as cm:
+            self.validator.check_repeat_dispense_window(self.context, self.handle_time)
+            self.assertEqual(str(cm.exception), f"{incorrect_field} has invalid format")
+
+    def test_high_date_exceeds_limit(self):
+        self.context.msg_output[message_vocab.DAYS_SUPPLY_LOW] = "20260911"
+        self.context.msg_output[message_vocab.DAYS_SUPPLY_HIGH] = "20280911"
+
+        with self.assertRaises(EpsValidationError) as cm:
+            self.validator.check_repeat_dispense_window(self.context, self.handle_time)
+            self.assertEqual(
+                str(cm.exception),
+                "daysSupplyValidHigh is more than "
+                + str(constants.MAX_FUTURESUPPLYMONTHS)
+                + " months beyond current day",
+            )
+
+    def test_high_date_in_the_past(self):
+        self.context.msg_output[message_vocab.DAYS_SUPPLY_LOW] = "20260911"
+        self.context.msg_output[message_vocab.DAYS_SUPPLY_HIGH] = "20260910"
+
+        with self.assertRaises(EpsValidationError) as cm:
+            self.validator.check_repeat_dispense_window(self.context, self.handle_time)
+            self.assertEqual(str(cm.exception), "daysSupplyValidHigh is in the past")
+
+    def test_low_after_high(self):
+        self.context.msg_output[message_vocab.DAYS_SUPPLY_LOW] = "20260912"
+        self.context.msg_output[message_vocab.DAYS_SUPPLY_HIGH] = "20260911"
+
+        with self.assertRaises(EpsValidationError) as cm:
+            self.validator.check_repeat_dispense_window(self.context, self.handle_time)
+            self.assertEqual(str(cm.exception), "daysSupplyValidLow is after daysSupplyValidHigh")
