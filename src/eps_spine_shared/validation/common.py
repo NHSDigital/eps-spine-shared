@@ -23,8 +23,6 @@ from eps_spine_shared.nhsfundamentals.time_utilities import (
 from eps_spine_shared.spinecore.schematron import SimpleReportSchematronApplier
 from eps_spine_shared.validation import message_vocab
 from eps_spine_shared.validation.constants import (
-    DEFAULT_DAYSSUPPLY,
-    MAX_DAYSSUPPLY,
     MAX_FUTURESUPPLYMONTHS,
     MAX_LINEITEMS,
     MAX_PRESCRIPTIONREPEATS,
@@ -836,26 +834,6 @@ class PrescriptionsValidator:
 
         context.output_fields.add(message_vocab.NOMPERFORMER)
         context.output_fields.add(message_vocab.NOMPERFORMER_TYPE)
-
-    def _check_days_supply(self, context: ValidationContext):
-        """
-        daysSupply is how many days each prescription instance should cover - supports
-        the calculation of nominated download dates
-        """
-        if not context.msg_output.get(message_vocab.DAYS_SUPPLY):
-            context.msg_output[message_vocab.DAYS_SUPPLY] = DEFAULT_DAYSSUPPLY
-        else:
-            if not REGEX_INTEGER12.match(context.msg_output[message_vocab.DAYS_SUPPLY]):
-                raise EpsValidationError("daysSupply is not an integer")
-            days_supply = int(context.msg_output[message_vocab.DAYS_SUPPLY])
-            if days_supply < 0:
-                raise EpsValidationError("daysSupply must be a non-zero integer")
-            if days_supply > MAX_DAYSSUPPLY:
-                raise EpsValidationError("daysSupply cannot exceed " + str(MAX_DAYSSUPPLY))
-            # This will need to be an integer when used in the interaction worker
-            context.msg_output[message_vocab.DAYS_SUPPLY] = days_supply
-
-        context.output_fields.add(message_vocab.DAYS_SUPPLY)
 
     def _check_repeat_dispense_window(self, context: ValidationContext, handle_time):
         """

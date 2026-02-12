@@ -7,6 +7,7 @@ from eps_spine_shared.errors import EpsValidationError
 from eps_spine_shared.logger import EpsLogger
 from eps_spine_shared.validation import message_vocab
 from eps_spine_shared.validation.common import ValidationContext
+from eps_spine_shared.validation.constants import MAX_DAYSSUPPLY
 from eps_spine_shared.validation.create import CreatePrescriptionValidator
 from tests.mock_logger import MockLogObject
 
@@ -114,3 +115,32 @@ class TestCheckSignedTime(CreatePrescriptionValidatorTest):
         with self.assertRaises(EpsValidationError) as cm:
             self.validator.check_signed_time(self.context)
             self.assertEqual(str(cm.exception), message_vocab.SIGNED_TIME + " has invalid format")
+
+
+class TestCheckDaysSupply(CreatePrescriptionValidatorTest):
+    def test_none(self):
+        self.context.msg_output[message_vocab.DAYS_SUPPLY] = None
+        self.validator.check_days_supply(self.context)
+
+        self.assertIn(message_vocab.DAYS_SUPPLY, self.context.output_fields)
+
+    def test_non_integer(self):
+        self.context.msg_output[message_vocab.DAYS_SUPPLY] = "one"
+
+        with self.assertRaises(EpsValidationError) as cm:
+            self.validator.check_days_supply(self.context)
+            self.assertEqual(str(cm.exception), "daysSupply is not an integer")
+
+    def test_negative_integer(self):
+        self.context.msg_output[message_vocab.DAYS_SUPPLY] = "-5"
+
+        with self.assertRaises(EpsValidationError) as cm:
+            self.validator.check_days_supply(self.context)
+            self.assertEqual(str(cm.exception), "daysSupply must be a non-zero integer")
+
+    def test_exceeds_max(self):
+        self.context.msg_output[message_vocab.DAYS_SUPPLY] = str(MAX_DAYSSUPPLY + 1)
+
+        with self.assertRaises(EpsValidationError) as cm:
+            self.validator.check_days_supply(self.context)
+            self.assertEqual(str(cm.exception), "daysSupply cannot exceed " + str(MAX_DAYSSUPPLY))
