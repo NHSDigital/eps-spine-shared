@@ -90,6 +90,7 @@ class PrescriptionsValidator:
         self.validator_sheet1 = interaction_worker.stage_1_validator
         self.validator_sheet2 = interaction_worker.stage_2_validator
         self.checksum_util = ChecksumUtil(self.log_object)
+
         # InternalID and xmlBody are unique to each run, and are re-set each time
         # the validate method is called
         self.xml_body = None
@@ -835,12 +836,6 @@ class PrescriptionsValidator:
 
         context.output_fields.add(message_vocab.NOMPERFORMER)
         context.output_fields.add(message_vocab.NOMPERFORMER_TYPE)
-
-    def _check_signed_time(self, context: ValidationContext):
-        """
-        Signed time must be a valid date/time
-        """
-        self._check_standard_date_time(context, message_vocab.SIGNED_TIME)
 
     def _check_days_supply(self, context: ValidationContext):
         """

@@ -1,6 +1,10 @@
 import unittest
+from unittest.mock import MagicMock
+
+from parameterized import parameterized
 
 from eps_spine_shared.errors import EpsValidationError
+from eps_spine_shared.logger import EpsLogger
 from eps_spine_shared.validation import message_vocab
 from eps_spine_shared.validation.common import ValidationContext
 from eps_spine_shared.validation.create import CreatePrescriptionValidator
@@ -9,9 +13,14 @@ from tests.mock_logger import MockLogObject
 
 class CreatePrescriptionValidatorTest(unittest.TestCase):
     def setUp(self):
-        self.log_object = MockLogObject()
+        self.log_object = EpsLogger(MockLogObject())
+        interaction_worker = MagicMock()
+        interaction_worker.log_object = self.log_object
+
+        self.validator = CreatePrescriptionValidator(interaction_worker)
         self.internal_id = "test-internal-id"
-        self.validator = CreatePrescriptionValidator(self.log_object, self.internal_id)
+        self.validator.internal_id = self.internal_id
+
         self.context = ValidationContext()
 
 
@@ -70,3 +79,38 @@ class TestCheckHcplOrg(CreatePrescriptionValidatorTest):
             self.validator.check_hcpl_org(self.context)
 
         self.assertEqual(str(cm.exception), message_vocab.HCPLORG + " has invalid format")
+
+
+class TestCheckSignedTime(CreatePrescriptionValidatorTest):
+    def test_valid_signed_time(self):
+        self.context.msg_output[message_vocab.SIGNED_TIME] = "20260911123456"
+        self.validator.check_signed_time(self.context)
+
+        self.assertIn(message_vocab.SIGNED_TIME, self.context.output_fields)
+
+    @parameterized.expand(
+        [
+            ("+0100"),
+            ("-0000"),
+            ("+0000"),
+        ]
+    )
+    def test_valid_international_signed_time(self, date_suffix):
+        self.context.msg_output[message_vocab.SIGNED_TIME] = "20260911123456" + date_suffix
+        self.validator.check_signed_time(self.context)
+
+        self.assertIn(message_vocab.SIGNED_TIME, self.context.output_fields)
+
+    def test_invalid_international_signed_time_raises_error(self):
+        self.context.msg_output[message_vocab.SIGNED_TIME] = "20260911123456+0200"
+
+        with self.assertRaises(EpsValidationError) as cm:
+            self.validator.check_signed_time(self.context)
+            self.assertEqual(str(cm.exception), message_vocab.SIGNED_TIME + " has invalid format")
+
+    def test_wrong_length_raises_error(self):
+        self.context.msg_output[message_vocab.SIGNED_TIME] = "202609111234567"
+
+        with self.assertRaises(EpsValidationError) as cm:
+            self.validator.check_signed_time(self.context)
+            self.assertEqual(str(cm.exception), message_vocab.SIGNED_TIME + " has invalid format")

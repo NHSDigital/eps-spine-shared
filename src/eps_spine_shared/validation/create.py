@@ -1,18 +1,17 @@
 from eps_spine_shared.errors import EpsValidationError
-from eps_spine_shared.logger import EpsLogger
 from eps_spine_shared.validation import message_vocab
-from eps_spine_shared.validation.common import ValidationContext
+from eps_spine_shared.validation.common import PrescriptionsValidator, ValidationContext
 from eps_spine_shared.validation.constants import REGEX_ALPHANUMERIC8, REGEX_ALPHANUMERIC12
 
 
-class CreatePrescriptionValidator:
+class CreatePrescriptionValidator(PrescriptionsValidator):
     """
     Validator for create prescription messages.
     """
 
-    def __init__(self, log_object, internal_id):
-        self.log_object = EpsLogger(log_object)
-        self.internal_id = internal_id
+    def __init__(self, interaction_worker):
+        super().__init__(interaction_worker)
+        self.internal_id = None
 
     def check_prescriber_details(self, context: ValidationContext):
         """
@@ -40,3 +39,9 @@ class CreatePrescriptionValidator:
         """
         if not REGEX_ALPHANUMERIC8.match(context.msg_output[message_vocab.HCPLORG]):
             raise EpsValidationError(message_vocab.HCPLORG + " has invalid format")
+
+    def check_signed_time(self, context: ValidationContext):
+        """
+        Signed time must be a valid date/time
+        """
+        self._check_standard_date_time(context, message_vocab.SIGNED_TIME)
