@@ -21,7 +21,6 @@ from eps_spine_shared.nhsfundamentals.time_utilities import (
 from eps_spine_shared.spinecore.schematron import SimpleReportSchematronApplier
 from eps_spine_shared.validation import message_vocab
 from eps_spine_shared.validation.constants import (
-    MAX_LINEITEMS,
     NOT_DISPENSED,
     PERFORMER_TYPELIST,
     R1,
@@ -33,8 +32,6 @@ from eps_spine_shared.validation.constants import (
     REGEX_PRESCRIDR1,
     REGEX_PRESCRIDR1_ALT,
     REGEX_ROLECODE,
-    STATUS_ACUTE,
-    STATUS_REPEAT,
     WITHDRAW_RSONLIST,
     WITHDRAW_TYPELIST,
 )
@@ -956,157 +953,3 @@ class PrescriptionsValidator:
             ),
         )
         return False
-
-    def validate_line_items(self, context: ValidationContext):
-        """
-        Validating line items - there are up to 32 line items
-
-        Each line item has a GUID (ID)
-        Each line item may have a repeatLow and a repeatHigh (not one but not the other)
-        Result needs to be places onto lineItems dictionary
-
-        Fields may be presented as empty when fields are not present - so these need to be
-        treated correctly as not present
-        - To manage this, delete any keys from the dictionary if the result is None or ''
-        """
-        maxRepeatHigh = 1
-        context.msg_output[message_vocab.LINEITEMS] = []
-
-        for line_number in range(MAX_LINEITEMS):
-
-            line_item = line_number + 1
-            line_dict = {}
-
-            line_item_id = message_vocab.LINEITEM_PX + str(line_item) + message_vocab.LINEITEM_SX_ID
-            if context.msg_output.get(line_item_id):
-                line_dict[message_vocab.LINEITEM_DT_ORDER] = line_item
-                line_dict[message_vocab.LINEITEM_DT_ID] = context.msg_output[line_item_id]
-                line_dict[message_vocab.LINEITEM_DT_STATUS] = "0007"
-            else:
-                break
-
-            line_item_repeat_high = (
-                message_vocab.LINEITEM_PX + str(line_item) + message_vocab.LINEITEM_SX_REPEATHIGH
-            )
-            line_item_repeat_low = (
-                message_vocab.LINEITEM_PX + str(line_item) + message_vocab.LINEITEM_SX_REPEATLOW
-            )
-            if context.msg_output.get(line_item_repeat_high):
-                line_dict[message_vocab.LINEITEM_DT_MAXREPEATS] = context.msg_output[
-                    line_item_repeat_high
-                ]
-            if context.msg_output.get(line_item_repeat_low):
-                line_dict[message_vocab.LINEITEM_DT_CURRINSTANCE] = context.msg_output[
-                    line_item_repeat_low
-                ]
-
-            maxRepeatHigh = self.validateLineItem(context, line_item, line_dict, maxRepeatHigh)
-            context.msg_output[message_vocab.LINEITEMS].append(line_dict)
-
-        if len(context.msg_output[message_vocab.LINEITEMS]) < 1:
-            supp_info = "No valid line items found"
-            raise EpsValidationError(supp_info)
-
-        maxLineItem = message_vocab.LINEITEM_PX
-        maxLineItem += str(MAX_LINEITEMS + 1)
-        maxLineItem += message_vocab.LINEITEM_SX_ID
-        if maxLineItem in context.msg_output:
-            supp_info = "lineItems over expected max count of " + str(MAX_LINEITEMS)
-            raise EpsValidationError(supp_info)
-
-        if (
-            message_vocab.REPEATHIGH in context.msg_output
-            and maxRepeatHigh < context.msg_output[message_vocab.REPEATHIGH]
-        ):
-            supp_info = "Prescription repeat count must not be greater than all "
-            supp_info += "Line Item repeat counts"
-            raise EpsValidationError(supp_info)
-
-        context.output_fields.add(message_vocab.LINEITEMS)
-
-    def validate_line_item(self, context: ValidationContext, line_item, line_dict, max_repeat_high):
-        """
-        Ensure that the GUID is valid
-        Check for an appropriate combination of maxRepeats and currentInstance
-        Check for an appropriate value of maxRepeats
-        Check for an appropriate value for currentInstance
-        """
-        if not REGEX_GUID.match(line_dict[message_vocab.LINEITEM_DT_ID]):
-            supp_info = line_dict[message_vocab.LINEITEM_DT_ID]
-            supp_info += " is not a valid GUID format"
-            raise EpsValidationError(supp_info)
-
-        if (
-            message_vocab.LINEITEM_DT_MAXREPEATS not in line_dict
-            and message_vocab.LINEITEM_DT_CURRINSTANCE not in line_dict
-            and context.msg_output[message_vocab.TREATMENTTYPE] == STATUS_ACUTE
-        ):
-            return max_repeat_high
-
-        self._check_for_invalid_line_item_repeat_combinations(context, line_dict, line_item)
-
-        if not REGEX_INTEGER12.match(line_dict[message_vocab.LINEITEM_DT_MAXREPEATS]):
-            supp_info = "repeat.High for line item "
-            supp_info += str(line_item) + " is not an integer"
-            raise EpsValidationError(supp_info)
-
-        repeat_high = int(line_dict[message_vocab.LINEITEM_DT_MAXREPEATS])
-        if repeat_high < 1:
-            supp_info = "repeat.High for line item "
-            supp_info += str(line_item) + " must be greater than zero"
-            raise EpsValidationError(supp_info)
-        if repeat_high > int(context.msg_output[message_vocab.REPEATHIGH]):
-            supp_info = "repeat.High of " + str(repeat_high)
-            supp_info += " for line item " + str(line_item)
-            supp_info += " must not be greater than " + message_vocab.REPEATHIGH
-            supp_info += " of " + str(context.msg_output[message_vocab.REPEATHIGH])
-            raise EpsValidationError(supp_info)
-        if repeat_high != 1 and context.msg_output[message_vocab.TREATMENTTYPE] == STATUS_REPEAT:
-            self.log_object.write_log(
-                "EPS0509",
-                None,
-                {
-                    "internalID": self.internal_id,
-                    "target": str(line_item),
-                    "maxRepeats": repeat_high,
-                },
-            )
-        if not REGEX_INTEGER12.match(line_dict[message_vocab.LINEITEM_DT_CURRINSTANCE]):
-            supp_info = "repeat.Low for line item " + str(line_item)
-            supp_info += " is not an integer"
-            raise EpsValidationError(supp_info)
-        repeat_low = int(line_dict[message_vocab.LINEITEM_DT_CURRINSTANCE])
-        if repeat_low != 1:
-            supp_info = "repeat.Low for line item " + str(line_item) + " is not set to 1"
-            raise EpsValidationError(supp_info)
-
-        max_repeat_high = max(max_repeat_high, repeat_high)
-        return max_repeat_high
-
-    def _check_for_invalid_line_item_repeat_combinations(
-        self, context: ValidationContext, line_dict, line_item
-    ):
-        """
-        If not an acute prescription - check the combination of repeat and instance
-        informaiton is valid
-        """
-        if (
-            message_vocab.LINEITEM_DT_MAXREPEATS not in line_dict
-            and message_vocab.LINEITEM_DT_CURRINSTANCE not in line_dict
-        ):
-            supp_info = "repeat.High and repeat.Low values must both be "
-            supp_info += "provided for lineItem " + str(line_item) + " "
-            supp_info += "if not acute prescription"
-            raise EpsValidationError(supp_info)
-        elif message_vocab.LINEITEM_DT_MAXREPEATS not in line_dict:
-            supp_info = "repeat.Low provided but not repeat.High for line item "
-            supp_info += str(line_item)
-            raise EpsValidationError(supp_info)
-        elif message_vocab.LINEITEM_DT_CURRINSTANCE not in line_dict:
-            supp_info = "repeat.High provided but not repeat.Low for line item "
-            supp_info += str(line_item)
-            raise EpsValidationError(supp_info)
-        elif not context.msg_output.get(message_vocab.REPEATHIGH):
-            supp_info = "Line item " + str(line_item)
-            supp_info += " repeat value provided for non-repeat prescription"
-            raise EpsValidationError(supp_info)
