@@ -218,7 +218,7 @@ class PrescriptionsValidator:
             return True
         return False
 
-    def _check_organisation_and_roles(self, context: ValidationContext):
+    def check_organisation_and_roles(self, context: ValidationContext):
         """
         Check the organisation and role information is of the correct format
         Requires:
@@ -290,7 +290,7 @@ class PrescriptionsValidator:
             ) from value_error
         context.output_fields.add(message_vocab.COMPONENTCOUNT)
 
-    def _check_hl7_event_id(self, context: ValidationContext):
+    def check_hl7_event_id(self, context: ValidationContext):
         """
         Check a HL7 ID is in a valid UUID format
         Requires:
@@ -300,7 +300,7 @@ class PrescriptionsValidator:
             raise EpsValidationError(message_vocab.HL7EVENTID + " has invalid format")
         context.output_fields.add(message_vocab.HL7EVENTID)
 
-    def _check_nhs_number(self, context: ValidationContext):
+    def check_nhs_number(self, context: ValidationContext):
         """
         Check an nhs number is of a valid format
         Requires:
@@ -321,7 +321,7 @@ class PrescriptionsValidator:
         else:
             raise EpsSystemError(EpsSystemError.DEVELOPMENT_FAILURE)
 
-    def _check_prescription_id(self, context: ValidationContext):
+    def check_prescription_id(self, context: ValidationContext):
         """
         Check the format of a prescription ID and that it has the correct checksum
         """
@@ -336,7 +336,7 @@ class PrescriptionsValidator:
 
         context.output_fields.add(message_vocab.PRESCID)
 
-    def _check_prescription_id_dispense_side(self, context: ValidationContext):
+    def check_prescription_id_dispense_side(self, context: ValidationContext):
         """
         On release need to determine target version - is it R1 or R2 - before validating
         the prescription ID
@@ -348,12 +348,12 @@ class PrescriptionsValidator:
         if context.msg_output.get(message_vocab.TARGET_PRESCVR, R1) == R1:
             self._check_r1_prescription_id(context)
         else:
-            self._check_prescription_id(context)
+            self.check_prescription_id(context)
 
         context.output_fields.add(message_vocab.PRESCID)
         context.output_fields.add(message_vocab.TARGET_PRESCVR)
 
-    def _check_prescription_id_dispense_rebuild(self, context: ValidationContext):
+    def check_prescription_id_dispense_rebuild(self, context: ValidationContext):
         """
         On dispense_rebuild need to determine target version - is it R1 or R2 - before validating
         the prescription ID. This is the Root ID in the prescription rebuild case
@@ -369,7 +369,7 @@ class PrescriptionsValidator:
         if context.msg_output.get(message_vocab.TARGET_PRESCVR, R1) == R1:
             self._check_r1_prescription_id(context)
         else:
-            self._check_prescription_id(context)
+            self.check_prescription_id(context)
 
         context.output_fields.add(message_vocab.PRESCID)
         context.output_fields.add(message_vocab.TARGET_PRESCVR)
@@ -665,7 +665,7 @@ class PrescriptionsValidator:
 
         context.output_fields.add(message_vocab.PRESCID)
 
-    def _check_standard_date_time(self, context: ValidationContext, attribute_name):
+    def check_standard_date_time(self, context: ValidationContext, attribute_name):
         """
         Check for a valid time
         """
@@ -708,7 +708,7 @@ class PrescriptionsValidator:
 
         context.output_fields.add(attribute_name)
 
-    def _check_nominated_performer(self, context: ValidationContext):
+    def check_nominated_performer(self, context: ValidationContext):
         """
         If there is nominated performer (i.e. pharmacy) information - then the format
         needs to be validated
@@ -791,7 +791,7 @@ class PrescriptionsValidator:
         Dispense time must be a valid date/time, not in the future (tolerance of one day
         is granted to allow for server timing issues)
         """
-        self._check_standard_date_time(context, message_vocab.DISPENSEN_TIME)
+        self.check_standard_date_time(context, message_vocab.DISPENSEN_TIME)
         dn_time = datetime.datetime.strptime(
             context.msg_output[message_vocab.DISPENSEN_TIME], TimeFormats.STANDARD_DATE_TIME_FORMAT
         )
@@ -817,7 +817,7 @@ class PrescriptionsValidator:
         is granted to allow for server timing issues)
         """
 
-        self._check_standard_date_time(context, message_vocab.DISPENSEW_TIME)
+        self.check_standard_date_time(context, message_vocab.DISPENSEW_TIME)
 
         dw_time = datetime.datetime.strptime(
             context.msg_output[message_vocab.DISPENSEW_TIME], TimeFormats.STANDARD_DATE_TIME_FORMAT

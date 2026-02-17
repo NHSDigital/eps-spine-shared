@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from dateutil.relativedelta import relativedelta
 
 from eps_spine_shared.common.prescription.fields import DEFAULT_DAYSSUPPLY
@@ -27,7 +29,7 @@ class CreatePrescriptionValidator(PrescriptionsValidator):
         """
         Signed time must be a valid date/time
         """
-        self._check_standard_date_time(context, message_vocab.SIGNED_TIME)
+        self.check_standard_date_time(context, message_vocab.SIGNED_TIME)
 
     def check_days_supply(self, context: ValidationContext):
         """
@@ -51,7 +53,7 @@ class CreatePrescriptionValidator(PrescriptionsValidator):
 
         context.output_fields.add(message_vocab.DAYS_SUPPLY)
 
-    def check_repeat_dispense_window(self, context: ValidationContext, handle_time):
+    def check_repeat_dispense_window(self, context: ValidationContext, handle_time: datetime):
         """
         The overall time to cover the dispense of all repeated instances
 
@@ -207,7 +209,7 @@ class CreatePrescriptionValidator(PrescriptionsValidator):
         context.output_fields.add(message_vocab.REPEATLOW)
         context.output_fields.add(message_vocab.REPEATHIGH)
 
-    def check_birth_date(self, context: ValidationContext, handle_time):
+    def check_birth_date(self, context: ValidationContext, handle_time: datetime):
         """
         Birth date must be a valid date, and must not be in the future
         """
@@ -368,3 +370,30 @@ class CreatePrescriptionValidator(PrescriptionsValidator):
             raise EpsValidationError(
                 f"Line item {line_item} repeat value provided for non-repeat prescription"
             )
+
+    def run_validations(self, validation_context: ValidationContext, handle_time: datetime):
+        """
+        Validate elements extracted from the inbound message
+        """
+        self.check_prescriber_details(validation_context)
+        self.check_organisation_and_roles(validation_context)
+        self.check_nhs_number(validation_context)
+        self.check_patient_name(validation_context)
+        self.check_standard_date_time(validation_context, message_vocab.PRESCTIME)
+        self.check_prescription_treatment_type(validation_context)
+        self.check_prescription_type(validation_context)
+        self.check_repeat_dispense_instances(validation_context)
+        self.check_birth_date(validation_context, handle_time)
+        self.check_hl7_event_id(validation_context)
+        self.validate_line_items(validation_context)
+        validation_context.output_fields.add(message_vocab.PRESCSTATUS)
+        validation_context.msg_output[message_vocab.PRESCSTATUS] = "NOT_SET_YET"
+
+        self.check_hcpl_org(validation_context)
+        self.check_nominated_performer(validation_context)
+        self.check_prescription_id(validation_context)
+        self.check_signed_time(validation_context)
+        self.check_days_supply(validation_context)
+        self.check_repeat_dispense_window(validation_context, handle_time)
+        validation_context.output_fields.add(message_vocab.SIGNED_INFO)
+        validation_context.output_fields.add(message_vocab.DIGEST_METHOD)
