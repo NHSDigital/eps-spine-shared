@@ -19,26 +19,7 @@ from eps_spine_shared.validation.constants import (
 )
 
 
-class ValidationContext(object):
-    """
-    Used to hold context of a validation process
-    """
-
-    def __init__(self, msg_output=None):
-        """
-        Context of an individual validation run
-        """
-        # This dictionary will hold the outputs of the schematron once the schematron
-        # validator has been applied to the xmlBody
-        self.msg_output = {}
-        if msg_output:
-            self.msg_output = msg_output
-        # Output fields should be set within the child class to determine what needs
-        # to be copied back into the workerContext
-        self.output_fields = set()
-
-
-def check_nominated_performer(context: ValidationContext):
+def check_nominated_performer(context):
     """
     If there is nominated performer (i.e. pharmacy) information - then the format
     needs to be validated
@@ -58,7 +39,7 @@ def check_nominated_performer(context: ValidationContext):
     context.output_fields.add(message_vocab.NOMPERFORMER_TYPE)
 
 
-def check_prescription_id(context: ValidationContext, internal_id, log_object):
+def check_prescription_id(context, internal_id, log_object):
     """
     Check the format of a prescription ID and that it has the correct checksum
     """
@@ -74,7 +55,7 @@ def check_prescription_id(context: ValidationContext, internal_id, log_object):
     context.output_fields.add(message_vocab.PRESCID)
 
 
-def check_organisation_and_roles(context: ValidationContext, log_object, internal_id):
+def check_organisation_and_roles(context, log_object, internal_id):
     """
     Check the organisation and role information is of the correct format
     Requires:
@@ -113,7 +94,7 @@ def check_organisation_and_roles(context: ValidationContext, log_object, interna
     context.output_fields.add(message_vocab.ROLE)
 
 
-def check_nhs_number(context: ValidationContext):
+def check_nhs_number(context):
     """
     Check an nhs number is of a valid format
     Requires:
@@ -126,9 +107,7 @@ def check_nhs_number(context: ValidationContext):
         raise EpsValidationError(supp_info)
 
 
-def check_standard_date_time(
-    context: ValidationContext, attribute_name, log_object: EpsLogger, internal_id
-):
+def check_standard_date_time(context, attribute_name, log_object: EpsLogger, internal_id):
     """
     Check for a valid time
     """
@@ -151,7 +130,7 @@ def check_standard_date_time(
     context.output_fields.add(attribute_name)
 
 
-def check_standard_date(context: ValidationContext, attribute_name):
+def check_standard_date(context, attribute_name):
     """
     Check for a valid date
     """
@@ -169,7 +148,7 @@ def check_standard_date(context: ValidationContext, attribute_name):
     context.output_fields.add(attribute_name)
 
 
-def check_hl7_event_id(context: ValidationContext):
+def check_hl7_event_id(context):
     """
     Check a HL7 ID is in a valid UUID format
     Requires:

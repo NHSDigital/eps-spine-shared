@@ -8,7 +8,6 @@ from eps_spine_shared.logger import EpsLogger
 from eps_spine_shared.nhsfundamentals.time_utilities import TimeFormats
 from eps_spine_shared.validation import constants, message_vocab
 from eps_spine_shared.validation.common import (
-    ValidationContext,
     check_hl7_event_id,
     check_nhs_number,
     check_nominated_performer,
@@ -19,7 +18,7 @@ from eps_spine_shared.validation.common import (
 )
 
 
-def check_hcpl_org(context: ValidationContext):
+def check_hcpl_org(context):
     """
     This is an org only found in EPS2 prescriber details
     """
@@ -27,14 +26,14 @@ def check_hcpl_org(context: ValidationContext):
         raise EpsValidationError(message_vocab.HCPLORG + " has invalid format")
 
 
-def check_signed_time(context: ValidationContext, log_object: EpsLogger, internal_id):
+def check_signed_time(context, log_object: EpsLogger, internal_id):
     """
     Signed time must be a valid date/time
     """
     check_standard_date_time(context, message_vocab.SIGNED_TIME, log_object, internal_id)
 
 
-def check_days_supply(context: ValidationContext):
+def check_days_supply(context):
     """
     daysSupply is how many days each prescription instance should cover - supports
     the calculation of nominated download dates
@@ -55,7 +54,7 @@ def check_days_supply(context: ValidationContext):
     context.output_fields.add(message_vocab.DAYS_SUPPLY)
 
 
-def check_repeat_dispense_window(context: ValidationContext, handle_time: datetime):
+def check_repeat_dispense_window(context, handle_time: datetime):
     """
     The overall time to cover the dispense of all repeated instances
 
@@ -101,7 +100,7 @@ def check_repeat_dispense_window(context: ValidationContext, handle_time: dateti
         raise EpsValidationError("daysSupplyValid low is after daysSupplyValidHigh")
 
 
-def check_prescriber_details(context: ValidationContext, log_object: EpsLogger, internal_id):
+def check_prescriber_details(context, log_object: EpsLogger, internal_id):
     """
     Validate prescriber details (not required beyond validation).
     """
@@ -122,7 +121,7 @@ def check_prescriber_details(context: ValidationContext, log_object: EpsLogger, 
     context.output_fields.add(message_vocab.AGENT_PERSON)
 
 
-def check_patient_name(context: ValidationContext):
+def check_patient_name(context):
     """
     Adds patient name to the context output_fields
     """
@@ -132,7 +131,7 @@ def check_patient_name(context: ValidationContext):
     context.output_fields.add(message_vocab.FAMILY)
 
 
-def check_prescription_treatment_type(context: ValidationContext):
+def check_prescription_treatment_type(context):
     """
     Validate treatment type
     """
@@ -142,7 +141,7 @@ def check_prescription_treatment_type(context: ValidationContext):
     context.output_fields.add(message_vocab.TREATMENTTYPE)
 
 
-def check_prescription_type(context: ValidationContext, log_object: EpsLogger, internal_id):
+def check_prescription_type(context, log_object: EpsLogger, internal_id):
     """
     Validate the prescriptionType
     """
@@ -154,7 +153,7 @@ def check_prescription_type(context: ValidationContext, log_object: EpsLogger, i
     context.output_fields.add(message_vocab.PRESCTYPE)
 
 
-def check_repeat_dispense_instances(context: ValidationContext, log_object: EpsLogger, internal_id):
+def check_repeat_dispense_instances(context, log_object: EpsLogger, internal_id):
     """
     Repeat dispense instances is an integer range found within repeat dispense
     prescriptions to articulate the number of instances.  Low must be 1!
@@ -206,7 +205,7 @@ def check_repeat_dispense_instances(context: ValidationContext, log_object: EpsL
     context.output_fields.add(message_vocab.REPEATHIGH)
 
 
-def check_birth_date(context: ValidationContext, handle_time: datetime):
+def check_birth_date(context, handle_time: datetime):
     """
     Birth date must be a valid date, and must not be in the future
     """
@@ -217,7 +216,7 @@ def check_birth_date(context: ValidationContext, handle_time: datetime):
         raise EpsValidationError(supp_info)
 
 
-def validate_line_items(context: ValidationContext, log_object: EpsLogger, internal_id):
+def validate_line_items(context, log_object: EpsLogger, internal_id):
     """
     Validating line items - there are up to 32 line items
 
@@ -287,7 +286,7 @@ def validate_line_items(context: ValidationContext, log_object: EpsLogger, inter
 
 
 def validate_line_item(
-    context: ValidationContext,
+    context,
     line_item,
     line_dict,
     max_repeat_high,
@@ -348,9 +347,7 @@ def validate_line_item(
     return max_repeat_high
 
 
-def check_for_invalid_line_item_repeat_combinations(
-    context: ValidationContext, line_dict, line_item
-):
+def check_for_invalid_line_item_repeat_combinations(context, line_dict, line_item):
     """
     If not an acute prescription - check the combination of repeat and instance
     information is valid
@@ -377,7 +374,7 @@ def check_for_invalid_line_item_repeat_combinations(
         )
 
 
-def run_validations(validation_context: ValidationContext, handle_time: datetime):
+def run_validations(validation_context, handle_time: datetime):
     """
     Validate elements extracted from the inbound message
     """

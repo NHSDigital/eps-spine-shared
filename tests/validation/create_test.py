@@ -8,7 +8,6 @@ import eps_spine_shared.validation.create as create_validator
 from eps_spine_shared.errors import EpsValidationError
 from eps_spine_shared.logger import EpsLogger
 from eps_spine_shared.validation import constants, message_vocab
-from eps_spine_shared.validation.common import ValidationContext
 from tests.mock_logger import MockLogObject
 
 
@@ -16,7 +15,10 @@ class CreatePrescriptionValidatorTest(unittest.TestCase):
     def setUp(self):
         self.log_object = EpsLogger(MockLogObject())
         self.internal_id = "test-internal-id"
-        self.context = ValidationContext()
+
+        self.context = MagicMock()
+        self.context.msg_output = {}
+        self.context.output_fields = set()
 
 
 class TestCheckHcplOrg(CreatePrescriptionValidatorTest):
@@ -490,7 +492,9 @@ class TestValidateLineItem(CreatePrescriptionValidatorTest):
         self.line_item_id = "12345678-1234-1234-1234-123456789012"
         self.line_item = 1
         self.line_dict = {}
-        self.context = ValidationContext()
+        self.context = MagicMock()
+        self.context.msg_output = {}
+        self.context.output_fields = set()
 
     def test_invalid_line_item_id(self):
         self.line_dict[message_vocab.LINEITEM_DT_ID] = "invalid-line-item-id"
