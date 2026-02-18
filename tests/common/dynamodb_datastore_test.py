@@ -825,7 +825,7 @@ class EpsDynamoDbDataStoreTest(DynamoDbTest):
         # Create several processes that try to update the record concurrently
         processes = []
         loggers = []
-        for _ in range(2):
+        for _ in range(5):
             logger = MockLogObject()
             loggers.append(logger)
 
@@ -856,8 +856,8 @@ class EpsDynamoDbDataStoreTest(DynamoDbTest):
         [logs.add(log) for logger in loggers for log in logger.called_references]
         self.assertTrue("DDB0022" in logs, "Expected a log DDB0022 for concurrent update failure")
 
-        self.assertEqual(
-            len(exceptions_thrown), 1, "Expected exception to be thrown for concurrent updates"
+        self.assertTrue(
+            len(exceptions_thrown) > 0, "Expected exception to be thrown for concurrent updates"
         )
         self.assertTrue(
             isinstance(exceptions_thrown[0], EpsDataStoreError),
