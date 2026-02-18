@@ -1,76 +1,66 @@
 from string import ascii_uppercase
 
+LONGIDLENGTH_WITH_CHECKDIGIT = 37
+SHORTIDLENGTH_WITH_CHECKDIGIT = 20
 
-class ChecksumUtil(object):
+
+def calculate_checksum(prescription_id):
     """
-    Provides utility methods for checkum validation
+    Generate a checksum for either R1 or R2 prescription
     """
+    prsc_id = prescription_id.replace("-", "")
+    prsc_id_length = len(prsc_id)
 
-    LONGIDLENGTH_WITH_CHECKDIGIT = 37
-    SHORTIDLENGTH_WITH_CHECKDIGIT = 20
+    running_total = 0
+    for string_position in range(prsc_id_length - 1):
+        char_mod36 = int(prsc_id[string_position], 36)
+        running_total += char_mod36 * (2 ** (prsc_id_length - string_position - 1))
 
-    def __init__(self, logObject):
-        """
-        :logObject required for logging invalid checksums
-        """
-        self.logObject = logObject
+    check_value = (38 - running_total % 37) % 37
+    if check_value == 36:
+        check_value = "+"
+    elif check_value > 9:
+        check_value = ascii_uppercase[check_value - 10]
+    else:
+        check_value = str(check_value)
 
-    def calculateChecksum(self, prescriptionID):
-        """
-        Generate a checksum for either R1 or R2 prescription
-        """
-        prscID = prescriptionID.replace("-", "")
-        prscIDLength = len(prscID)
+    return check_value
 
-        runningTotal = 0
-        for stringPosition in range(prscIDLength - 1):
-            _charMod36 = int(prscID[stringPosition], 36)
-            runningTotal += _charMod36 * (2 ** (prscIDLength - stringPosition - 1))
 
-        checkValue = (38 - runningTotal % 37) % 37
-        if checkValue == 36:
-            checkValue = "+"
-        elif checkValue > 9:
-            checkValue = ascii_uppercase[checkValue - 10]
-        else:
-            checkValue = str(checkValue)
+def check_checksum(prescription_id, internal_id, log_object):
+    """
+    Check the checksum of a Prescription ID
+    :prescription_id the prescription to check
+    :log_object optional logObject, if this is given then invalid checksums will be logged.
+    """
+    check_character = prescription_id[-1:]
+    check_value = calculate_checksum(prescription_id)
 
-        return checkValue
+    if check_value == check_character:
+        return True
 
-    def checkChecksum(self, prescriptionID, internalID):
-        """
-        Check the checksum of a Prescription ID
-        :prescriptionID the prescription to check
-        :logObject optional logObject, if this is given then invalid checksums will be logged.
-        """
-        checkCharacter = prescriptionID[-1:]
-        checkValue = self.calculateChecksum(prescriptionID)
+    log_object.write_log(
+        "MWS0042",
+        None,
+        dict(
+            {
+                "internalID": internal_id,
+                "prescriptionID": prescription_id,
+                "checkValue": check_value,
+            }
+        ),
+    )
 
-        if checkValue == checkCharacter:
-            return True
+    return False
 
-        self.logObject.writeLog(
-            "MWS0042",
-            None,
-            dict(
-                {
-                    "internalID": internalID,
-                    "prescriptionID": prescriptionID,
-                    "checkValue": checkValue,
-                }
-            ),
-        )
 
-        return False
-
-    @classmethod
-    def removeCheckDigit(cls, prescriptionID):
-        """
-        Takes the passed in id and determines, by its length, if it contains a checkdigit,
-        returns an id without the check digit
-        """
-        prescriptionKey = prescriptionID
-        idLength = len(prescriptionID)
-        if idLength in [cls.LONGIDLENGTH_WITH_CHECKDIGIT, cls.SHORTIDLENGTH_WITH_CHECKDIGIT]:
-            prescriptionKey = prescriptionID[:-1]
-        return prescriptionKey
+def remove_check_digit(prescription_id):
+    """
+    Takes the passed in id and determines, by its length, if it contains a checkdigit,
+    returns an id without the check digit
+    """
+    prescription_key = prescription_id
+    id_length = len(prescription_id)
+    if id_length in [LONGIDLENGTH_WITH_CHECKDIGIT, SHORTIDLENGTH_WITH_CHECKDIGIT]:
+        prescription_key = prescription_id[:-1]
+    return prescription_key
