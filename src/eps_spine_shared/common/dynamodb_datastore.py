@@ -80,26 +80,18 @@ class EpsDynamoDbDataStore:
     DEFAULT_EXPIRY_DAYS = 56
     MAX_NEXT_ACTIVITY_DATE = "99991231"
 
-    def __init__(
-        self,
-        log_object,
-        aws_endpoint_url,
-        table_name,
-        role_arn=None,
-        role_session_name=None,
-        sts_endpoint_url=None,
-    ):
+    def __init__(self, log_object, system_config):
         """
         Instantiate the DynamoDB client.
         """
         self.log_object = EpsLogger(log_object)
         self.client = EpsDynamoDbClient(
             log_object,
-            aws_endpoint_url,
-            table_name,
-            role_arn,
-            role_session_name,
-            sts_endpoint_url,
+            system_config["ddb aws endpoint url"],
+            system_config["datastore table name"],
+            system_config["datastore role arn"],
+            system_config["process name"],
+            system_config["sts endpoint url"],
         )
         self.indexes = EpsDynamoDbIndex(log_object, self.client)
 
