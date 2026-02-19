@@ -17,17 +17,17 @@ class CreatePrescriptionValidatorTest(unittest.TestCase):
         self.internal_id = "test-internal-id"
 
         self.context = MagicMock()
-        self.context.msg_output = {}
-        self.context.output_fields = set()
+        self.context.msgOutput = {}
+        self.context.outputFields = set()
 
 
 class TestCheckHcplOrg(CreatePrescriptionValidatorTest):
     def test_valid_hcpl_org(self):
-        self.context.msg_output[message_vocab.HCPLORG] = "ORG12345"
+        self.context.msgOutput[message_vocab.HCPLORG] = "ORG12345"
         create_validator.check_hcpl_org(self.context)
 
     def test_invalid_format_raises_error(self):
-        self.context.msg_output[message_vocab.HCPLORG] = "ORG@1234"
+        self.context.msgOutput[message_vocab.HCPLORG] = "ORG@1234"
 
         with self.assertRaises(EpsValidationError) as cm:
             create_validator.check_hcpl_org(self.context)
@@ -37,10 +37,10 @@ class TestCheckHcplOrg(CreatePrescriptionValidatorTest):
 
 class TestCheckSignedTime(CreatePrescriptionValidatorTest):
     def test_valid_signed_time(self):
-        self.context.msg_output[message_vocab.SIGNED_TIME] = "20260911123456"
+        self.context.msgOutput[message_vocab.SIGNED_TIME] = "20260911123456"
         create_validator.check_signed_time(self.context, self.log_object, self.internal_id)
 
-        self.assertIn(message_vocab.SIGNED_TIME, self.context.output_fields)
+        self.assertIn(message_vocab.SIGNED_TIME, self.context.outputFields)
 
     @parameterized.expand(
         [
@@ -50,13 +50,13 @@ class TestCheckSignedTime(CreatePrescriptionValidatorTest):
         ]
     )
     def test_valid_international_signed_time(self, date_suffix):
-        self.context.msg_output[message_vocab.SIGNED_TIME] = "20260911123456" + date_suffix
+        self.context.msgOutput[message_vocab.SIGNED_TIME] = "20260911123456" + date_suffix
         create_validator.check_signed_time(self.context, self.log_object, self.internal_id)
 
-        self.assertIn(message_vocab.SIGNED_TIME, self.context.output_fields)
+        self.assertIn(message_vocab.SIGNED_TIME, self.context.outputFields)
 
     def test_invalid_international_signed_time_raises_error(self):
-        self.context.msg_output[message_vocab.SIGNED_TIME] = "20260911123456+0200"
+        self.context.msgOutput[message_vocab.SIGNED_TIME] = "20260911123456+0200"
 
         with self.assertRaises(EpsValidationError) as cm:
             create_validator.check_signed_time(self.context, self.log_object, self.internal_id)
@@ -68,7 +68,7 @@ class TestCheckSignedTime(CreatePrescriptionValidatorTest):
         )
 
     def test_wrong_length_raises_error(self):
-        self.context.msg_output[message_vocab.SIGNED_TIME] = "202609111234567"
+        self.context.msgOutput[message_vocab.SIGNED_TIME] = "202609111234567"
 
         with self.assertRaises(EpsValidationError) as cm:
             create_validator.check_signed_time(self.context, self.log_object, self.internal_id)
@@ -82,13 +82,13 @@ class TestCheckSignedTime(CreatePrescriptionValidatorTest):
 
 class TestCheckDaysSupply(CreatePrescriptionValidatorTest):
     def test_none(self):
-        self.context.msg_output[message_vocab.DAYS_SUPPLY] = None
+        self.context.msgOutput[message_vocab.DAYS_SUPPLY] = None
         create_validator.check_days_supply(self.context)
 
-        self.assertIn(message_vocab.DAYS_SUPPLY, self.context.output_fields)
+        self.assertIn(message_vocab.DAYS_SUPPLY, self.context.outputFields)
 
     def test_non_integer(self):
-        self.context.msg_output[message_vocab.DAYS_SUPPLY] = "one"
+        self.context.msgOutput[message_vocab.DAYS_SUPPLY] = "one"
 
         with self.assertRaises(EpsValidationError) as cm:
             create_validator.check_days_supply(self.context)
@@ -96,7 +96,7 @@ class TestCheckDaysSupply(CreatePrescriptionValidatorTest):
         self.assertEqual(str(cm.exception), "daysSupply is not an integer")
 
     def test_negative_integer(self):
-        self.context.msg_output[message_vocab.DAYS_SUPPLY] = "-5"
+        self.context.msgOutput[message_vocab.DAYS_SUPPLY] = "-5"
 
         with self.assertRaises(EpsValidationError) as cm:
             create_validator.check_days_supply(self.context)
@@ -104,7 +104,7 @@ class TestCheckDaysSupply(CreatePrescriptionValidatorTest):
         self.assertEqual(str(cm.exception), "daysSupply is not an integer")
 
     def test_exceeds_max(self):
-        self.context.msg_output[message_vocab.DAYS_SUPPLY] = str(constants.MAX_DAYSSUPPLY + 1)
+        self.context.msgOutput[message_vocab.DAYS_SUPPLY] = str(constants.MAX_DAYSSUPPLY + 1)
 
         with self.assertRaises(EpsValidationError) as cm:
             create_validator.check_days_supply(self.context)
@@ -117,18 +117,18 @@ class TestCheckDaysSupply(CreatePrescriptionValidatorTest):
 class TestCheckRepeatDispenseWindow(CreatePrescriptionValidatorTest):
     def setUp(self):
         super().setUp()
-        self.context.msg_output[message_vocab.TREATMENTTYPE] = constants.STATUS_REPEAT_DISP
+        self.context.msgOutput[message_vocab.TREATMENTTYPE] = constants.STATUS_REPEAT_DISP
         self.handle_time = datetime(2026, 9, 11, 12, 34, 56)
 
     def test_non_repeat(self):
-        self.context.msg_output[message_vocab.TREATMENTTYPE] = constants.STATUS_ACUTE
+        self.context.msgOutput[message_vocab.TREATMENTTYPE] = constants.STATUS_ACUTE
         create_validator.check_repeat_dispense_window(self.context, self.handle_time)
 
-        self.assertEqual(self.context.msg_output[message_vocab.DAYS_SUPPLY_LOW], "20260911")
-        self.assertEqual(self.context.msg_output[message_vocab.DAYS_SUPPLY_HIGH], "20270911")
+        self.assertEqual(self.context.msgOutput[message_vocab.DAYS_SUPPLY_LOW], "20260911")
+        self.assertEqual(self.context.msgOutput[message_vocab.DAYS_SUPPLY_HIGH], "20270911")
 
-        self.assertIn(message_vocab.DAYS_SUPPLY_LOW, self.context.output_fields)
-        self.assertIn(message_vocab.DAYS_SUPPLY_HIGH, self.context.output_fields)
+        self.assertIn(message_vocab.DAYS_SUPPLY_LOW, self.context.outputFields)
+        self.assertIn(message_vocab.DAYS_SUPPLY_HIGH, self.context.outputFields)
 
     def test_missing_low_and_high(self):
         with self.assertRaises(EpsValidationError) as cm:
@@ -146,8 +146,8 @@ class TestCheckRepeatDispenseWindow(CreatePrescriptionValidatorTest):
         ]
     )
     def test_invalid_dates(self, low_date, high_date, incorrect_field):
-        self.context.msg_output[message_vocab.DAYS_SUPPLY_LOW] = low_date
-        self.context.msg_output[message_vocab.DAYS_SUPPLY_HIGH] = high_date
+        self.context.msgOutput[message_vocab.DAYS_SUPPLY_LOW] = low_date
+        self.context.msgOutput[message_vocab.DAYS_SUPPLY_HIGH] = high_date
 
         with self.assertRaises(EpsValidationError) as cm:
             create_validator.check_repeat_dispense_window(self.context, self.handle_time)
@@ -158,8 +158,8 @@ class TestCheckRepeatDispenseWindow(CreatePrescriptionValidatorTest):
         )
 
     def test_high_date_exceeds_limit(self):
-        self.context.msg_output[message_vocab.DAYS_SUPPLY_LOW] = "20260911"
-        self.context.msg_output[message_vocab.DAYS_SUPPLY_HIGH] = "20280911"
+        self.context.msgOutput[message_vocab.DAYS_SUPPLY_LOW] = "20260911"
+        self.context.msgOutput[message_vocab.DAYS_SUPPLY_HIGH] = "20280911"
 
         with self.assertRaises(EpsValidationError) as cm:
             create_validator.check_repeat_dispense_window(self.context, self.handle_time)
@@ -170,8 +170,8 @@ class TestCheckRepeatDispenseWindow(CreatePrescriptionValidatorTest):
         )
 
     def test_high_date_in_the_past(self):
-        self.context.msg_output[message_vocab.DAYS_SUPPLY_LOW] = "20260911"
-        self.context.msg_output[message_vocab.DAYS_SUPPLY_HIGH] = "20260910"
+        self.context.msgOutput[message_vocab.DAYS_SUPPLY_LOW] = "20260911"
+        self.context.msgOutput[message_vocab.DAYS_SUPPLY_HIGH] = "20260910"
 
         with self.assertRaises(EpsValidationError) as cm:
             create_validator.check_repeat_dispense_window(self.context, self.handle_time)
@@ -179,8 +179,8 @@ class TestCheckRepeatDispenseWindow(CreatePrescriptionValidatorTest):
         self.assertEqual(str(cm.exception), "daysSupplyValidHigh is in the past")
 
     def test_low_after_high(self):
-        self.context.msg_output[message_vocab.DAYS_SUPPLY_LOW] = "20260912"
-        self.context.msg_output[message_vocab.DAYS_SUPPLY_HIGH] = "20260911"
+        self.context.msgOutput[message_vocab.DAYS_SUPPLY_LOW] = "20260912"
+        self.context.msgOutput[message_vocab.DAYS_SUPPLY_HIGH] = "20260911"
 
         with self.assertRaises(EpsValidationError) as cm:
             create_validator.check_repeat_dispense_window(self.context, self.handle_time)
@@ -190,21 +190,21 @@ class TestCheckRepeatDispenseWindow(CreatePrescriptionValidatorTest):
 
 class TestCheckPrescriberDetails(CreatePrescriptionValidatorTest):
     def test_8_char_alphanumeric(self):
-        self.context.msg_output[message_vocab.AGENT_PERSON] = "ABCD1234"
+        self.context.msgOutput[message_vocab.AGENT_PERSON] = "ABCD1234"
         create_validator.check_prescriber_details(self.context, self.log_object, self.internal_id)
 
-        self.assertIn(message_vocab.AGENT_PERSON, self.context.output_fields)
+        self.assertIn(message_vocab.AGENT_PERSON, self.context.outputFields)
         self.assertFalse(self.log_object.logger.was_logged("EPS0323a"))
 
     def test_12_char_alphanumeric(self):
-        self.context.msg_output[message_vocab.AGENT_PERSON] = "ABCD12345678"
+        self.context.msgOutput[message_vocab.AGENT_PERSON] = "ABCD12345678"
         create_validator.check_prescriber_details(self.context, self.log_object, self.internal_id)
 
-        self.assertIn(message_vocab.AGENT_PERSON, self.context.output_fields)
+        self.assertIn(message_vocab.AGENT_PERSON, self.context.outputFields)
         self.assertTrue(self.log_object.logger.was_logged("EPS0323a"))
 
     def test_too_long_raises_error(self):
-        self.context.msg_output[message_vocab.AGENT_PERSON] = "ABCD123456789"
+        self.context.msgOutput[message_vocab.AGENT_PERSON] = "ABCD123456789"
 
         with self.assertRaises(EpsValidationError) as cm:
             create_validator.check_prescriber_details(
@@ -219,7 +219,7 @@ class TestCheckPrescriberDetails(CreatePrescriptionValidatorTest):
         )
 
     def test_special_chars_raises_error(self):
-        self.context.msg_output[message_vocab.AGENT_PERSON] = "ABC@1234"
+        self.context.msgOutput[message_vocab.AGENT_PERSON] = "ABC@1234"
 
         with self.assertRaises(EpsValidationError) as cm:
             create_validator.check_prescriber_details(
@@ -228,26 +228,26 @@ class TestCheckPrescriberDetails(CreatePrescriptionValidatorTest):
 
         self.assertEqual(str(cm.exception), message_vocab.AGENT_PERSON + " has invalid format")
 
-    def test_adds_to_output_fields(self):
-        self.context.msg_output[message_vocab.AGENT_PERSON] = "ABCD1234"
+    def test_adds_to_outputFields(self):
+        self.context.msgOutput[message_vocab.AGENT_PERSON] = "ABCD1234"
         create_validator.check_prescriber_details(self.context, self.log_object, self.internal_id)
 
-        self.assertIn(message_vocab.AGENT_PERSON, self.context.output_fields)
+        self.assertIn(message_vocab.AGENT_PERSON, self.context.outputFields)
 
 
 class TestCheckPatientName(CreatePrescriptionValidatorTest):
-    def test_adds_to_output_fields(self):
+    def test_adds_to_outputFields(self):
         create_validator.check_patient_name(self.context)
 
-        self.assertIn(message_vocab.PREFIX, self.context.output_fields)
-        self.assertIn(message_vocab.SUFFIX, self.context.output_fields)
-        self.assertIn(message_vocab.GIVEN, self.context.output_fields)
-        self.assertIn(message_vocab.FAMILY, self.context.output_fields)
+        self.assertIn(message_vocab.PREFIX, self.context.outputFields)
+        self.assertIn(message_vocab.SUFFIX, self.context.outputFields)
+        self.assertIn(message_vocab.GIVEN, self.context.outputFields)
+        self.assertIn(message_vocab.FAMILY, self.context.outputFields)
 
 
 class TestCheckPrescriptionTreatmentType(CreatePrescriptionValidatorTest):
     def test_unrecognised_treatment_type_raises_error(self):
-        self.context.msg_output[message_vocab.TREATMENTTYPE] = "9999"
+        self.context.msgOutput[message_vocab.TREATMENTTYPE] = "9999"
 
         with self.assertRaises(EpsValidationError) as cm:
             create_validator.check_prescription_treatment_type(self.context)
@@ -257,33 +257,33 @@ class TestCheckPrescriptionTreatmentType(CreatePrescriptionValidatorTest):
 
 class TestCheckPrescriptionType(CreatePrescriptionValidatorTest):
     def test_unrecognised_prescription_type(self):
-        self.context.msg_output[message_vocab.PRESCTYPE] = "9999"
+        self.context.msgOutput[message_vocab.PRESCTYPE] = "9999"
         create_validator.check_prescription_type(self.context, self.log_object, self.internal_id)
 
-        self.assertEqual(self.context.msg_output[message_vocab.PRESCTYPE], "NotProvided")
-        self.assertIn(message_vocab.PRESCTYPE, self.context.output_fields)
+        self.assertEqual(self.context.msgOutput[message_vocab.PRESCTYPE], "NotProvided")
+        self.assertIn(message_vocab.PRESCTYPE, self.context.outputFields)
 
 
 class TestCheckRepeatDispenseInstances(CreatePrescriptionValidatorTest):
     def setUp(self):
         super().setUp()
-        self.context.msg_output[message_vocab.TREATMENTTYPE] = constants.STATUS_REPEAT_DISP
+        self.context.msgOutput[message_vocab.TREATMENTTYPE] = constants.STATUS_REPEAT_DISP
 
     def test_acute_prescription_without_repeat_values(self):
-        self.context.msg_output[message_vocab.TREATMENTTYPE] = constants.STATUS_ACUTE
-        self.context.msg_output[message_vocab.REPEATLOW] = None
-        self.context.msg_output[message_vocab.REPEATHIGH] = None
+        self.context.msgOutput[message_vocab.TREATMENTTYPE] = constants.STATUS_ACUTE
+        self.context.msgOutput[message_vocab.REPEATLOW] = None
+        self.context.msgOutput[message_vocab.REPEATHIGH] = None
 
         create_validator.check_repeat_dispense_instances(
             self.context, self.log_object, self.internal_id
         )
 
-        self.assertNotIn(message_vocab.REPEATLOW, self.context.output_fields)
-        self.assertNotIn(message_vocab.REPEATHIGH, self.context.output_fields)
+        self.assertNotIn(message_vocab.REPEATLOW, self.context.outputFields)
+        self.assertNotIn(message_vocab.REPEATHIGH, self.context.outputFields)
 
     def test_non_acute_without_repeat_values_raises_error(self):
-        self.context.msg_output[message_vocab.REPEATLOW] = None
-        self.context.msg_output[message_vocab.REPEATHIGH] = None
+        self.context.msgOutput[message_vocab.REPEATLOW] = None
+        self.context.msgOutput[message_vocab.REPEATHIGH] = None
 
         with self.assertRaises(EpsValidationError) as cm:
             create_validator.check_repeat_dispense_instances(
@@ -301,8 +301,8 @@ class TestCheckRepeatDispenseInstances(CreatePrescriptionValidatorTest):
     def test_repeat_high_or_low_not_integer_raises_error(
         self, low_value, high_value, incorrect_field
     ):
-        self.context.msg_output[message_vocab.REPEATLOW] = low_value
-        self.context.msg_output[message_vocab.REPEATHIGH] = high_value
+        self.context.msgOutput[message_vocab.REPEATLOW] = low_value
+        self.context.msgOutput[message_vocab.REPEATHIGH] = high_value
 
         with self.assertRaises(EpsValidationError) as cm:
             create_validator.check_repeat_dispense_instances(
@@ -312,8 +312,8 @@ class TestCheckRepeatDispenseInstances(CreatePrescriptionValidatorTest):
         self.assertEqual(str(cm.exception), incorrect_field + " is not an integer")
 
     def test_repeat_low_not_one_raises_error(self):
-        self.context.msg_output[message_vocab.REPEATLOW] = "2"
-        self.context.msg_output[message_vocab.REPEATHIGH] = "6"
+        self.context.msgOutput[message_vocab.REPEATLOW] = "2"
+        self.context.msgOutput[message_vocab.REPEATHIGH] = "6"
 
         with self.assertRaises(EpsValidationError) as cm:
             create_validator.check_repeat_dispense_instances(
@@ -323,8 +323,8 @@ class TestCheckRepeatDispenseInstances(CreatePrescriptionValidatorTest):
         self.assertEqual(str(cm.exception), message_vocab.REPEATLOW + " must be 1")
 
     def test_repeat_high_exceeds_max_raises_error(self):
-        self.context.msg_output[message_vocab.REPEATLOW] = "1"
-        self.context.msg_output[message_vocab.REPEATHIGH] = str(
+        self.context.msgOutput[message_vocab.REPEATLOW] = "1"
+        self.context.msgOutput[message_vocab.REPEATHIGH] = str(
             constants.MAX_PRESCRIPTIONREPEATS + 1
         )
 
@@ -336,8 +336,8 @@ class TestCheckRepeatDispenseInstances(CreatePrescriptionValidatorTest):
         self.assertIn("must not be over configured maximum", str(cm.exception))
 
     def test_repeat_low_greater_than_high_raises_error(self):
-        self.context.msg_output[message_vocab.REPEATLOW] = "1"
-        self.context.msg_output[message_vocab.REPEATHIGH] = "0"
+        self.context.msgOutput[message_vocab.REPEATLOW] = "1"
+        self.context.msgOutput[message_vocab.REPEATHIGH] = "0"
 
         with self.assertRaises(EpsValidationError) as cm:
             create_validator.check_repeat_dispense_instances(
@@ -347,28 +347,28 @@ class TestCheckRepeatDispenseInstances(CreatePrescriptionValidatorTest):
         self.assertIn("is greater than", str(cm.exception))
 
     def test_repeat_prescription_with_multiple_instances_logs_warning(self):
-        self.context.msg_output[message_vocab.TREATMENTTYPE] = constants.STATUS_REPEAT
-        self.context.msg_output[message_vocab.REPEATLOW] = "1"
-        self.context.msg_output[message_vocab.REPEATHIGH] = "6"
+        self.context.msgOutput[message_vocab.TREATMENTTYPE] = constants.STATUS_REPEAT
+        self.context.msgOutput[message_vocab.REPEATLOW] = "1"
+        self.context.msgOutput[message_vocab.REPEATHIGH] = "6"
 
         create_validator.check_repeat_dispense_instances(
             self.context, self.log_object, self.internal_id
         )
 
         self.assertTrue(self.log_object.logger.was_logged("EPS0509"))
-        self.assertIn(message_vocab.REPEATLOW, self.context.output_fields)
-        self.assertIn(message_vocab.REPEATHIGH, self.context.output_fields)
+        self.assertIn(message_vocab.REPEATLOW, self.context.outputFields)
+        self.assertIn(message_vocab.REPEATHIGH, self.context.outputFields)
 
     def test_valid_repeat_dispense_instances(self):
-        self.context.msg_output[message_vocab.REPEATLOW] = "1"
-        self.context.msg_output[message_vocab.REPEATHIGH] = "6"
+        self.context.msgOutput[message_vocab.REPEATLOW] = "1"
+        self.context.msgOutput[message_vocab.REPEATHIGH] = "6"
 
         create_validator.check_repeat_dispense_instances(
             self.context, self.log_object, self.internal_id
         )
 
-        self.assertIn(message_vocab.REPEATLOW, self.context.output_fields)
-        self.assertIn(message_vocab.REPEATHIGH, self.context.output_fields)
+        self.assertIn(message_vocab.REPEATLOW, self.context.outputFields)
+        self.assertIn(message_vocab.REPEATHIGH, self.context.outputFields)
 
 
 class TestCheckBirthDate(CreatePrescriptionValidatorTest):
@@ -377,13 +377,13 @@ class TestCheckBirthDate(CreatePrescriptionValidatorTest):
         self.handle_time = datetime(2026, 9, 11, 12, 34, 56)
 
     def test_valid_birth_date(self):
-        self.context.msg_output[message_vocab.BIRTHTIME] = "20000101"
+        self.context.msgOutput[message_vocab.BIRTHTIME] = "20000101"
         create_validator.check_birth_date(self.context, self.handle_time)
 
-        self.assertIn(message_vocab.BIRTHTIME, self.context.output_fields)
+        self.assertIn(message_vocab.BIRTHTIME, self.context.outputFields)
 
     def test_birth_date_in_future_raises_error(self):
-        self.context.msg_output[message_vocab.BIRTHTIME] = "20260912"
+        self.context.msgOutput[message_vocab.BIRTHTIME] = "20260912"
 
         with self.assertRaises(EpsValidationError) as cm:
             create_validator.check_birth_date(self.context, self.handle_time)
@@ -391,7 +391,7 @@ class TestCheckBirthDate(CreatePrescriptionValidatorTest):
         self.assertEqual(str(cm.exception), message_vocab.BIRTHTIME + " is in the future")
 
     def test_invalid_birth_date_format_raises_error(self):
-        self.context.msg_output[message_vocab.BIRTHTIME] = "2000010112"
+        self.context.msgOutput[message_vocab.BIRTHTIME] = "2000010112"
 
         with self.assertRaises(EpsValidationError) as cm:
             create_validator.check_birth_date(self.context, self.handle_time)
@@ -407,46 +407,46 @@ class TestValidateLineItems(CreatePrescriptionValidatorTest):
     def setUp(self):
         super().setUp()
         self.line_item_1_id = "12345678-1234-1234-1234-123456789012"
-        self.context.msg_output[message_vocab.LINEITEM_PX + "1" + message_vocab.LINEITEM_SX_ID] = (
+        self.context.msgOutput[message_vocab.LINEITEM_PX + "1" + message_vocab.LINEITEM_SX_ID] = (
             self.line_item_1_id
         )
 
     def test_no_line_items_raises_error(self):
-        del self.context.msg_output[message_vocab.LINEITEM_PX + "1" + message_vocab.LINEITEM_SX_ID]
+        del self.context.msgOutput[message_vocab.LINEITEM_PX + "1" + message_vocab.LINEITEM_SX_ID]
         with self.assertRaises(EpsValidationError) as cm:
             create_validator.validate_line_items(self.context, self.log_object, self.internal_id)
 
         self.assertEqual(str(cm.exception), "No valid line items found")
 
     def test_single_valid_line_item(self):
-        self.context.msg_output[message_vocab.TREATMENTTYPE] = constants.STATUS_ACUTE
+        self.context.msgOutput[message_vocab.TREATMENTTYPE] = constants.STATUS_ACUTE
 
         create_validator.validate_line_items(self.context, self.log_object, self.internal_id)
 
-        self.assertEqual(len(self.context.msg_output[message_vocab.LINEITEMS]), 1)
+        self.assertEqual(len(self.context.msgOutput[message_vocab.LINEITEMS]), 1)
         self.assertEqual(
-            self.context.msg_output[message_vocab.LINEITEMS][0][message_vocab.LINEITEM_SX_ID],
+            self.context.msgOutput[message_vocab.LINEITEMS][0][message_vocab.LINEITEM_SX_ID],
             self.line_item_1_id,
         )
-        self.assertIn(message_vocab.LINEITEMS, self.context.output_fields)
+        self.assertIn(message_vocab.LINEITEMS, self.context.outputFields)
 
     def test_multiple_valid_line_items(self):
-        self.context.msg_output[message_vocab.LINEITEM_PX + "2" + message_vocab.LINEITEM_SX_ID] = (
+        self.context.msgOutput[message_vocab.LINEITEM_PX + "2" + message_vocab.LINEITEM_SX_ID] = (
             "12345678-1234-1234-1234-123456789013"
         )
-        self.context.msg_output[message_vocab.TREATMENTTYPE] = constants.STATUS_ACUTE
+        self.context.msgOutput[message_vocab.TREATMENTTYPE] = constants.STATUS_ACUTE
 
         create_validator.validate_line_items(self.context, self.log_object, self.internal_id)
 
-        self.assertEqual(len(self.context.msg_output[message_vocab.LINEITEMS]), 2)
-        self.assertIn(message_vocab.LINEITEMS, self.context.output_fields)
+        self.assertEqual(len(self.context.msgOutput[message_vocab.LINEITEMS]), 2)
+        self.assertIn(message_vocab.LINEITEMS, self.context.outputFields)
 
     def test_exceeds_max_line_items_raises_error(self):
         for i in range(1, constants.MAX_LINEITEMS + 2):
-            self.context.msg_output[
+            self.context.msgOutput[
                 message_vocab.LINEITEM_PX + str(i) + message_vocab.LINEITEM_SX_ID
             ] = f"12345678-1234-1234-1234-1234567890{i:02d}"
-        self.context.msg_output[message_vocab.TREATMENTTYPE] = constants.STATUS_ACUTE
+        self.context.msgOutput[message_vocab.TREATMENTTYPE] = constants.STATUS_ACUTE
 
         with self.assertRaises(EpsValidationError) as cm:
             create_validator.validate_line_items(self.context, self.log_object, self.internal_id)
@@ -454,31 +454,31 @@ class TestValidateLineItems(CreatePrescriptionValidatorTest):
         self.assertIn("over expected max count", str(cm.exception))
 
     def test_line_item_with_repeat_values(self):
-        self.context.msg_output[
+        self.context.msgOutput[
             message_vocab.LINEITEM_PX + "1" + message_vocab.LINEITEM_SX_REPEATHIGH
         ] = "6"
-        self.context.msg_output[
+        self.context.msgOutput[
             message_vocab.LINEITEM_PX + "1" + message_vocab.LINEITEM_SX_REPEATLOW
         ] = "1"
-        self.context.msg_output[message_vocab.TREATMENTTYPE] = constants.STATUS_REPEAT_DISP
-        self.context.msg_output[message_vocab.REPEATHIGH] = 6
+        self.context.msgOutput[message_vocab.TREATMENTTYPE] = constants.STATUS_REPEAT_DISP
+        self.context.msgOutput[message_vocab.REPEATHIGH] = 6
 
         create_validator.validate_line_items(self.context, self.log_object, self.internal_id)
 
-        line_items = self.context.msg_output[message_vocab.LINEITEMS]
+        line_items = self.context.msgOutput[message_vocab.LINEITEMS]
         self.assertEqual(len(line_items), 1)
         self.assertEqual(line_items[0][message_vocab.LINEITEM_DT_MAXREPEATS], "6")
         self.assertEqual(line_items[0][message_vocab.LINEITEM_DT_CURRINSTANCE], "1")
 
     def test_prescription_repeat_less_than_line_item_repeat_raises_error(self):
-        self.context.msg_output[
+        self.context.msgOutput[
             message_vocab.LINEITEM_PX + "1" + message_vocab.LINEITEM_SX_REPEATHIGH
         ] = "6"
-        self.context.msg_output[
+        self.context.msgOutput[
             message_vocab.LINEITEM_PX + "1" + message_vocab.LINEITEM_SX_REPEATLOW
         ] = "1"
-        self.context.msg_output[message_vocab.TREATMENTTYPE] = constants.STATUS_REPEAT_DISP
-        self.context.msg_output[message_vocab.REPEATHIGH] = 3
+        self.context.msgOutput[message_vocab.TREATMENTTYPE] = constants.STATUS_REPEAT_DISP
+        self.context.msgOutput[message_vocab.REPEATHIGH] = 3
 
         with self.assertRaises(EpsValidationError) as cm:
             create_validator.validate_line_items(self.context, self.log_object, self.internal_id)
@@ -493,8 +493,8 @@ class TestValidateLineItem(CreatePrescriptionValidatorTest):
         self.line_item = 1
         self.line_dict = {}
         self.context = MagicMock()
-        self.context.msg_output = {}
-        self.context.output_fields = set()
+        self.context.msgOutput = {}
+        self.context.outputFields = set()
 
     def test_invalid_line_item_id(self):
         self.line_dict[message_vocab.LINEITEM_DT_ID] = "invalid-line-item-id"
@@ -508,7 +508,7 @@ class TestValidateLineItem(CreatePrescriptionValidatorTest):
 
     def test_missing_items_from_line_dict(self):
         self.line_dict[message_vocab.LINEITEM_DT_ID] = self.line_item_id
-        self.context.msg_output[message_vocab.TREATMENTTYPE] = constants.STATUS_ACUTE
+        self.context.msgOutput[message_vocab.TREATMENTTYPE] = constants.STATUS_ACUTE
 
         max_repeats = create_validator.validate_line_item(
             self.context, self.line_item, self.line_dict, 1, self.log_object, self.internal_id
@@ -524,7 +524,7 @@ class TestValidateLineItem(CreatePrescriptionValidatorTest):
         p.start()
 
         self.line_dict[message_vocab.LINEITEM_DT_ID] = self.line_item_id
-        self.context.msg_output[message_vocab.TREATMENTTYPE] = constants.STATUS_REPEAT_DISP
+        self.context.msgOutput[message_vocab.TREATMENTTYPE] = constants.STATUS_REPEAT_DISP
         self.line_dict[message_vocab.LINEITEM_DT_MAXREPEATS] = "abc"
 
         with self.assertRaises(EpsValidationError) as cm:
@@ -543,7 +543,7 @@ class TestValidateLineItem(CreatePrescriptionValidatorTest):
         p.start()
 
         self.line_dict[message_vocab.LINEITEM_DT_ID] = self.line_item_id
-        self.context.msg_output[message_vocab.TREATMENTTYPE] = constants.STATUS_REPEAT_DISP
+        self.context.msgOutput[message_vocab.TREATMENTTYPE] = constants.STATUS_REPEAT_DISP
         self.line_dict[message_vocab.LINEITEM_DT_MAXREPEATS] = "0"
 
         with self.assertRaises(EpsValidationError) as cm:
@@ -564,8 +564,8 @@ class TestValidateLineItem(CreatePrescriptionValidatorTest):
         self.line_dict[message_vocab.LINEITEM_DT_ID] = self.line_item_id
         self.line_dict[message_vocab.LINEITEM_DT_MAXREPEATS] = "6"
 
-        self.context.msg_output[message_vocab.TREATMENTTYPE] = constants.STATUS_REPEAT_DISP
-        self.context.msg_output[message_vocab.REPEATHIGH] = "3"
+        self.context.msgOutput[message_vocab.TREATMENTTYPE] = constants.STATUS_REPEAT_DISP
+        self.context.msgOutput[message_vocab.REPEATHIGH] = "3"
 
         with self.assertRaises(EpsValidationError) as cm:
             create_validator.validate_line_item(
@@ -590,8 +590,8 @@ class TestValidateLineItem(CreatePrescriptionValidatorTest):
         self.line_dict[message_vocab.LINEITEM_DT_MAXREPEATS] = "3"
         self.line_dict[message_vocab.LINEITEM_DT_CURRINSTANCE] = "1"
 
-        self.context.msg_output[message_vocab.TREATMENTTYPE] = constants.STATUS_REPEAT
-        self.context.msg_output[message_vocab.REPEATHIGH] = "3"
+        self.context.msgOutput[message_vocab.TREATMENTTYPE] = constants.STATUS_REPEAT
+        self.context.msgOutput[message_vocab.REPEATHIGH] = "3"
 
         create_validator.validate_line_item(
             self.context, self.line_item, self.line_dict, 1, self.log_object, self.internal_id
@@ -611,9 +611,9 @@ class TestValidateLineItem(CreatePrescriptionValidatorTest):
         self.line_dict[message_vocab.LINEITEM_DT_MAXREPEATS] = "3"
         self.line_dict[message_vocab.LINEITEM_DT_CURRINSTANCE] = "abc"
 
-        self.context.msg_output[message_vocab.TREATMENTTYPE] = constants.STATUS_ACUTE
-        self.context.msg_output[message_vocab.REPEATHIGH] = "3"
-        self.context.msg_output[message_vocab.REPEATLOW] = "1"
+        self.context.msgOutput[message_vocab.TREATMENTTYPE] = constants.STATUS_ACUTE
+        self.context.msgOutput[message_vocab.REPEATHIGH] = "3"
+        self.context.msgOutput[message_vocab.REPEATLOW] = "1"
 
         with self.assertRaises(EpsValidationError) as cm:
             create_validator.validate_line_item(
@@ -634,9 +634,9 @@ class TestValidateLineItem(CreatePrescriptionValidatorTest):
         self.line_dict[message_vocab.LINEITEM_DT_MAXREPEATS] = "3"
         self.line_dict[message_vocab.LINEITEM_DT_CURRINSTANCE] = "2"
 
-        self.context.msg_output[message_vocab.TREATMENTTYPE] = constants.STATUS_ACUTE
-        self.context.msg_output[message_vocab.REPEATHIGH] = "3"
-        self.context.msg_output[message_vocab.REPEATLOW] = "1"
+        self.context.msgOutput[message_vocab.TREATMENTTYPE] = constants.STATUS_ACUTE
+        self.context.msgOutput[message_vocab.REPEATHIGH] = "3"
+        self.context.msgOutput[message_vocab.REPEATLOW] = "1"
 
         with self.assertRaises(EpsValidationError) as cm:
             create_validator.validate_line_item(
@@ -654,7 +654,7 @@ class TestCheckForInvalidLineItemRepeatCombinations(CreatePrescriptionValidatorT
         self.line_dict = {message_vocab.LINEITEM_DT_ID: "12345678-1234-1234-1234-123456789012"}
 
     def test_repeat_dispense_without_repeat_values_raises_error(self):
-        self.context.msg_output[message_vocab.TREATMENTTYPE] = constants.STATUS_REPEAT_DISP
+        self.context.msgOutput[message_vocab.TREATMENTTYPE] = constants.STATUS_REPEAT_DISP
 
         with self.assertRaises(EpsValidationError) as cm:
             create_validator.check_for_invalid_line_item_repeat_combinations(
@@ -667,7 +667,7 @@ class TestCheckForInvalidLineItemRepeatCombinations(CreatePrescriptionValidatorT
         )
 
     def test_acute_prescription_with_repeat_values_raises_error(self):
-        self.context.msg_output[message_vocab.TREATMENTTYPE] = constants.STATUS_ACUTE
+        self.context.msgOutput[message_vocab.TREATMENTTYPE] = constants.STATUS_ACUTE
         self.line_dict[message_vocab.LINEITEM_DT_MAXREPEATS] = "6"
         self.line_dict[message_vocab.LINEITEM_DT_CURRINSTANCE] = "1"
 
@@ -681,7 +681,7 @@ class TestCheckForInvalidLineItemRepeatCombinations(CreatePrescriptionValidatorT
         )
 
     def test_repeat_dispense_with_only_repeat_high_raises_error(self):
-        self.context.msg_output[message_vocab.TREATMENTTYPE] = constants.STATUS_REPEAT_DISP
+        self.context.msgOutput[message_vocab.TREATMENTTYPE] = constants.STATUS_REPEAT_DISP
         self.line_dict[message_vocab.LINEITEM_DT_MAXREPEATS] = "6"
 
         with self.assertRaises(EpsValidationError) as cm:
@@ -694,7 +694,7 @@ class TestCheckForInvalidLineItemRepeatCombinations(CreatePrescriptionValidatorT
         )
 
     def test_repeat_dispense_with_only_repeat_low_raises_error(self):
-        self.context.msg_output[message_vocab.TREATMENTTYPE] = constants.STATUS_REPEAT_DISP
+        self.context.msgOutput[message_vocab.TREATMENTTYPE] = constants.STATUS_REPEAT_DISP
         self.line_dict[message_vocab.LINEITEM_DT_CURRINSTANCE] = "1"
 
         with self.assertRaises(EpsValidationError) as cm:
@@ -707,8 +707,8 @@ class TestCheckForInvalidLineItemRepeatCombinations(CreatePrescriptionValidatorT
         )
 
     def test_repeat_dispense_with_valid_repeat_values(self):
-        self.context.msg_output[message_vocab.TREATMENTTYPE] = constants.STATUS_REPEAT_DISP
-        self.context.msg_output[message_vocab.REPEATHIGH] = "6"
+        self.context.msgOutput[message_vocab.TREATMENTTYPE] = constants.STATUS_REPEAT_DISP
+        self.context.msgOutput[message_vocab.REPEATHIGH] = "6"
 
         self.line_dict[message_vocab.LINEITEM_DT_MAXREPEATS] = "6"
         self.line_dict[message_vocab.LINEITEM_DT_CURRINSTANCE] = "1"

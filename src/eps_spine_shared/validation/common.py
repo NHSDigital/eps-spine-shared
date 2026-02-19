@@ -24,35 +24,35 @@ def check_nominated_performer(context):
     If there is nominated performer (i.e. pharmacy) information - then the format
     needs to be validated
     """
-    if context.msg_output.get(message_vocab.NOMPERFORMER) and context.msg_output.get(
+    if context.msgOutput.get(message_vocab.NOMPERFORMER) and context.msgOutput.get(
         message_vocab.NOMPERFORMER_TYPE
     ):
-        if not REGEX_ALPHANUMERIC8.match(context.msg_output.get(message_vocab.NOMPERFORMER)):
+        if not REGEX_ALPHANUMERIC8.match(context.msgOutput.get(message_vocab.NOMPERFORMER)):
             raise EpsValidationError("nominatedPerformer has invalid format")
-        if context.msg_output.get(message_vocab.NOMPERFORMER_TYPE) not in PERFORMER_TYPELIST:
+        if context.msgOutput.get(message_vocab.NOMPERFORMER_TYPE) not in PERFORMER_TYPELIST:
             raise EpsValidationError("nominatedPerformer has invalid type")
 
-    if context.msg_output.get(message_vocab.NOMPERFORMER) == "":
+    if context.msgOutput.get(message_vocab.NOMPERFORMER) == "":
         raise EpsValidationError("nominatedPerformer is present but empty")
 
-    context.output_fields.add(message_vocab.NOMPERFORMER)
-    context.output_fields.add(message_vocab.NOMPERFORMER_TYPE)
+    context.outputFields.add(message_vocab.NOMPERFORMER)
+    context.outputFields.add(message_vocab.NOMPERFORMER_TYPE)
 
 
 def check_prescription_id(context, internal_id, log_object):
     """
     Check the format of a prescription ID and that it has the correct checksum
     """
-    if not REGEX_PRESCRID.match(context.msg_output[message_vocab.PRESCID]):
+    if not REGEX_PRESCRID.match(context.msgOutput[message_vocab.PRESCID]):
         raise EpsValidationError(message_vocab.PRESCID + " has invalid format")
 
     valid = checksum_util.check_checksum(
-        context.msg_output[message_vocab.PRESCID], internal_id, log_object
+        context.msgOutput[message_vocab.PRESCID], internal_id, log_object
     )
     if not valid:
         raise EpsValidationError(message_vocab.PRESCID + " has invalid checksum")
 
-    context.output_fields.add(message_vocab.PRESCID)
+    context.outputFields.add(message_vocab.PRESCID)
 
 
 def check_organisation_and_roles(context, log_object, internal_id):
@@ -63,35 +63,35 @@ def check_organisation_and_roles(context, log_object, internal_id):
         agent_role_profile_code_id
         agent_sds_role
     """
-    if not REGEX_ALPHANUMERIC8.match(context.msg_output[message_vocab.AGENTORG]):
+    if not REGEX_ALPHANUMERIC8.match(context.msgOutput[message_vocab.AGENTORG]):
         raise EpsValidationError(message_vocab.AGENTORG + " has invalid format")
-    if not REGEX_NUMERIC15.match(context.msg_output[message_vocab.ROLEPROFILE]):
+    if not REGEX_NUMERIC15.match(context.msgOutput[message_vocab.ROLEPROFILE]):
         log_object.write_log(
             "EPS0323b",
             None,
             {
                 "internalID": internal_id,
-                "agent_sds_role_profile_id": context.msg_output[message_vocab.ROLEPROFILE],
+                "agent_sds_role_profile_id": context.msgOutput[message_vocab.ROLEPROFILE],
             },
         )
 
-    if context.msg_output[message_vocab.ROLE] == "NotProvided":
+    if context.msgOutput[message_vocab.ROLE] == "NotProvided":
         log_object.write_log("EPS0330", None, dict({"internalID": internal_id}))
-    elif not REGEX_ROLECODE.match(context.msg_output[message_vocab.ROLE]):
+    elif not REGEX_ROLECODE.match(context.msgOutput[message_vocab.ROLE]):
         log_object.write_log(
             "EPS0323",
             None,
             dict(
                 {
                     "internalID": internal_id,
-                    "agent_sds_role": context.msg_output[message_vocab.ROLE],
+                    "agent_sds_role": context.msgOutput[message_vocab.ROLE],
                 }
             ),
         )
 
-    context.output_fields.add(message_vocab.AGENTORG)
-    context.output_fields.add(message_vocab.ROLEPROFILE)
-    context.output_fields.add(message_vocab.ROLE)
+    context.outputFields.add(message_vocab.AGENTORG)
+    context.outputFields.add(message_vocab.ROLEPROFILE)
+    context.outputFields.add(message_vocab.ROLE)
 
 
 def check_nhs_number(context):
@@ -100,8 +100,8 @@ def check_nhs_number(context):
     Requires:
         nhsNumber
     """
-    if is_nhs_number_valid(context.msg_output[message_vocab.PATIENTID]):
-        context.output_fields.add(message_vocab.PATIENTID)
+    if is_nhs_number_valid(context.msgOutput[message_vocab.PATIENTID]):
+        context.outputFields.add(message_vocab.PATIENTID)
     else:
         supp_info = message_vocab.PATIENTID + " is not valid"
         raise EpsValidationError(supp_info)
@@ -112,22 +112,22 @@ def check_standard_date_time(context, attribute_name, log_object: EpsLogger, int
     Check for a valid time
     """
     try:
-        if len(context.msg_output[attribute_name]) != 14:
-            if len(context.msg_output[attribute_name]) != 19:
+        if len(context.msgOutput[attribute_name]) != 14:
+            if len(context.msgOutput[attribute_name]) != 19:
                 raise ValueError("Wrong String Length")
             parsed_time = convert_international_time(
-                context.msg_output[attribute_name], log_object, internal_id
+                context.msgOutput[attribute_name], log_object, internal_id
             )
-            context.msg_output[attribute_name] = parsed_time
+            context.msgOutput[attribute_name] = parsed_time
         datetime.datetime.strptime(
-            context.msg_output[attribute_name], TimeFormats.STANDARD_DATE_TIME_FORMAT
+            context.msgOutput[attribute_name], TimeFormats.STANDARD_DATE_TIME_FORMAT
         )
     except ValueError as value_error:
         supp_info = attribute_name + " is not a valid time or in the "
         supp_info += "valid format; expected format " + TimeFormats.STANDARD_DATE_TIME_FORMAT
         raise EpsValidationError(supp_info) from value_error
 
-    context.output_fields.add(attribute_name)
+    context.outputFields.add(attribute_name)
 
 
 def check_standard_date(context, attribute_name):
@@ -135,17 +135,17 @@ def check_standard_date(context, attribute_name):
     Check for a valid date
     """
     try:
-        if len(context.msg_output[attribute_name]) != 8:
+        if len(context.msgOutput[attribute_name]) != 8:
             raise ValueError("Wrong String Length")
         datetime.datetime.strptime(
-            context.msg_output[attribute_name], TimeFormats.STANDARD_DATE_FORMAT
+            context.msgOutput[attribute_name], TimeFormats.STANDARD_DATE_FORMAT
         )
     except ValueError as value_error:
         supp_info = attribute_name + " is not a valid time or in the "
         supp_info += "valid format; expected format " + TimeFormats.STANDARD_DATE_FORMAT
         raise EpsValidationError(supp_info) from value_error
 
-    context.output_fields.add(attribute_name)
+    context.outputFields.add(attribute_name)
 
 
 def check_hl7_event_id(context):
@@ -154,6 +154,15 @@ def check_hl7_event_id(context):
     Requires:
         hl7EventID
     """
-    if not REGEX_GUID.match(context.msg_output[message_vocab.HL7EVENTID]):
+    if not REGEX_GUID.match(context.msgOutput[message_vocab.HL7EVENTID]):
         raise EpsValidationError(message_vocab.HL7EVENTID + " has invalid format")
-    context.output_fields.add(message_vocab.HL7EVENTID)
+    context.outputFields.add(message_vocab.HL7EVENTID)
+
+
+def check_mandatory_items(context, mandatory_extracted_items):
+    """
+    Check for mandatory keys in the schematron output
+    """
+    for mandatory_key in mandatory_extracted_items:
+        if mandatory_key not in context.msgOutput:
+            raise EpsValidationError("Mandatory field " + mandatory_key + " missing")
