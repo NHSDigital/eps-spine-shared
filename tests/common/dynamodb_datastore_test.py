@@ -764,7 +764,7 @@ class EpsDynamoDbDataStoreTest(DynamoDbTest):
             logger = MockLogObject()
             loggers.append(logger)
 
-            datastore = EpsDynamoDbDataStore(logger, None, "spine-eps-datastore")
+            datastore = EpsDynamoDbDataStore(logger, self.system_config)
 
             process = Thread(
                 target=insert_record, args=(datastore, (self.internal_id, prescription_id, record))
@@ -829,7 +829,7 @@ class EpsDynamoDbDataStoreTest(DynamoDbTest):
             logger = MockLogObject()
             loggers.append(logger)
 
-            datastore = EpsDynamoDbDataStore(logger, None, "spine-eps-datastore")
+            datastore = EpsDynamoDbDataStore(logger, self.system_config)
 
             index = None
             record_type = None

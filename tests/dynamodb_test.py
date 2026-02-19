@@ -176,9 +176,14 @@ class DynamoDbTest(TestCase):
 
         self.logger: MockLogObject = MockLogObject()
 
-        self.datastore: EpsDynamoDbDataStore = EpsDynamoDbDataStore(
-            self.logger, None, "spine-eps-datastore"
-        )
+        self.system_config = {
+            "ddb aws endpoint url": "",
+            "datastore table name": "spine-eps-datastore",
+            "datastore role arn": "arn:aws:iam::123456789012:role/DynamoDBRole",
+            "process name": "test-process",
+            "sts endpoint url": "",
+        }
+        self.datastore: EpsDynamoDbDataStore = EpsDynamoDbDataStore(self.logger, self.system_config)
         self.keys = []
         self.internal_id = str(uuid4())
 
