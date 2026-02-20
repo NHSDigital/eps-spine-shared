@@ -45,7 +45,7 @@ jobs:
   dependabot_auto_approve_and_merge:
     name: Dependabot Auto Approve and Merge
     needs: quality_checks
-    uses: NHSDigital/eps-common-workflows/.github/workflows/dependabot-auto-approve-and-merge.yml@dd3026f8ed87cc45ff1882d4276cf928b71c59c2
+    uses: NHSDigital/eps-common-workflows/.github/workflows/dependabot-auto-approve-and-merge.yml@d215f841eb18b803e339e4ed597ed1f30e086e17
     secrets:
       AUTOMERGE_APP_ID: ${{ secrets.AUTOMERGE_APP_ID }}
       AUTOMERGE_PEM: ${{ secrets.AUTOMERGE_PEM }}
