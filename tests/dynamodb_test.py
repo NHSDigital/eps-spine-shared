@@ -13,7 +13,7 @@ from moto import mock_aws
 from eps_spine_shared.common.dynamodb_common import SortKey
 from eps_spine_shared.common.dynamodb_datastore import EpsDynamoDbDataStore
 from eps_spine_shared.common.prescription.record import PrescriptionStatus
-from tests.mock_logger import MockLogObject
+from eps_spine_shared.testing.mock_logger import MockLogObject
 
 PRESC_ORG = "X26"
 DISP_ORG = "X27"
@@ -176,9 +176,14 @@ class DynamoDbTest(TestCase):
 
         self.logger: MockLogObject = MockLogObject()
 
-        self.datastore: EpsDynamoDbDataStore = EpsDynamoDbDataStore(
-            self.logger, None, "spine-eps-datastore"
-        )
+        self.system_config = {
+            "ddb aws endpoint url": "",
+            "datastore table name": "spine-eps-datastore",
+            "datastore role arn": "arn:aws:iam::123456789012:role/DynamoDBRole",
+            "process name": "test-process",
+            "sts endpoint url": "",
+        }
+        self.datastore: EpsDynamoDbDataStore = EpsDynamoDbDataStore(self.logger, self.system_config)
         self.keys = []
         self.internal_id = str(uuid4())
 

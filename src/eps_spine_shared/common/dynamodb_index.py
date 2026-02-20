@@ -314,7 +314,7 @@ class EpsDynamoDbIndex:
 
         return [item[Key.PK.name] for item in items]
 
-    def query_next_activity_date(self, range_start, range_end):
+    def query_next_activity_date(self, range_start, range_end, shard=None):
         """
         Yields the epsRecord keys which match the supplied nextActivity and date range for the nextActivity index.
 
@@ -331,6 +331,10 @@ class EpsDynamoDbIndex:
 
         if not valid:
             return []
+
+        if shard or shard == "":
+            yield from self._query_next_activity_date_shard(next_activity, sk_expression, shard)
+            return
 
         shards = [None] + list(range(1, NEXT_ACTIVITY_DATE_PARTITIONS + 1))
 
