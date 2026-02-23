@@ -5,7 +5,6 @@ import uuid
 import zlib
 
 from dateutil import relativedelta
-from lxml import etree
 
 from eps_spine_shared.common import indexes
 from eps_spine_shared.common.dynamodb_client import EpsDataStoreError
@@ -23,6 +22,8 @@ from eps_spine_shared.interactions.metadata import (
 from eps_spine_shared.interactions.wdo import CreatePrescriptionWDO
 from eps_spine_shared.logger import EpsLogger
 from eps_spine_shared.nhsfundamentals.time_utilities import TimeFormats
+from eps_spine_shared.spinecore.base_utilities import handle_encoding_oddities
+from eps_spine_shared.spinecore.changelog import PrescriptionsChangeLogProcessor
 from eps_spine_shared.spinecore.notification import SubsequentCancellationResponse
 from eps_spine_shared.spinecore.xml_utilities import apply_transform, serialise_xml, unzip_xml
 
@@ -231,8 +232,7 @@ def generate_subsequent_cancellation_response(
         handle_missing_cancellation_document(cancellation_obj, log_object, internal_id)
         return
 
-    cancellation_document = returnCancellationDocument(context, cancellation_document_key)
-    sanitised_cancellation_document = etree.tostring(cancellation_document).decode("utf-8")
+    cancellation_document = return_cancellation_document(context, cancellation_document_key)
 
     core_cancellation_payload = generate_cancellation_payload(
         cancellation_obj, cancellation_document
@@ -280,10 +280,12 @@ def generate_subsequent_cancellation_response(
 
     context.notificationsToQueue.append(notification_to_append)
 
-    _meshFhirSubCanc(context, cancellation_obj, sanitised_cancellation_document)
+    # Leave in Spine for now. Pull-out into prescriptionsWorkflow/doInteractionWorkflow. when re-integrating.
+    # sanitised_cancellation_document = etree.tostring(cancellation_document).decode("utf-8")
+    # _meshFhirSubCanc(context, cancellation_obj, sanitised_cancellation_document)
 
 
-def log_pending_cancellation_event(context, start_issue_number):
+def log_pending_cancellation_event(context, start_issue_number, log_object: EpsLogger, internal_id):
     """
     Generate a pending cancellation eventLog entry
     """
@@ -302,9 +304,30 @@ def log_pending_cancellation_event(context, start_issue_number):
     cancellationBodyXSLT = "cancellationRequest_to_cancellationResponse.xsl"
     responseXSLT = [errorResponseStylesheet, cancellationBodyXSLT]
     context.responseDetails[PrescriptionsChangeLogProcessor.XSLT] = responseXSLT
-    context.epsRecord.incrementSCN()
-    self.createEventLog(context, start_issue_number)
-    context.epsRecord.addEventToChangeLog(self.internalID, context.eventLog)
+    context.epsRecord.increment_scn()
+    create_event_log(context, log_object, internal_id, start_issue_number)
+    context.epsRecord.add_event_to_change_log(internal_id, context.eventLog)
+
+
+def create_event_log(context, log_object: EpsLogger, internal_id, instance_id=None):
+    """
+    Create the change log for this event. Will be placed on change log in record
+    under a key of the messageID
+    """
+    if context.replayDetected:
+        return
+
+    if not instance_id:
+        if context.epsRecord:
+            instance_id = context.epsRecord.return_current_instance()
+        else:
+            log_object.write_log("EPS0673", None, {"internalID": internal_id})
+            instance_id = "NotAvailable"
+    context.instanceID = instance_id
+
+    if context.epsRecord:
+        eventLog = PrescriptionsChangeLogProcessor.log_for_domain_update(context, internal_id)
+        context.eventLog = eventLog
 
 
 def handle_missing_cancellation_document(cancellation_obj, log_object: EpsLogger, internal_id):
@@ -321,7 +344,7 @@ def handle_missing_cancellation_document(cancellation_obj, log_object: EpsLogger
         log_object.write_log("EPS0651", None, {"internalID": internal_id, "reason": str(reason)})
 
 
-def returnCancellationDocument(context, cancellation_document_key):
+def return_cancellation_document(context, cancellation_document_key):
     """
     Use the cancellationDocumentKey to retrieve the cancelation document from the
     document store, then dencode and decompress the content and return the xmlPayload
@@ -448,3 +471,58 @@ def generate_complete_cancellation_message(
     response_obj["Response Parameters"] = response_parameters
 
     return response_obj
+
+
+def apply_all_cancellations(
+    context,
+    log_object: EpsLogger,
+    internal_id,
+    was_pending=False,
+    start_issue_number=None,
+    send_subsequent_cancellation=True,
+):
+    """
+    Apply all the cancellations on the context (these should normally be fetched from
+    the record)
+    """
+
+    for cancellation_obj in context.cancellationObjects:
+        [cancel_id, issues_updated] = context.epsRecord.apply_cancellation(
+            cancellation_obj, start_issue_number
+        )
+        log_object.write_log(
+            "EPS0266",
+            None,
+            {
+                "internalID": internal_id,
+                "prescriptionID": context.prescriptionID,
+                "issuesUpdated": issues_updated,
+                "cancellationID": cancel_id,
+            },
+        )
+
+        if not is_death(cancellation_obj, log_object, internal_id):
+            if was_pending and send_subsequent_cancellation:
+                generate_subsequent_cancellation_response(
+                    context, cancellation_obj, log_object, internal_id
+                )
+                log_pending_cancellation_event(context, start_issue_number)
+
+
+def is_death(cancellation_obj, log_object: EpsLogger, internal_id):
+    """
+    Returns True if this is a Death Notification
+    """
+    reasons = cancellation_obj.get(fields.FIELD_REASONS)
+
+    if not reasons:
+        return False
+
+    for reason in reasons:
+        if str(handle_encoding_oddities(reason)).lower().find("notification of death") != -1:
+            log_object.write_log(
+                "EPS0652", None, {"internalID": internal_id, "reason": str(reason)}
+            )
+            return True
+
+    return False

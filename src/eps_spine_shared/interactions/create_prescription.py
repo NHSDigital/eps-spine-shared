@@ -3,7 +3,6 @@ from datetime import datetime, timezone
 from eps_spine_shared.common.dynamodb_client import EpsDataStoreError
 from eps_spine_shared.common.dynamodb_common import prescription_id_without_check_digit
 from eps_spine_shared.common.dynamodb_datastore import EpsDynamoDbDataStore
-from eps_spine_shared.common.prescription import fields
 from eps_spine_shared.common.prescription.record import PrescriptionRecord
 from eps_spine_shared.common.prescription.repeat_dispense import RepeatDispenseRecord
 from eps_spine_shared.common.prescription.repeat_prescribe import RepeatPrescribeRecord
@@ -17,15 +16,13 @@ from eps_spine_shared.errors import (
     ErrorBaseInstance,
 )
 from eps_spine_shared.interactions.common import (
+    apply_all_cancellations,
     build_working_record,
     check_for_pending_cancellations,
     check_for_replay,
-    generate_subsequent_cancellation_response,
-    log_pending_cancellation_event,
     prepare_document_for_store,
 )
 from eps_spine_shared.logger import EpsLogger
-from eps_spine_shared.spinecore.base_utilities import handle_encoding_oddities
 from eps_spine_shared.validation.common import check_mandatory_items
 from eps_spine_shared.validation.create import run_validations
 
@@ -217,61 +214,6 @@ def create_initial_record(context, log_object: EpsLogger, internal_id):
 
     if context.cancellationPlaceholderFound:
         apply_all_cancellations(context, True)
-
-
-def apply_all_cancellations(
-    context,
-    log_object: EpsLogger,
-    internal_id,
-    was_pending=False,
-    start_issue_number=None,
-    send_subsequent_cancellation=True,
-):
-    """
-    Apply all the cancellations on the context (these should normally be fetched from
-    the record)
-    """
-
-    for cancellation_obj in context.cancellationObjects:
-        [cancel_id, issues_updated] = context.epsRecord.apply_cancellation(
-            cancellation_obj, start_issue_number
-        )
-        log_object.write_log(
-            "EPS0266",
-            None,
-            {
-                "internalID": internal_id,
-                "prescriptionID": context.prescriptionID,
-                "issuesUpdated": issues_updated,
-                "cancellationID": cancel_id,
-            },
-        )
-
-        if not is_death(cancellation_obj, log_object, internal_id):
-            if was_pending and send_subsequent_cancellation:
-                generate_subsequent_cancellation_response(
-                    context, cancellation_obj, log_object, internal_id
-                )
-                log_pending_cancellation_event(context, start_issue_number)
-
-
-def is_death(cancellation_obj, log_object: EpsLogger, internal_id):
-    """
-    Returns True if this is a Death Notification
-    """
-    reasons = cancellation_obj.get(fields.FIELD_REASONS)
-
-    if not reasons:
-        return False
-
-    for reason in reasons:
-        if str(handle_encoding_oddities(reason)).lower().find("notification of death") != -1:
-            log_object.write_log(
-                "EPS0652", None, {"internalID": internal_id, "reason": str(reason)}
-            )
-            return True
-
-    return False
 
 
 def prescriptions_workflow(
