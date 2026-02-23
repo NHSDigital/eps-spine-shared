@@ -20,6 +20,7 @@ from eps_spine_shared.interactions.common import (
     build_working_record,
     check_for_pending_cancellations,
     check_for_replay,
+    log_pending_cancellation_event,
     prepare_document_for_store,
 )
 from eps_spine_shared.logger import EpsLogger
@@ -216,6 +217,14 @@ def create_initial_record(context, log_object: EpsLogger, internal_id):
         apply_all_cancellations(context, True)
 
 
+def log_pending_cancellation_events(context, log_object: EpsLogger, internal_id):
+    """
+    Generate pending cancellation eventLog entries for all cancellations on the context
+    """
+    for _ in context.cancellationObjects:
+        log_pending_cancellation_event(context, None, log_object, internal_id)
+
+
 def prescriptions_workflow(
     context,
     log_object: EpsLogger,
@@ -237,3 +246,4 @@ def prescriptions_workflow(
         context, doc_type, doc_ref_title, log_object, internal_id, services_dict, deep_copy
     )
     create_initial_record(context, log_object, internal_id)
+    log_pending_cancellation_events(context, log_object, internal_id)

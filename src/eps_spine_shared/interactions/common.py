@@ -14,17 +14,10 @@ from eps_spine_shared.common.prescription.repeat_dispense import RepeatDispenseR
 from eps_spine_shared.common.prescription.repeat_prescribe import RepeatPrescribeRecord
 from eps_spine_shared.common.prescription.single_prescribe import SinglePrescribeRecord
 from eps_spine_shared.errors import EpsSystemError
-from eps_spine_shared.interactions.metadata import (
-    EBXMLMetadata,
-    HL7Metadata,
-    StatusMetadata,
-)
-from eps_spine_shared.interactions.wdo import CreatePrescriptionWDO
 from eps_spine_shared.logger import EpsLogger
 from eps_spine_shared.nhsfundamentals.time_utilities import TimeFormats
 from eps_spine_shared.spinecore.base_utilities import handle_encoding_oddities
 from eps_spine_shared.spinecore.changelog import PrescriptionsChangeLogProcessor
-from eps_spine_shared.spinecore.notification import SubsequentCancellationResponse
 from eps_spine_shared.spinecore.xml_utilities import apply_transform, serialise_xml, unzip_xml
 
 CANCEL_INTERACTION = "PORX_IN050102UK32"
@@ -207,89 +200,10 @@ def create_index_for_document(context, doc_ref_title, prescription_id):
     return index_dict
 
 
-def generate_subsequent_cancellation_response(
-    context, cancellation_obj, services_dict, log_object: EpsLogger, internal_id
-):
-    """
-    Generate a subsequentCancellationResponse message
-
-    * Use the default successful cancellation code if one is not provided
-    * Extract the cancellationDocument reference and the hl7 data from the original cancellation from
-        the cancellation object
-    * Retrieve the cancellation document
-    * Generate the core cancellation body payload
-    * Generate the complete cancellation message
-    * Create a notification and append the complete cancellation message as the payload
-    """
-    hl7 = cancellation_obj["hl7"]
-    sds_lookup = services_dict["Endpoint SDS Reference"]
-
-    cancellation_response_data = {}
-    cancellation_response_data["responseAction"] = '"' + hl7["interactionID"] + '"'
-    cancellation_document_key = cancellation_obj.get(fields.FIELD_CANCELLATION_MSG_REF)
-
-    if not cancellation_document_key:
-        handle_missing_cancellation_document(cancellation_obj, log_object, internal_id)
-        return
-
-    cancellation_document = return_cancellation_document(context, cancellation_document_key)
-
-    core_cancellation_payload = generate_cancellation_payload(
-        cancellation_obj, cancellation_document
-    )
-    complete_msg = generate_complete_cancellation_message(
-        hl7, core_cancellation_payload, cancellation_response_data, context
-    )
-
-    notification = SubsequentCancellationResponse(context.replayDetected)
-    notification.set_payload(complete_msg)
-
-    message_id = str(uuid.uuid4())
-    notification.set_key(message_id)
-    notification_to_append = notification.return_dictionary()
-    notification_to_append[CreatePrescriptionWDO.KEY_HL7] = hl7
-
-    eb_xml = {}
-    eb_xml[EBXMLMetadata.KEY_MSGID] = message_id
-    eb_xml[EBXMLMetadata.KEY_SERVICE] = SERVICE
-    eb_xml[EBXMLMetadata.KEY_FROMPARTY] = sds_lookup.getPartyIDFromASID(
-        hl7[HL7Metadata.KEY_FROMASID]
-    )
-    eb_xml[EBXMLMetadata.KEY_TOPARTY] = services_dict["spine source party key"]
-
-    eb_xml[EBXMLMetadata.KEY_CONVID] = context.conversationID
-    notification_to_append[CreatePrescriptionWDO.KEY_EBXML] = eb_xml
-
-    _status = {}
-    _status[StatusMetadata.KEY_OUTBOUNDINTERACTION] = CANCEL_INTERACTION
-    _status[StatusMetadata.KEY_RCVTIME] = datetime.datetime.now().strftime(
-        TimeFormats.HL7_DATETIME_FORMAT
-    )[:-3]
-    notification_to_append[CreatePrescriptionWDO.KEY_STATUS] = _status
-
-    log_object.write_log(
-        "EPS0317",
-        None,
-        {
-            "internalID": internal_id,
-            "toASID": hl7[HL7Metadata.KEY_FROMASID],
-            "refToEventID": cancellation_response_data["refToEventID"],
-            "messageID": message_id,
-        },
-    )
-
-    context.notificationsToQueue.append(notification_to_append)
-
-    # Leave in Spine for now. Pull-out into prescriptionsWorkflow/doInteractionWorkflow. when re-integrating.
-    # sanitised_cancellation_document = etree.tostring(cancellation_document).decode("utf-8")
-    # _meshFhirSubCanc(context, cancellation_obj, sanitised_cancellation_document)
-
-
 def log_pending_cancellation_event(context, start_issue_number, log_object: EpsLogger, internal_id):
     """
     Generate a pending cancellation eventLog entry
     """
-
     if not hasattr(context, "responseParameters"):
         context.responseParameters = {}
         context.responseParameters["cancellationResponseText"] = "Subsequent cancellation"
@@ -503,10 +417,7 @@ def apply_all_cancellations(
 
         if not is_death(cancellation_obj, log_object, internal_id):
             if was_pending and send_subsequent_cancellation:
-                generate_subsequent_cancellation_response(
-                    context, cancellation_obj, log_object, internal_id
-                )
-                log_pending_cancellation_event(context, start_issue_number)
+                context.cancellationObjects.append(cancellation_obj)
 
 
 def is_death(cancellation_obj, log_object: EpsLogger, internal_id):
