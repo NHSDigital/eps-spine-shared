@@ -10,7 +10,6 @@ def is_nhs_number_valid(nhs_number):
     See http://www.datadictionary.nhs.uk/data_dictionary/attributes/n/nhs_number_de.asp
     Returns True if check passes, False otherwise
     """
-
     nhs_number_match = False
 
     if re.match(TEN_DIGIT_NUMBER_REGEX, nhs_number):

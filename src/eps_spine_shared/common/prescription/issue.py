@@ -73,7 +73,6 @@ class PrescriptionIssue(object):
         :type expired_at_time: datetime.datetime
         :type parent_prescription: PrescriptionRecord
         """
-
         currentStatus = self.status
 
         # update the issue status, if appropriate

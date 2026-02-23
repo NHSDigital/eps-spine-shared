@@ -287,7 +287,6 @@ class PrescriptionsChangeLogProcessor(ChangeLogProcessor):
         Create a change log for this expected change - requires attribute to be set on
         context object
         """
-
         log_of_change = cls.log_for_general_update(
             update_context.epsRecord.get_scn(),
             internal_id,

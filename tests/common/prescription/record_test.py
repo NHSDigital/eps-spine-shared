@@ -268,7 +268,6 @@ class PrescriptionRecordTest(TestCase):
         """
         Test that resetting the current instance chooses the correct instance.
         """
-
         prescription = load_test_example_json(self.mock_log_object, "50EE48-B83002-490F7.json")
         self.assertEqual(prescription.current_issue_number, 4)
         (old, new) = prescription.reset_current_instance()
@@ -369,7 +368,6 @@ class PrescriptionRecordTest(TestCase):
         """
         Test that a prescription with a future start date is marked as FUTURE_DATED_PRESCRIPTION.
         """
-
         prescription = load_test_example_json(self.mock_log_object, "0DA698-A83008-F50593.json")
 
         future_time = datetime.now() + timedelta(days=10)

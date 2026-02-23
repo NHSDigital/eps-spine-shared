@@ -278,7 +278,6 @@ def retrieve_eps_document_by_key(
     """
     Fetch from the document store and add to the context
     """
-
     log_object.write_log("EPS0144", None, {"internalID": internal_id, "documentKey": document_key})
 
     try:
@@ -399,7 +398,6 @@ def apply_all_cancellations(
     Apply all the cancellations on the context (these should normally be fetched from
     the record)
     """
-
     for cancellation_obj in context.cancellationObjects:
         [cancel_id, issues_updated] = context.epsRecord.apply_cancellation(
             cancellation_obj, start_issue_number
