@@ -24,9 +24,7 @@ from eps_spine_shared.interactions.common import (
     log_pending_cancellation_event,
     prepare_document_for_store,
 )
-from eps_spine_shared.interactions.context import CreatePrescriptionContext
 from eps_spine_shared.logger import EpsLogger
-from eps_spine_shared.nhsfundamentals.time_utilities import TimeFormats
 from eps_spine_shared.spinecore.base_utilities import handle_encoding_oddities
 from eps_spine_shared.validation.common import check_mandatory_items
 from eps_spine_shared.validation.create import run_validations
@@ -53,7 +51,7 @@ CANCEL_SUCCESS_RESPONSE_CODE_SYSTEM = "2.16.840.1.113883.2.1.3.2.4.17.19"
 CANCELLATION_SUCCESS_STYLESHEET = "CancellationResponse_PORX_MT135201UK31.xsl"
 
 
-def validate_wdo(context: CreatePrescriptionContext, log_object: EpsLogger, internal_id):
+def validate_wdo(context, log_object: EpsLogger, internal_id):
     """
     Validate the WDO using the local validator
     """
@@ -277,7 +275,7 @@ def is_death(cancellation_obj, log_object: EpsLogger, internal_id):
 
 
 def prescriptions_workflow(
-    context: CreatePrescriptionContext,
+    context,
     log_object: EpsLogger,
     internal_id,
     prescription_id,
