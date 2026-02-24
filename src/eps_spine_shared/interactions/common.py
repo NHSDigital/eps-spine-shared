@@ -1,13 +1,11 @@
 import base64
 import datetime
 import sys
-import uuid
 import zlib
 
 from dateutil import relativedelta
 
 from eps_spine_shared.common import indexes
-from eps_spine_shared.common.dynamodb_client import EpsDataStoreError
 from eps_spine_shared.common.dynamodb_common import prescription_id_without_check_digit
 from eps_spine_shared.common.dynamodb_datastore import EpsDynamoDbDataStore
 from eps_spine_shared.common.prescription import fields
@@ -15,11 +13,11 @@ from eps_spine_shared.common.prescription.repeat_dispense import RepeatDispenseR
 from eps_spine_shared.common.prescription.repeat_prescribe import RepeatPrescribeRecord
 from eps_spine_shared.common.prescription.single_prescribe import SinglePrescribeRecord
 from eps_spine_shared.errors import EpsSystemError
+from eps_spine_shared.interactions.updates import apply_blind_update, apply_smart_update
 from eps_spine_shared.logger import EpsLogger
 from eps_spine_shared.nhsfundamentals.time_utilities import TimeFormats
 from eps_spine_shared.spinecore.base_utilities import handle_encoding_oddities
 from eps_spine_shared.spinecore.changelog import PrescriptionsChangeLogProcessor
-from eps_spine_shared.spinecore.xml_utilities import apply_transform, serialise_xml, unzip_xml
 
 CANCEL_INTERACTION = "PORX_IN050102UK32"
 EXPECTED_DELETE_WAIT_TIME_MONTHS = 18
@@ -41,7 +39,7 @@ PURGED_DELETE_PERIOD = 365
 
 
 def check_for_replay(
-    eps_record_id, eps_record_retrieved, message_id, context, log_object: EpsLogger, internal_id
+    eps_record_id, eps_record_retrieved, message_id, context, internal_id, log_object: EpsLogger
 ):
     """
     Check a retrieved record for the existence of the message GUID within the change log
@@ -74,7 +72,7 @@ def check_for_replay(
     return False
 
 
-def build_working_record(context, log_object: EpsLogger, internal_id):
+def build_working_record(context, internal_id, log_object: EpsLogger):
     """
     An epsRecord object needs to be created from the record extracted from the
     store.  The record-type should have been extracted - and this will be used to
@@ -114,7 +112,7 @@ def check_for_pending_cancellations(context):
 
 
 def prepare_document_for_store(
-    context, doc_type, doc_ref_title, log_object: EpsLogger, internal_id, services_dict, deep_copy
+    context, doc_type, doc_ref_title, services_dict, deep_copy, internal_id, log_object: EpsLogger
 ):
     """
     For inbound messages to be stored in the datastore.
@@ -138,7 +136,7 @@ def prepare_document_for_store(
     documentToStore = {}
     documentToStore["key"] = document_ref
     documentToStore["value"] = extract_body_to_store(
-        presc_id, doc_type, context, services_dict, deep_copy, log_object, internal_id
+        presc_id, doc_type, context, services_dict, deep_copy, internal_id, log_object
     )
     documentToStore["index"] = create_index_for_document(context, doc_ref_title, presc_id)
     documentToStore["vectorClock"] = None
@@ -158,8 +156,8 @@ def extract_body_to_store(
     context,
     services_dict,
     deep_copy,
-    log_object: EpsLogger,
     internal_id,
+    log_object: EpsLogger,
     base_document=None,
 ):
     """
@@ -214,7 +212,7 @@ def create_index_for_document(context, doc_ref_title, prescription_id):
     return index_dict
 
 
-def log_pending_cancellation_event(context, start_issue_number, log_object: EpsLogger, internal_id):
+def log_pending_cancellation_event(context, start_issue_number, internal_id, log_object: EpsLogger):
     """
     Generate a pending cancellation eventLog entry
     """
@@ -233,11 +231,11 @@ def log_pending_cancellation_event(context, start_issue_number, log_object: EpsL
     responseXSLT = [errorResponseStylesheet, cancellationBodyXSLT]
     context.responseDetails[PrescriptionsChangeLogProcessor.XSLT] = responseXSLT
     context.epsRecord.increment_scn()
-    create_event_log(context, log_object, internal_id, start_issue_number)
+    create_event_log(context, internal_id, log_object, start_issue_number)
     context.epsRecord.add_event_to_change_log(internal_id, context.eventLog)
 
 
-def create_event_log(context, log_object: EpsLogger, internal_id, instance_id=None):
+def create_event_log(context, internal_id, log_object: EpsLogger, instance_id=None):
     """
     Create the change log for this event. Will be placed on change log in record
     under a key of the messageID
@@ -258,152 +256,10 @@ def create_event_log(context, log_object: EpsLogger, internal_id, instance_id=No
         context.eventLog = eventLog
 
 
-def handle_missing_cancellation_document(cancellation_obj, log_object: EpsLogger, internal_id):
-    """
-    In some cases there has been missing cancellation object references - in
-    particular post migration.  Ignore generating a response in this case - but raise
-    an error
-    """
-    reasons = cancellation_obj.get(fields.FIELD_REASONS)
-    if not reasons:
-        log_object.write_log("EPS0650", None, {"internalID": internal_id})
-        return
-    for reason in reasons:
-        log_object.write_log("EPS0651", None, {"internalID": internal_id, "reason": str(reason)})
-
-
-def return_cancellation_document(context, cancellation_document_key):
-    """
-    Use the cancellationDocumentKey to retrieve the cancelation document from the
-    document store, then dencode and decompress the content and return the xmlPayload
-    """
-    zipped_encoded_doc = retrieve_eps_document_by_key(context, cancellation_document_key)
-
-    return unzip_xml(zipped_encoded_doc)
-
-
-def retrieve_eps_document_by_key(
-    context,
-    document_key,
-    datastore_object: EpsDynamoDbDataStore,
-    log_object: EpsLogger,
-    internal_id,
-):
-    """
-    Fetch from the document store and add to the context
-    """
-    log_object.write_log("EPS0144", None, {"internalID": internal_id, "documentKey": document_key})
-
-    try:
-        doc_object = datastore_object.return_document_for_process(internal_id, document_key)
-    except EpsDataStoreError as e:
-        log_object.write_log("EPS0142", None, {"internalID": internal_id, "reason": e.error_topic})
-        raise EpsSystemError(EpsSystemError.SYSTEM_FAILURE) from e
-
-    if str(context.prescriptionID) != str(doc_object["id"]):
-        log_object.write_log(
-            "EPS0143",
-            None,
-            {
-                "internalID": internal_id,
-                "msgPrescID": str(context.prescriptionID),
-                "docPrescID": str(doc_object["id"]),
-            },
-        )
-        raise EpsSystemError(EpsSystemError.MESSAGE_FAILURE)
-
-    return doc_object["content"]
-
-
-def generate_cancellation_payload(
-    cancellation_doc,
-    services_dict,
-    cancellation_body_xslt,
-    response_text,
-    response_code,
-    response_code_system,
-    log_object: EpsLogger,
-    internal_id,
-):
-    """
-    There is an additional transformation required to prepare the cancellation
-    response from the inbound cancellation request.
-
-    There are two transformations: one to create the payload from the inbound request
-    and then one to wrap the payload in a standard HL7 format, this method is just to
-    create the payload.
-    """
-    stylesheets = services_dict["Style Sheets"]
-    response_generator = stylesheets[cancellation_body_xslt]
-
-    cancellation_msg = cancellation_doc
-
-    success_text = '"' + response_text + '"'
-    success_code = '"' + response_code + '"'
-    success_code_system = '"' + response_code_system + '"'
-
-    response_params = {}
-    response_params["cancellationResponseText"] = success_text
-    response_params["cancellationResponseCode"] = success_code
-    response_params["cancellationResponseCodeSystem"] = success_code_system
-
-    try:
-        return apply_transform(response_generator, cancellation_msg, response_params)
-    except SystemError as system_error:
-        log_object.write_log("EPS0042", sys.exc_info(), dict({"internalID": internal_id}))
-        raise EpsSystemError("developmentFailure") from system_error
-
-
-def generate_complete_cancellation_message(
-    hl7,
-    core_body_xml,
-    response_parameters,
-    context,
-    services_dict,
-    cancellation_success_stylesheet,
-    log_object: EpsLogger,
-    internal_id,
-):
-    """
-    This is the final stage of message generation and takes either a success or
-    failure partial payload and puts it into an outbound message with valid
-    response parameters.
-    """
-    final_generator = services_dict["Style Sheets"][cancellation_success_stylesheet]
-
-    service_asid = services_dict["Service ASID"]
-    response_guid = str(uuid.uuid4()).upper()
-
-    response_parameters["messageID"] = '"' + response_guid + '"'
-    response_parameters["refToEventID"] = '"' + context.messageID + '"'
-
-    response_parameters["refToMessageID"] = '"' + context.messageID + '"'
-    response_parameters["timeStampAck"] = '"' + context.timestampRcv + '"'
-    response_parameters["timeStampSent"] = '"' + context.timestampPrc + '"'
-    response_parameters["fromASID"] = '"' + context.toASID + '"'
-    response_parameters["toASID"] = '"' + context.fromASID + '"'
-    response_parameters["serviceASID"] = '"' + service_asid + '"'
-    response_parameters["interactionID"] = '"' + hl7["interactionID"] + '"'
-
-    try:
-        final_xml = apply_transform(final_generator, core_body_xml, response_parameters)
-    except SystemError as system_error:
-        log_object.write_log("EPS0042", sys.exc_info(), {"internalID": internal_id})
-        raise EpsSystemError("developmentFailure") from system_error
-
-    message_body = serialise_xml(final_xml)
-
-    response_obj = {}
-    response_obj["responseXML"] = message_body
-    response_obj["Response Parameters"] = response_parameters
-
-    return response_obj
-
-
 def apply_all_cancellations(
     context,
-    log_object: EpsLogger,
     internal_id,
+    log_object: EpsLogger,
     was_pending=False,
     start_issue_number=None,
     send_subsequent_cancellation=True,
@@ -427,12 +283,12 @@ def apply_all_cancellations(
             },
         )
 
-        if not is_death(cancellation_obj, log_object, internal_id):
+        if not is_death(cancellation_obj, internal_id, log_object):
             if was_pending and send_subsequent_cancellation:
                 context.cancellationObjects.append(cancellation_obj)
 
 
-def is_death(cancellation_obj, log_object: EpsLogger, internal_id):
+def is_death(cancellation_obj, internal_id, log_object: EpsLogger):
     """
     Returns True if this is a Death Notification
     """
@@ -452,7 +308,7 @@ def is_death(cancellation_obj, log_object: EpsLogger, internal_id):
 
 
 def prepare_record_for_store(
-    context, log_object: EpsLogger, internal_id, fetched_record=False, key=None
+    context, internal_id, log_object: EpsLogger, fetched_record=False, key=None
 ):
     """
     Prepare the record to be stored:
@@ -481,7 +337,7 @@ def prepare_record_for_store(
     else:
         context.recordToStore["key"] = key
 
-    index_dict = create_record_index(context, log_object, internal_id)
+    index_dict = create_record_index(context, internal_id, log_object)
     context.recordToStore["index"] = index_dict
     context.epsRecord.add_index_to_record(index_dict)
     context.epsRecord.add_document_references(context.documentReferences)
@@ -510,7 +366,7 @@ def prepare_record_for_store(
     )
 
 
-def create_record_index(context, log_object: EpsLogger, internal_id):
+def create_record_index(context, internal_id, log_object: EpsLogger):
     """
     Create the index values to be used when storing the epsRecord.
     There may be separate index terms for each individual instance
@@ -540,3 +396,65 @@ def get_nad_references():
         "notificationDelayPeriod": relativedelta(days=+NOTIFICATION_DELAY_PERIOD),
         "purgedDeletePeriod": relativedelta(days=+PURGED_DELETE_PERIOD),
     }
+
+
+def apply_updates(
+    context,
+    failure_count,
+    internal_id,
+    log_object: EpsLogger,
+    datastore_object: EpsDynamoDbDataStore,
+):
+    """
+    Apply record and document updates directly
+    """
+    log_object.write_log("EPS0900", None, {"internalID": internal_id})
+
+    add_documents_to_store(context, internal_id, log_object, datastore_object)
+    apply_record_change_to_store(context, failure_count, internal_id, log_object, datastore_object)
+
+
+def add_documents_to_store(
+    context, internal_id, log_object: EpsLogger, datastore_object: EpsDynamoDbDataStore
+):
+    """
+    Add documents to the store from the context
+    """
+    documents_to_store = context.documentsToStore
+    if not documents_to_store:
+        log_object.write_log("EPS0910", None, {"internalID": internal_id})
+        return
+
+    for document_to_store in documents_to_store:
+        apply_blind_update(
+            document_to_store, "epsDocument", datastore_object, log_object, internal_id
+        )
+
+
+def apply_record_change_to_store(
+    context,
+    failure_count,
+    internal_id,
+    log_object: EpsLogger,
+    datastore_object: EpsDynamoDbDataStore,
+):
+    """
+    Apply the record change to the store from the context
+    """
+    record_to_store = context.recordToStore
+
+    if not record_to_store:
+        log_object.write_log("EPS0920", None, {"internalID": internal_id})
+        return
+
+    if not record_to_store["vectorClock"]:
+        apply_blind_update(record_to_store, "epsRecord", datastore_object, log_object, internal_id)
+    else:
+        apply_smart_update(
+            record_to_store,
+            datastore_object,
+            log_object,
+            internal_id,
+            failure_count,
+            context.documentsToStore,
+        )
