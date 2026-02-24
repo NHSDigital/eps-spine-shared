@@ -20,8 +20,10 @@ from eps_spine_shared.interactions.common import (
     build_working_record,
     check_for_pending_cancellations,
     check_for_replay,
+    create_event_log,
     log_pending_cancellation_event,
     prepare_document_for_store,
+    prepare_record_for_store,
 )
 from eps_spine_shared.logger import EpsLogger
 from eps_spine_shared.validation.common import check_mandatory_items
@@ -247,3 +249,5 @@ def prescriptions_workflow(
     )
     create_initial_record(context, log_object, internal_id)
     log_pending_cancellation_events(context, log_object, internal_id)
+    create_event_log(context, log_object, internal_id)
+    prepare_record_for_store(context, log_object, internal_id)

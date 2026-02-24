@@ -8,6 +8,7 @@ from dateutil import relativedelta
 
 from eps_spine_shared.common import indexes
 from eps_spine_shared.common.dynamodb_client import EpsDataStoreError
+from eps_spine_shared.common.dynamodb_common import prescription_id_without_check_digit
 from eps_spine_shared.common.dynamodb_datastore import EpsDynamoDbDataStore
 from eps_spine_shared.common.prescription import fields
 from eps_spine_shared.common.prescription.repeat_dispense import RepeatDispenseRecord
@@ -24,6 +25,19 @@ CANCEL_INTERACTION = "PORX_IN050102UK32"
 EXPECTED_DELETE_WAIT_TIME_MONTHS = 18
 EXPECTED_NOMINATED_RELEASE_DELETE_WAIT_TIME_DAYS = 36
 SERVICE = "urn:nhs:names:services:mm"
+TEST_PRESCRIBING_SITES = ["Z99901", "Z99902"]
+
+PRESCRIPTION_EXPIRY_PERIOD_MONTHS = 6
+REPEAT_DISP_EXPIRY_PERIOD_MONTHS = 12
+DATA_CLEANSE_PERIOD_MONTHS = 6
+WD_ACTIVE_EXPIRY_PERIOD_DAYS = 180
+EXPIRED_DELETE_PERIOD = 90
+CANCELLED_DELETE_PERIOD = 180
+CLAIMED_DELETE_PERIOD = 36
+NOT_DISPENSED_DELETE_PERIOD = 30
+NOMINATED_DOWNLOAD_LEAD_DAYS = 7
+NOTIFICATION_DELAY_PERIOD = 180
+PURGED_DELETE_PERIOD = 365
 
 
 def check_for_replay(
@@ -435,3 +449,94 @@ def is_death(cancellation_obj, log_object: EpsLogger, internal_id):
             return True
 
     return False
+
+
+def prepare_record_for_store(
+    context, log_object: EpsLogger, internal_id, fetched_record=False, key=None
+):
+    """
+    Prepare the record to be stored:
+    1 - Check there is a need to store (not replay)
+    2 - Set the key
+    3 - Add change log to record
+    4 - Set the index (including calculation of nextActivity)
+    5 - Set the value (from the epsRecord object)
+
+    fetched_record indicates whether the recordToStore is based on one retrieved by
+    this interactionWorker process.  If it is, there will be a vectorClock, which
+    is required in order for the updateApplier to use as an optimistic 'lock'
+
+    key if passed will be used as the key to be stored (otherwise generate from
+    context.prescriptionID)
+    """
+    if context.replayDetected:
+        context.recordToStore = None
+        return
+
+    context.recordToStore = {}
+
+    if not key:
+        presc_id = prescription_id_without_check_digit(context.prescriptionID)
+        context.recordToStore["key"] = presc_id
+    else:
+        context.recordToStore["key"] = key
+
+    index_dict = create_record_index(context, log_object, internal_id)
+    context.recordToStore["index"] = index_dict
+    context.epsRecord.add_index_to_record(index_dict)
+    context.epsRecord.add_document_references(context.documentReferences)
+
+    context.epsRecord.increment_scn()
+    context.epsRecord.add_event_to_change_log(context.messageID, context.eventLog)
+
+    context.recordToStore["value"] = context.epsRecord.return_record_to_be_stored()
+
+    if fetched_record:
+        context.recordToStore["vectorClock"] = context.recordToProcess["vectorClock"]
+    else:
+        context.recordToStore["vectorClock"] = None
+
+    context.recordToStore["recordType"] = context.epsRecord.record_type
+
+    log_object.write_log(
+        "EPS0125",
+        None,
+        {
+            "internalID": internal_id,
+            "type": "prescriptionRecord",
+            "key": context.recordToStore["key"],
+            "vectorClock": "None",
+        },
+    )
+
+
+def create_record_index(context, log_object: EpsLogger, internal_id):
+    """
+    Create the index values to be used when storing the epsRecord.
+    There may be separate index terms for each individual instance
+    (but only unique index terms for the prescription should be returned).
+    """
+    indexMaker = indexes.EpsIndexFactory(
+        log_object, internal_id, TEST_PRESCRIBING_SITES, get_nad_references()
+    )
+    return indexMaker.build_indexes(context)
+
+
+def get_nad_references():
+    """
+    Create a reference dictionary of information
+    for use during next activity date calculation
+    """
+    return {
+        "prescriptionExpiryPeriod": relativedelta(months=+PRESCRIPTION_EXPIRY_PERIOD_MONTHS),
+        "repeatDispenseExpiryPeriod": relativedelta(months=+REPEAT_DISP_EXPIRY_PERIOD_MONTHS),
+        "dataCleansePeriod": relativedelta(months=+DATA_CLEANSE_PERIOD_MONTHS),
+        "withDispenserActiveExpiryPeriod": relativedelta(days=+WD_ACTIVE_EXPIRY_PERIOD_DAYS),
+        "expiredDeletePeriod": relativedelta(days=+EXPIRED_DELETE_PERIOD),
+        "cancelledDeletePeriod": relativedelta(days=+CANCELLED_DELETE_PERIOD),
+        "claimedDeletePeriod": relativedelta(days=+CLAIMED_DELETE_PERIOD),
+        "notDispensedDeletePeriod": relativedelta(days=+NOT_DISPENSED_DELETE_PERIOD),
+        "nominatedDownloadDateLeadTime": relativedelta(days=+NOMINATED_DOWNLOAD_LEAD_DAYS),
+        "notificationDelayPeriod": relativedelta(days=+NOTIFICATION_DELAY_PERIOD),
+        "purgedDeletePeriod": relativedelta(days=+PURGED_DELETE_PERIOD),
+    }
