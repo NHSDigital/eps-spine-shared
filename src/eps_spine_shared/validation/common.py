@@ -1,8 +1,8 @@
 import datetime
 
+from eps_spine_shared.common import checksum_util
 from eps_spine_shared.errors import EpsValidationError
 from eps_spine_shared.logger import EpsLogger
-from eps_spine_shared.nhsfundamentals import checksum_util
 from eps_spine_shared.nhsfundamentals.mim_rules import is_nhs_number_valid
 from eps_spine_shared.nhsfundamentals.time_utilities import (
     TimeFormats,

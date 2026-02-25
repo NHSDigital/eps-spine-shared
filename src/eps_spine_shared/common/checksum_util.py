@@ -31,7 +31,7 @@ def check_checksum(prescription_id, internal_id, log_object):
     """
     Check the checksum of a Prescription ID
     :prescription_id the prescription to check
-    :log_object optional logObject, if this is given then invalid checksums will be logged.
+    :log_object invalid checksums will be logged
     """
     check_character = prescription_id[-1:]
     check_value = calculate_checksum(prescription_id)

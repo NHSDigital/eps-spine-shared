@@ -636,17 +636,17 @@ class PrescriptionRecord(object):
         Returns a list containing the index prefix concatenated with all applicable release
         versions and Prescription Statuses
         """
-        _release_version = self._release_version
-        _status_list = self.return_prescription_status_set()
+        release_version = self._release_version
+        status_list = self.return_prescription_status_set()
         return_set = []
-        for each_status in _status_list:
+        for each_status in status_list:
             if not is_string:
                 for each_index in index_prefix:
-                    _new_value = each_index + "|" + _release_version + "|" + each_status
-                    return_set.append(_new_value)
+                    new_value = each_index + "|" + release_version + "|" + each_status
+                    return_set.append(new_value)
             else:
-                _new_value = index_prefix + "|" + _release_version + "|" + each_status
-                return_set.append(_new_value)
+                new_value = index_prefix + "|" + release_version + "|" + each_status
+                return_set.append(new_value)
 
         return return_set
 
@@ -667,11 +667,11 @@ class PrescriptionRecord(object):
         """
         Return the prescribing organization and the prescription status
         """
-        _presc_site = self.prescription_record[fields.FIELD_PRESCRIPTION][
+        presc_site = self.prescription_record[fields.FIELD_PRESCRIPTION][
             fields.FIELD_PRESCRIBING_ORG
         ]
-        _presc_status = self.return_prescription_status_set()
-        return [True, _presc_site, _presc_status]
+        presc_status = self.return_prescription_status_set()
+        return [True, presc_site, presc_status]
 
     def return_nom_pharm_status_index(self):
         """
@@ -696,12 +696,12 @@ class PrescriptionRecord(object):
         Returns the Dispensing Site if available, otherwise, returns the Nominated Pharmacy
         or None if neither exist
         """
-        _disp_site = instance.get(fields.FIELD_DISPENSE, {}).get(
+        disp_site = instance.get(fields.FIELD_DISPENSE, {}).get(
             fields.FIELD_DISPENSING_ORGANIZATION
         )
-        if not _disp_site:
-            _disp_site = self.return_nom_pharm()
-        return _disp_site
+        if not disp_site:
+            disp_site = self.return_nom_pharm()
+        return disp_site
 
     def return_disp_site_status_index(self):
         """
@@ -711,11 +711,11 @@ class PrescriptionRecord(object):
         dispensing_site_statuses = set()
         for instance_key in self.prescription_record[fields.FIELD_INSTANCES]:
             instance = self._get_prescription_instance_data(instance_key)
-            _disp_site = self.return_disp_site_or_nom_pharm(instance)
-            if not _disp_site:
+            disp_site = self.return_disp_site_or_nom_pharm(instance)
+            if not disp_site:
                 continue
-            _presc_status = instance[fields.FIELD_PRESCRIPTION_STATUS]
-            dispensing_site_statuses.add(_disp_site + "_" + _presc_status)
+            presc_status = instance[fields.FIELD_PRESCRIPTION_STATUS]
+            dispensing_site_statuses.add(disp_site + "_" + presc_status)
 
         return [True, dispensing_site_statuses]
 
@@ -730,10 +730,10 @@ class PrescriptionRecord(object):
         nhs_number_presc_disp_dates = set()
         for instance_key in self.prescription_record[fields.FIELD_INSTANCES]:
             instance = self._get_prescription_instance_data(instance_key)
-            _disp_site = self.return_disp_site_or_nom_pharm(instance)
-            if not _disp_site:
+            disp_site = self.return_disp_site_or_nom_pharm(instance)
+            if not disp_site:
                 continue
-            nhs_number_presc_disp_dates.add(index_start + _disp_site + "|" + prescription_time)
+            nhs_number_presc_disp_dates.add(index_start + disp_site + "|" + prescription_time)
 
         return [True, nhs_number_presc_disp_dates]
 
@@ -780,10 +780,10 @@ class PrescriptionRecord(object):
         nhs_number_disp_dates = set()
         for instance_key in self.prescription_record[fields.FIELD_INSTANCES]:
             instance = self._get_prescription_instance_data(instance_key)
-            _disp_site = self.return_disp_site_or_nom_pharm(instance)
-            if not _disp_site:
+            disp_site = self.return_disp_site_or_nom_pharm(instance)
+            if not disp_site:
                 continue
-            nhs_number_disp_dates.add(index_start + _disp_site + "|" + prescription_time)
+            nhs_number_disp_dates.add(index_start + disp_site + "|" + prescription_time)
 
         return [True, nhs_number_disp_dates]
 
@@ -792,9 +792,9 @@ class PrescriptionRecord(object):
         Return the nominated performer (called when determining routing key extension)
         """
         nom_performer = None
-        _nomination = self.prescription_record.get(fields.FIELD_NOMINATION)
-        if _nomination:
-            nom_performer = _nomination.get(fields.FIELD_NOMINATED_PERFORMER)
+        nomination = self.prescription_record.get(fields.FIELD_NOMINATION)
+        if nomination:
+            nom_performer = nomination.get(fields.FIELD_NOMINATED_PERFORMER)
         return nom_performer
 
     def return_nominated_performer_type(self):
@@ -802,9 +802,9 @@ class PrescriptionRecord(object):
         Return the nominated performer type
         """
         nom_performer_type = None
-        _nomination = self.prescription_record.get(fields.FIELD_NOMINATION)
-        if _nomination:
-            nom_performer_type = _nomination.get(fields.FIELD_NOMINATED_PERFORMER_TYPE)
+        nomination = self.prescription_record.get(fields.FIELD_NOMINATION)
+        if nomination:
+            nom_performer_type = nomination.get(fields.FIELD_NOMINATED_PERFORMER_TYPE)
         return nom_performer_type
 
     def return_prescription_status_set(self):
@@ -840,38 +840,36 @@ class PrescriptionRecord(object):
         """
         Return the pending cancellations flag
         """
-        _prescription = self.prescription_record[fields.FIELD_PRESCRIPTION]
-        _max_repeats = _prescription.get(fields.FIELD_MAX_REPEATS)
+        prescription = self.prescription_record[fields.FIELD_PRESCRIPTION]
+        max_repeats = prescription.get(fields.FIELD_MAX_REPEATS)
 
-        if not _max_repeats:
-            _max_repeats = 1
+        if not max_repeats:
+            max_repeats = 1
 
-        for prescription_issue in range(1, int(_max_repeats) + 1):
-            _prescription_issue = self.prescription_record[fields.FIELD_INSTANCES].get(
+        for prescription_issue in range(1, int(max_repeats) + 1):
+            prescription_issue = self.prescription_record[fields.FIELD_INSTANCES].get(
                 str(prescription_issue)
             )
             # handle missing issues
-            if not _prescription_issue:
+            if not prescription_issue:
                 continue
             issue_specific_cancellations = {}
-            _applied_cancellations_for_issue = _prescription_issue.get(
-                fields.FIELD_CANCELLATIONS, []
-            )
-            _cancellation_status_string_prefix = ""
+            applied_cancellations_for_issue = prescription_issue.get(fields.FIELD_CANCELLATIONS, [])
+            cancellation_status_string_prefix = ""
             self._create_cancellation_summary_dict(
-                _applied_cancellations_for_issue,
+                applied_cancellations_for_issue,
                 issue_specific_cancellations,
-                _cancellation_status_string_prefix,
+                cancellation_status_string_prefix,
             )
-            if str(_prescription_issue[fields.FIELD_INSTANCE_NUMBER]) == str(
-                _prescription[fields.FIELD_CURRENT_INSTANCE]
+            if str(prescription_issue[fields.FIELD_INSTANCE_NUMBER]) == str(
+                prescription[fields.FIELD_CURRENT_INSTANCE]
             ):
-                _pending_cancellations = _prescription[fields.FIELD_PENDING_CANCELLATIONS]
-                _cancellation_status_string_prefix = "Pending: "
+                pending_cancellations = prescription[fields.FIELD_PENDING_CANCELLATIONS]
+                cancellation_status_string_prefix = "Pending: "
                 self._create_cancellation_summary_dict(
-                    _pending_cancellations,
+                    pending_cancellations,
                     issue_specific_cancellations,
-                    _cancellation_status_string_prefix,
+                    cancellation_status_string_prefix,
                 )
                 for _, val in issue_specific_cancellations.items():
                     if val.get(fields.FIELD_REASONS, "")[:7] == "Pending":
@@ -891,39 +889,37 @@ class PrescriptionRecord(object):
         if not recorded_cancellations:
             return
 
-        for _cancellation in recorded_cancellations:
-            _subsequent_reason = False
-            _cancellation_reasons = str(cancellation_status)
+        for cancellation in recorded_cancellations:
+            subsequent_reason = False
+            cancellation_reasons = str(cancellation_status)
 
-            _cancellation_id = _cancellation.get(fields.FIELD_CANCELLATION_ID, [])
-            _scn = PrescriptionsChangeLogProcessor.get_scn(
-                self.prescription_record["changeLog"].get(_cancellation_id, {})
+            cancellation_id = cancellation.get(fields.FIELD_CANCELLATION_ID, [])
+            scn = PrescriptionsChangeLogProcessor.get_scn(
+                self.prescription_record["changeLog"].get(cancellation_id, {})
             )
-            for _cancellation_reason in _cancellation.get(fields.FIELD_REASONS, []):
-                _cancellation_text = _cancellation_reason.split(":")[1].strip()
-                if _subsequent_reason:
-                    _cancellation_reasons += "; "
-                _subsequent_reason = True
-                _cancellation_reasons += str(handle_encoding_oddities(_cancellation_text))
+            for cancellation_reason in cancellation.get(fields.FIELD_REASONS, []):
+                cancellation_text = cancellation_reason.split(":")[1].strip()
+                if subsequent_reason:
+                    cancellation_reasons += "; "
+                subsequent_reason = True
+                cancellation_reasons += str(handle_encoding_oddities(cancellation_text))
 
-            if (
-                _cancellation.get(fields.FIELD_CANCELLATION_TARGET) == "Prescription"
-            ):  # noqa: SIM108
-                _cancellation_target = fields.FIELD_PRESCRIPTION
+            if cancellation.get(fields.FIELD_CANCELLATION_TARGET) == "Prescription":  # noqa: SIM108
+                cancellation_target = fields.FIELD_PRESCRIPTION
             else:
-                _cancellation_target = _cancellation.get(fields.FIELD_CANCEL_LINE_ITEM_REF)
+                cancellation_target = cancellation.get(fields.FIELD_CANCEL_LINE_ITEM_REF)
 
             if (
-                issue_cancellation_dict.get(_cancellation_target, {}).get(fields.FIELD_ID)
-                == _cancellation_id
+                issue_cancellation_dict.get(cancellation_target, {}).get(fields.FIELD_ID)
+                == cancellation_id
             ):
                 # Cancellation has already been added and this is pending as multiple cancellations are not possible
                 return
 
-            issue_cancellation_dict[_cancellation_target] = {
-                fields.FIELD_SCN: _scn,
-                fields.FIELD_REASONS: _cancellation_reasons,
-                fields.FIELD_ID: _cancellation_id,
+            issue_cancellation_dict[cancellation_target] = {
+                fields.FIELD_SCN: scn,
+                fields.FIELD_REASONS: cancellation_reasons,
+                fields.FIELD_ID: cancellation_id,
             }
 
     def return_current_instance(self):

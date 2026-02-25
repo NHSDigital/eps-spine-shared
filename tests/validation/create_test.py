@@ -87,6 +87,13 @@ class TestCheckDaysSupply(CreatePrescriptionValidatorTest):
 
         self.assertIn(message_vocab.DAYS_SUPPLY, self.context.outputFields)
 
+    def test_valid_integer(self):
+        self.context.msgOutput[message_vocab.DAYS_SUPPLY] = "30"
+        create_validator.check_days_supply(self.context)
+
+        self.assertIn(message_vocab.DAYS_SUPPLY, self.context.outputFields)
+        self.assertEqual(self.context.msgOutput[message_vocab.DAYS_SUPPLY], 30)
+
     def test_non_integer(self):
         self.context.msgOutput[message_vocab.DAYS_SUPPLY] = "one"
 
@@ -253,6 +260,12 @@ class TestCheckPrescriptionTreatmentType(CreatePrescriptionValidatorTest):
             create_validator.check_prescription_treatment_type(self.context)
 
         self.assertEqual(str(cm.exception), "prescriptionTreatmentType is not of expected type")
+
+    def test_valid_treatment_type(self):
+        self.context.msgOutput[message_vocab.TREATMENTTYPE] = constants.STATUS_ACUTE
+        create_validator.check_prescription_treatment_type(self.context)
+
+        self.assertIn(message_vocab.TREATMENTTYPE, self.context.outputFields)
 
 
 class TestCheckPrescriptionType(CreatePrescriptionValidatorTest):
@@ -484,6 +497,36 @@ class TestValidateLineItems(CreatePrescriptionValidatorTest):
             create_validator.validate_line_items(self.context, self.internal_id, self.log_object)
 
         self.assertIn("must not be greater than prescriptionRepeatHigh", str(cm.exception))
+
+    def test_prescription_repeat_greater_than_all_line_item_repeats_raises_error(self):
+        self.context.msgOutput[message_vocab.LINEITEM_PX + "2" + message_vocab.LINEITEM_SX_ID] = (
+            "12345678-1234-1234-1234-123456789013"
+        )
+        self.context.msgOutput[message_vocab.TREATMENTTYPE] = constants.STATUS_ACUTE
+
+        self.context.msgOutput[message_vocab.REPEATHIGH] = 3
+
+        self.context.msgOutput[
+            message_vocab.LINEITEM_PX + "1" + message_vocab.LINEITEM_SX_REPEATHIGH
+        ] = "1"
+        self.context.msgOutput[
+            message_vocab.LINEITEM_PX + "1" + message_vocab.LINEITEM_SX_REPEATLOW
+        ] = "1"
+
+        self.context.msgOutput[
+            message_vocab.LINEITEM_PX + "2" + message_vocab.LINEITEM_SX_REPEATHIGH
+        ] = "1"
+        self.context.msgOutput[
+            message_vocab.LINEITEM_PX + "2" + message_vocab.LINEITEM_SX_REPEATLOW
+        ] = "1"
+
+        with self.assertRaises(EpsValidationError) as cm:
+            create_validator.validate_line_items(self.context, self.internal_id, self.log_object)
+
+        self.assertIn(
+            "prescriptionRepeatHigh of 6 must not be greater than repeat.High of 3 for line item 1",
+            str(cm.exception),
+        )
 
 
 class TestValidateLineItem(CreatePrescriptionValidatorTest):

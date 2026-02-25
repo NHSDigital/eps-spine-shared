@@ -1,9 +1,9 @@
 from unittest.case import TestCase
 
-from eps_spine_shared.spinecore.base_utilities import handle_encoding_oddities
+from eps_spine_shared.spinecore.base_utilities import handle_encoding_oddities, quoted
 
 
-class handle_encoding_odditiesTest(TestCase):
+class HandleEncodingOdditiesTest(TestCase):
     """Test that handle_encoding_oddities handles encoding oddities"""
 
     def test_basic_ascii(self):
@@ -48,3 +48,15 @@ class handle_encoding_odditiesTest(TestCase):
     def test_not_a_string(self):
         """test that non-strings are stringified"""
         self.assertEqual(handle_encoding_oddities(123), "123")
+
+
+class QuotedTest(TestCase):
+    """Test that quoted returns the value as a string surrounded by double quotes"""
+
+    def test_basic_string(self):
+        """test that a basic string is quoted"""
+        self.assertEqual(quoted("simple string"), '"simple string"')
+
+    def test_non_string(self):
+        """test that a non-string is stringified and quoted"""
+        self.assertEqual(quoted(123), '"123"')
