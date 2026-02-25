@@ -524,7 +524,7 @@ class TestValidateLineItems(CreatePrescriptionValidatorTest):
             create_validator.validate_line_items(self.context, self.internal_id, self.log_object)
 
         self.assertIn(
-            "prescriptionRepeatHigh of 6 must not be greater than repeat.High of 3 for line item 1",
+            "Prescription repeat count must not be greater than all Line Item repeat counts",
             str(cm.exception),
         )
 
