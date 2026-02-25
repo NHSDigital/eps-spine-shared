@@ -1,6 +1,6 @@
 import re
 
-TEN_DIGIT_NUMBER_REGEX = "^[0-9]{10}$"
+TEN_DIGIT_NUMBER_REGEX = "^[\\d]{10}$"
 
 
 def is_nhs_number_valid(nhs_number):

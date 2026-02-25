@@ -76,7 +76,7 @@ def check_organisation_and_roles(context, internal_id, log_object: EpsLogger):
         )
 
     if context.msgOutput[message_vocab.ROLE] == "NotProvided":
-        log_object.write_log("EPS0330", None, dict({"internalID": internal_id}))
+        log_object.write_log("EPS0330", None, {"internalID": internal_id})
     elif not REGEX_ROLECODE.match(context.msgOutput[message_vocab.ROLE]):
         log_object.write_log(
             "EPS0323",

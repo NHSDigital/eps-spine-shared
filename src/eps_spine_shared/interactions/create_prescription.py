@@ -174,7 +174,7 @@ def check_existing_record_real(eps_record_id, context, internal_id, log_object: 
     log_object.write_log(
         "EPS0139",
         None,
-        dict({"internalID": internal_id, "key": eps_record_id, "vectorClock": vector_clock}),
+        {"internalID": internal_id, "key": eps_record_id, "vectorClock": vector_clock},
     )
 
     build_working_record(context, internal_id, log_object)
@@ -184,7 +184,7 @@ def check_existing_record_real(eps_record_id, context, internal_id, log_object: 
         log_object.write_log(
             "EPS0128",
             None,
-            dict({"internalID": internal_id, "prescriptionID": context.prescriptionID}),
+            {"internalID": internal_id, "prescriptionID": context.prescriptionID},
         )
         # Re-raise this as SpineBusinessError with equivalent errorCode from ErrorBase1722.
         raise EpsBusinessError(EpsErrorBase.DUPLICATE_PRESRIPTION)
@@ -213,7 +213,7 @@ def create_initial_record(context, internal_id, log_object: EpsLogger):
         record_object = RepeatDispenseRecord(log_object, internal_id)
     else:
         log_object.write_log(
-            "EPS0122", None, dict({"internalID": internal_id, "treatmentType": treatment_type})
+            "EPS0122", None, {"internalID": internal_id, "treatmentType": treatment_type}
         )
         raise EpsSystemError("messageFailure")
 

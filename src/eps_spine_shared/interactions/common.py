@@ -50,7 +50,7 @@ def check_for_replay(
         log_object.write_log(
             "EPS0004",
             sys.exc_info(),
-            dict({"internalID": internal_id, "epsRecordID": eps_record_id}),
+            {"internalID": internal_id, "epsRecordID": eps_record_id},
         )
         raise EpsSystemError("systemFailure") from e
 
@@ -92,7 +92,7 @@ def build_working_record(context, internal_id, log_object: EpsLogger):
         context.epsRecord = RepeatDispenseRecord(log_object, internal_id)
     else:
         log_object.write_log(
-            "EPS0133", None, dict({"internalID": internal_id, "recordType": str(record_type)})
+            "EPS0133", None, {"internalID": internal_id, "recordType": str(record_type)}
         )
         raise EpsSystemError("developmentFailure")
 
