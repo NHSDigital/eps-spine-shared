@@ -1,3 +1,5 @@
+import sys
+import traceback
 from datetime import datetime, timezone
 
 from eps_spine_shared.common.dynamodb_client import EpsDataStoreError
@@ -12,8 +14,7 @@ from eps_spine_shared.errors import (
     EpsBusinessError,
     EpsErrorBase,
     EpsSystemError,
-    ErrorBase1634,
-    ErrorBaseInstance,
+    EpsValidationError,
 )
 from eps_spine_shared.interactions.common import (
     apply_all_cancellations,
@@ -52,24 +53,28 @@ CANCEL_SUCCESS_RESPONSE_CODE_SYSTEM = "2.16.840.1.113883.2.1.3.2.4.17.19"
 CANCELLATION_SUCCESS_STYLESHEET = "CancellationResponse_PORX_MT135201UK31.xsl"
 
 
-def validate_wdo(context, internal_id, log_object: EpsLogger):
+def output_validate(context, internal_id, log_object: EpsLogger):
     """
     Validate the WDO using the local validator
     """
     try:
         check_mandatory_items(context, MANDATORY_ITEMS)
         run_validations(context, datetime.now(tz=timezone.utc), internal_id, log_object)
-    except EpsBusinessError as e:
-        if isinstance(e.error_code, dict) and e.error_code["errorCode"] == "5000":
-            raise EpsBusinessError(
-                ErrorBaseInstance(
-                    ErrorBase1634.UNABLE_TO_PROCESS, e.error_code["supplementaryInformation"]
-                )
-            ) from e
-        else:
-            raise e
-
-    log_object.write_log("EPS0138", None, {"internalID": internal_id})
+        log_object.write_log("EPS0001", None, {"internalID": internal_id})
+    except EpsValidationError as e:
+        last_log_line = traceback.format_tb(sys.exc_info()[2])
+        log_object.write_log(
+            "EPS0002",
+            None,
+            {
+                "internalID": internal_id,
+                "interactionID": context.interactionID,
+                "errorDetails": e.supp_info,
+                "lastLogLine": last_log_line,
+            },
+        )
+        # Re-raise this as SpineBusinessError with equivalent errorCode from ErrorBase1634.
+        raise EpsBusinessError(EpsErrorBase.UNABLE_TO_PROCESS, e.supp_info) from e
 
 
 def audit_prescription_id(prescription_id, interaction_id, internal_id, log_object: EpsLogger):
@@ -244,7 +249,7 @@ def prescriptions_workflow(
     """
     Workflow for creating a prescription
     """
-    validate_wdo(context, internal_id, log_object)
+    output_validate(context, internal_id, log_object)
     audit_prescription_id(prescription_id, interaction_id, internal_id, log_object)
     check_for_duplicate(context, prescription_id, internal_id, log_object, datastore_object)
     prepare_document_for_store(

@@ -143,13 +143,3 @@ def apply_blind_update(
     log_object.write_log(
         "EPS0127", None, {"internalID": internal_id, "bucket": bucket, "key": key, "scn": scn}
     )
-
-
-def _balanceIncrementInFailureCount(self):
-    """
-    If the failure is going to lead to a call to _handleFailureInUpdateApplier - but
-    it is not due to a non-functional failure, balance the increment in the failure
-    count here by decrementing the value first
-    """
-    if self.failureCount >= 0:
-        self.failureCount -= 1
