@@ -759,3 +759,36 @@ class TestCheckForInvalidLineItemRepeatCombinations(CreatePrescriptionValidatorT
         create_validator.check_for_invalid_line_item_repeat_combinations(
             self.context, self.line_dict, self.line_item
         )
+
+
+class TestRunValidations(CreatePrescriptionValidatorTest):
+    def setUp(self):
+        super().setUp()
+        self.handle_time = datetime(2026, 9, 11, 12, 34, 56)
+
+    def test_validations_happy_path(self):
+        self.context.msgOutput[message_vocab.AGENT_PERSON] = "ABCD1234"
+        self.context.msgOutput[message_vocab.AGENTORG] = "ORG12345"
+        self.context.msgOutput[message_vocab.ROLEPROFILE] = "123456789012345"
+        self.context.msgOutput[message_vocab.ROLE] = "ROLE"
+        self.context.msgOutput[message_vocab.PATIENTID] = "9434765919"
+        self.context.msgOutput[message_vocab.PRESCTIME] = "20240101120000"
+        self.context.msgOutput[message_vocab.TREATMENTTYPE] = constants.STATUS_ACUTE
+        self.context.msgOutput[message_vocab.PRESCTYPE] = "0001"
+        self.context.msgOutput[message_vocab.REPEATLOW] = None
+        self.context.msgOutput[message_vocab.REPEATHIGH] = 1
+        self.context.msgOutput[message_vocab.BIRTHTIME] = "20000101"
+        self.context.msgOutput[message_vocab.HL7EVENTID] = "C0AB090A-FDDC-4B64-97AD-2319A2309C2F"
+        self.context.msgOutput[message_vocab.LINEITEM_PX + "1" + message_vocab.LINEITEM_SX_ID] = (
+            "12345678-1234-1234-1234-123456789012"
+        )
+        self.context.msgOutput[message_vocab.HCPLORG] = "ORG12345"
+        self.context.msgOutput[message_vocab.NOMPERFORMER] = "VALID123"
+        self.context.msgOutput[message_vocab.NOMPERFORMER_TYPE] = "P1"
+        self.context.msgOutput[message_vocab.PRESCID] = "7D9625-Z72BF2-11E3AC"
+        self.context.msgOutput[message_vocab.SIGNED_TIME] = "20260911123456"
+        self.context.msgOutput[message_vocab.DAYS_SUPPLY] = "30"
+
+        create_validator.run_validations(
+            self.context, self.handle_time, self.internal_id, self.log_object
+        )
