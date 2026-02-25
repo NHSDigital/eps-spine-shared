@@ -1,6 +1,5 @@
+import zoneinfo
 from datetime import datetime, timedelta
-
-from pytz import timezone
 
 from eps_spine_shared.logger import EpsLogger
 
@@ -120,8 +119,8 @@ def convert_international_time(international_date, log_object: EpsLogger, intern
         # International format BST detected
         loggedTimeZone = TZ_BST
         formatted_date = datetime.strptime(international_date[:14], date_format)
-        corrected_date = formatted_date.replace(tzinfo=timezone(TZ_BST_OFFSET))
-        localised_date = corrected_date.astimezone(timezone(TZ_UTC))
+        corrected_date = formatted_date.replace(tzinfo=zoneinfo.ZoneInfo(TZ_BST_OFFSET))
+        localised_date = corrected_date.astimezone(zoneinfo.ZoneInfo(TZ_UTC))
         returned_date = localised_date.strftime(date_format)
 
     elif international_date[-5:] == "+0000" or international_date[-5:] == "-0000":
