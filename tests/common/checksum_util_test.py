@@ -1,17 +1,7 @@
-import random
-import string
 from unittest import TestCase
 
 from eps_spine_shared.common.checksum_util import check_checksum, remove_check_digit
 from tests.mock_logger import MockLogObject
-
-
-def generate_prescription_id():
-    """
-    Create a random id with the format of a prescription id.
-    """
-    parts = [random.choices(string.ascii_uppercase + string.digits, k=6) for _ in range(3)]
-    return "-".join(["".join(part) for part in parts])
 
 
 class ChecksumUtilTest(TestCase):
