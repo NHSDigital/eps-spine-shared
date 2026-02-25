@@ -26,11 +26,11 @@ def check_hcpl_org(context):
         raise EpsValidationError(message_vocab.HCPLORG + " has invalid format")
 
 
-def check_signed_time(context, log_object: EpsLogger, internal_id):
+def check_signed_time(context, internal_id, log_object: EpsLogger):
     """
     Signed time must be a valid date/time
     """
-    check_standard_date_time(context, message_vocab.SIGNED_TIME, log_object, internal_id)
+    check_standard_date_time(context, message_vocab.SIGNED_TIME, internal_id, log_object)
 
 
 def check_days_supply(context):
@@ -100,7 +100,7 @@ def check_repeat_dispense_window(context, handle_time: datetime):
         raise EpsValidationError("daysSupplyValid low is after daysSupplyValidHigh")
 
 
-def check_prescriber_details(context, log_object: EpsLogger, internal_id):
+def check_prescriber_details(context, internal_id, log_object: EpsLogger):
     """
     Validate prescriber details (not required beyond validation).
     """
@@ -141,7 +141,7 @@ def check_prescription_treatment_type(context):
     context.outputFields.add(message_vocab.TREATMENTTYPE)
 
 
-def check_prescription_type(context, log_object: EpsLogger, internal_id):
+def check_prescription_type(context, internal_id, log_object: EpsLogger):
     """
     Validate the prescriptionType
     """
@@ -153,7 +153,7 @@ def check_prescription_type(context, log_object: EpsLogger, internal_id):
     context.outputFields.add(message_vocab.PRESCTYPE)
 
 
-def check_repeat_dispense_instances(context, log_object: EpsLogger, internal_id):
+def check_repeat_dispense_instances(context, internal_id, log_object: EpsLogger):
     """
     Repeat dispense instances is an integer range found within repeat dispense
     prescriptions to articulate the number of instances.  Low must be 1!
@@ -216,7 +216,7 @@ def check_birth_date(context, handle_time: datetime):
         raise EpsValidationError(supp_info)
 
 
-def validate_line_items(context, log_object: EpsLogger, internal_id):
+def validate_line_items(context, internal_id, log_object: EpsLogger):
     """
     Validating line items - there are up to 32 line items
 
@@ -290,8 +290,8 @@ def validate_line_item(
     line_item,
     line_dict,
     max_repeat_high,
-    log_object: EpsLogger,
     internal_id,
+    log_object: EpsLogger,
 ):
     """
     Ensure that the GUID is valid
@@ -374,28 +374,28 @@ def check_for_invalid_line_item_repeat_combinations(context, line_dict, line_ite
         )
 
 
-def run_validations(validation_context, handle_time: datetime):
+def run_validations(validation_context, handle_time: datetime, internal_id, log_object: EpsLogger):
     """
     Validate elements extracted from the inbound message
     """
-    check_prescriber_details(validation_context)
-    check_organisation_and_roles(validation_context)
+    check_prescriber_details(validation_context, internal_id, log_object)
+    check_organisation_and_roles(validation_context, internal_id, log_object)
     check_nhs_number(validation_context)
     check_patient_name(validation_context)
-    check_standard_date_time(validation_context, message_vocab.PRESCTIME)
+    check_standard_date_time(validation_context, message_vocab.PRESCTIME, internal_id, log_object)
     check_prescription_treatment_type(validation_context)
-    check_prescription_type(validation_context)
-    check_repeat_dispense_instances(validation_context)
+    check_prescription_type(validation_context, internal_id, log_object)
+    check_repeat_dispense_instances(validation_context, internal_id, log_object)
     check_birth_date(validation_context, handle_time)
     check_hl7_event_id(validation_context)
-    validate_line_items(validation_context)
+    validate_line_items(validation_context, internal_id, log_object)
     validation_context.outputFields.add(message_vocab.PRESCSTATUS)
     validation_context.msgOutput[message_vocab.PRESCSTATUS] = "NOT_SET_YET"
 
     check_hcpl_org(validation_context)
     check_nominated_performer(validation_context)
-    check_prescription_id(validation_context)
-    check_signed_time(validation_context)
+    check_prescription_id(validation_context, internal_id, log_object)
+    check_signed_time(validation_context, internal_id, log_object)
     check_days_supply(validation_context)
     check_repeat_dispense_window(validation_context, handle_time)
     validation_context.outputFields.add(message_vocab.SIGNED_INFO)

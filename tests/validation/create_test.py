@@ -38,7 +38,7 @@ class TestCheckHcplOrg(CreatePrescriptionValidatorTest):
 class TestCheckSignedTime(CreatePrescriptionValidatorTest):
     def test_valid_signed_time(self):
         self.context.msgOutput[message_vocab.SIGNED_TIME] = "20260911123456"
-        create_validator.check_signed_time(self.context, self.log_object, self.internal_id)
+        create_validator.check_signed_time(self.context, self.internal_id, self.log_object)
 
         self.assertIn(message_vocab.SIGNED_TIME, self.context.outputFields)
 
@@ -51,7 +51,7 @@ class TestCheckSignedTime(CreatePrescriptionValidatorTest):
     )
     def test_valid_international_signed_time(self, date_suffix):
         self.context.msgOutput[message_vocab.SIGNED_TIME] = "20260911123456" + date_suffix
-        create_validator.check_signed_time(self.context, self.log_object, self.internal_id)
+        create_validator.check_signed_time(self.context, self.internal_id, self.log_object)
 
         self.assertIn(message_vocab.SIGNED_TIME, self.context.outputFields)
 
@@ -59,7 +59,7 @@ class TestCheckSignedTime(CreatePrescriptionValidatorTest):
         self.context.msgOutput[message_vocab.SIGNED_TIME] = "20260911123456+0200"
 
         with self.assertRaises(EpsValidationError) as cm:
-            create_validator.check_signed_time(self.context, self.log_object, self.internal_id)
+            create_validator.check_signed_time(self.context, self.internal_id, self.log_object)
 
         self.assertEqual(
             str(cm.exception),
@@ -71,7 +71,7 @@ class TestCheckSignedTime(CreatePrescriptionValidatorTest):
         self.context.msgOutput[message_vocab.SIGNED_TIME] = "202609111234567"
 
         with self.assertRaises(EpsValidationError) as cm:
-            create_validator.check_signed_time(self.context, self.log_object, self.internal_id)
+            create_validator.check_signed_time(self.context, self.internal_id, self.log_object)
 
         self.assertEqual(
             str(cm.exception),
@@ -191,14 +191,14 @@ class TestCheckRepeatDispenseWindow(CreatePrescriptionValidatorTest):
 class TestCheckPrescriberDetails(CreatePrescriptionValidatorTest):
     def test_8_char_alphanumeric(self):
         self.context.msgOutput[message_vocab.AGENT_PERSON] = "ABCD1234"
-        create_validator.check_prescriber_details(self.context, self.log_object, self.internal_id)
+        create_validator.check_prescriber_details(self.context, self.internal_id, self.log_object)
 
         self.assertIn(message_vocab.AGENT_PERSON, self.context.outputFields)
         self.assertFalse(self.log_object.logger.was_logged("EPS0323a"))
 
     def test_12_char_alphanumeric(self):
         self.context.msgOutput[message_vocab.AGENT_PERSON] = "ABCD12345678"
-        create_validator.check_prescriber_details(self.context, self.log_object, self.internal_id)
+        create_validator.check_prescriber_details(self.context, self.internal_id, self.log_object)
 
         self.assertIn(message_vocab.AGENT_PERSON, self.context.outputFields)
         self.assertTrue(self.log_object.logger.was_logged("EPS0323a"))
@@ -208,7 +208,7 @@ class TestCheckPrescriberDetails(CreatePrescriptionValidatorTest):
 
         with self.assertRaises(EpsValidationError) as cm:
             create_validator.check_prescriber_details(
-                self.context, self.log_object, self.internal_id
+                self.context, self.internal_id, self.log_object
             )
 
         self.assertEqual(str(cm.exception), message_vocab.AGENT_PERSON + " has invalid format")
@@ -223,14 +223,14 @@ class TestCheckPrescriberDetails(CreatePrescriptionValidatorTest):
 
         with self.assertRaises(EpsValidationError) as cm:
             create_validator.check_prescriber_details(
-                self.context, self.log_object, self.internal_id
+                self.context, self.internal_id, self.log_object
             )
 
         self.assertEqual(str(cm.exception), message_vocab.AGENT_PERSON + " has invalid format")
 
     def test_adds_to_outputFields(self):
         self.context.msgOutput[message_vocab.AGENT_PERSON] = "ABCD1234"
-        create_validator.check_prescriber_details(self.context, self.log_object, self.internal_id)
+        create_validator.check_prescriber_details(self.context, self.internal_id, self.log_object)
 
         self.assertIn(message_vocab.AGENT_PERSON, self.context.outputFields)
 
@@ -258,7 +258,7 @@ class TestCheckPrescriptionTreatmentType(CreatePrescriptionValidatorTest):
 class TestCheckPrescriptionType(CreatePrescriptionValidatorTest):
     def test_unrecognised_prescription_type(self):
         self.context.msgOutput[message_vocab.PRESCTYPE] = "9999"
-        create_validator.check_prescription_type(self.context, self.log_object, self.internal_id)
+        create_validator.check_prescription_type(self.context, self.internal_id, self.log_object)
 
         self.assertEqual(self.context.msgOutput[message_vocab.PRESCTYPE], "NotProvided")
         self.assertIn(message_vocab.PRESCTYPE, self.context.outputFields)
@@ -275,7 +275,7 @@ class TestCheckRepeatDispenseInstances(CreatePrescriptionValidatorTest):
         self.context.msgOutput[message_vocab.REPEATHIGH] = None
 
         create_validator.check_repeat_dispense_instances(
-            self.context, self.log_object, self.internal_id
+            self.context, self.internal_id, self.log_object
         )
 
         self.assertNotIn(message_vocab.REPEATLOW, self.context.outputFields)
@@ -287,7 +287,7 @@ class TestCheckRepeatDispenseInstances(CreatePrescriptionValidatorTest):
 
         with self.assertRaises(EpsValidationError) as cm:
             create_validator.check_repeat_dispense_instances(
-                self.context, self.log_object, self.internal_id
+                self.context, self.internal_id, self.log_object
             )
 
         self.assertIn("must both be provided", str(cm.exception))
@@ -306,7 +306,7 @@ class TestCheckRepeatDispenseInstances(CreatePrescriptionValidatorTest):
 
         with self.assertRaises(EpsValidationError) as cm:
             create_validator.check_repeat_dispense_instances(
-                self.context, self.log_object, self.internal_id
+                self.context, self.internal_id, self.log_object
             )
 
         self.assertEqual(str(cm.exception), incorrect_field + " is not an integer")
@@ -317,7 +317,7 @@ class TestCheckRepeatDispenseInstances(CreatePrescriptionValidatorTest):
 
         with self.assertRaises(EpsValidationError) as cm:
             create_validator.check_repeat_dispense_instances(
-                self.context, self.log_object, self.internal_id
+                self.context, self.internal_id, self.log_object
             )
 
         self.assertEqual(str(cm.exception), message_vocab.REPEATLOW + " must be 1")
@@ -330,7 +330,7 @@ class TestCheckRepeatDispenseInstances(CreatePrescriptionValidatorTest):
 
         with self.assertRaises(EpsValidationError) as cm:
             create_validator.check_repeat_dispense_instances(
-                self.context, self.log_object, self.internal_id
+                self.context, self.internal_id, self.log_object
             )
 
         self.assertIn("must not be over configured maximum", str(cm.exception))
@@ -341,7 +341,7 @@ class TestCheckRepeatDispenseInstances(CreatePrescriptionValidatorTest):
 
         with self.assertRaises(EpsValidationError) as cm:
             create_validator.check_repeat_dispense_instances(
-                self.context, self.log_object, self.internal_id
+                self.context, self.internal_id, self.log_object
             )
 
         self.assertIn("is greater than", str(cm.exception))
@@ -352,7 +352,7 @@ class TestCheckRepeatDispenseInstances(CreatePrescriptionValidatorTest):
         self.context.msgOutput[message_vocab.REPEATHIGH] = "6"
 
         create_validator.check_repeat_dispense_instances(
-            self.context, self.log_object, self.internal_id
+            self.context, self.internal_id, self.log_object
         )
 
         self.assertTrue(self.log_object.logger.was_logged("EPS0509"))
@@ -364,7 +364,7 @@ class TestCheckRepeatDispenseInstances(CreatePrescriptionValidatorTest):
         self.context.msgOutput[message_vocab.REPEATHIGH] = "6"
 
         create_validator.check_repeat_dispense_instances(
-            self.context, self.log_object, self.internal_id
+            self.context, self.internal_id, self.log_object
         )
 
         self.assertIn(message_vocab.REPEATLOW, self.context.outputFields)
@@ -414,14 +414,14 @@ class TestValidateLineItems(CreatePrescriptionValidatorTest):
     def test_no_line_items_raises_error(self):
         del self.context.msgOutput[message_vocab.LINEITEM_PX + "1" + message_vocab.LINEITEM_SX_ID]
         with self.assertRaises(EpsValidationError) as cm:
-            create_validator.validate_line_items(self.context, self.log_object, self.internal_id)
+            create_validator.validate_line_items(self.context, self.internal_id, self.log_object)
 
         self.assertEqual(str(cm.exception), "No valid line items found")
 
     def test_single_valid_line_item(self):
         self.context.msgOutput[message_vocab.TREATMENTTYPE] = constants.STATUS_ACUTE
 
-        create_validator.validate_line_items(self.context, self.log_object, self.internal_id)
+        create_validator.validate_line_items(self.context, self.internal_id, self.log_object)
 
         self.assertEqual(len(self.context.msgOutput[message_vocab.LINEITEMS]), 1)
         self.assertEqual(
@@ -436,7 +436,7 @@ class TestValidateLineItems(CreatePrescriptionValidatorTest):
         )
         self.context.msgOutput[message_vocab.TREATMENTTYPE] = constants.STATUS_ACUTE
 
-        create_validator.validate_line_items(self.context, self.log_object, self.internal_id)
+        create_validator.validate_line_items(self.context, self.internal_id, self.log_object)
 
         self.assertEqual(len(self.context.msgOutput[message_vocab.LINEITEMS]), 2)
         self.assertIn(message_vocab.LINEITEMS, self.context.outputFields)
@@ -449,7 +449,7 @@ class TestValidateLineItems(CreatePrescriptionValidatorTest):
         self.context.msgOutput[message_vocab.TREATMENTTYPE] = constants.STATUS_ACUTE
 
         with self.assertRaises(EpsValidationError) as cm:
-            create_validator.validate_line_items(self.context, self.log_object, self.internal_id)
+            create_validator.validate_line_items(self.context, self.internal_id, self.log_object)
 
         self.assertIn("over expected max count", str(cm.exception))
 
@@ -463,7 +463,7 @@ class TestValidateLineItems(CreatePrescriptionValidatorTest):
         self.context.msgOutput[message_vocab.TREATMENTTYPE] = constants.STATUS_REPEAT_DISP
         self.context.msgOutput[message_vocab.REPEATHIGH] = 6
 
-        create_validator.validate_line_items(self.context, self.log_object, self.internal_id)
+        create_validator.validate_line_items(self.context, self.internal_id, self.log_object)
 
         line_items = self.context.msgOutput[message_vocab.LINEITEMS]
         self.assertEqual(len(line_items), 1)
@@ -481,7 +481,7 @@ class TestValidateLineItems(CreatePrescriptionValidatorTest):
         self.context.msgOutput[message_vocab.REPEATHIGH] = 3
 
         with self.assertRaises(EpsValidationError) as cm:
-            create_validator.validate_line_items(self.context, self.log_object, self.internal_id)
+            create_validator.validate_line_items(self.context, self.internal_id, self.log_object)
 
         self.assertIn("must not be greater than prescriptionRepeatHigh", str(cm.exception))
 
@@ -501,7 +501,7 @@ class TestValidateLineItem(CreatePrescriptionValidatorTest):
 
         with self.assertRaises(EpsValidationError) as cm:
             create_validator.validate_line_item(
-                self.context, self.line_item, self.line_dict, 1, self.log_object, self.internal_id
+                self.context, self.line_item, self.line_dict, 1, self.internal_id, self.log_object
             )
 
         self.assertEqual(str(cm.exception), "invalid-line-item-id is not a valid GUID format")
@@ -511,7 +511,7 @@ class TestValidateLineItem(CreatePrescriptionValidatorTest):
         self.context.msgOutput[message_vocab.TREATMENTTYPE] = constants.STATUS_ACUTE
 
         max_repeats = create_validator.validate_line_item(
-            self.context, self.line_item, self.line_dict, 1, self.log_object, self.internal_id
+            self.context, self.line_item, self.line_dict, 1, self.internal_id, self.log_object
         )
 
         self.assertEqual(max_repeats, 1)
@@ -529,7 +529,7 @@ class TestValidateLineItem(CreatePrescriptionValidatorTest):
 
         with self.assertRaises(EpsValidationError) as cm:
             create_validator.validate_line_item(
-                self.context, self.line_item, self.line_dict, 1, self.log_object, self.internal_id
+                self.context, self.line_item, self.line_dict, 1, self.internal_id, self.log_object
             )
 
         self.assertEqual(str(cm.exception), "repeat.High for line item 1 is not an integer")
@@ -548,7 +548,7 @@ class TestValidateLineItem(CreatePrescriptionValidatorTest):
 
         with self.assertRaises(EpsValidationError) as cm:
             create_validator.validate_line_item(
-                self.context, self.line_item, self.line_dict, 1, self.log_object, self.internal_id
+                self.context, self.line_item, self.line_dict, 1, self.internal_id, self.log_object
             )
 
         self.assertEqual(str(cm.exception), "repeat.High for line item 1 must be greater than zero")
@@ -569,7 +569,7 @@ class TestValidateLineItem(CreatePrescriptionValidatorTest):
 
         with self.assertRaises(EpsValidationError) as cm:
             create_validator.validate_line_item(
-                self.context, self.line_item, self.line_dict, 1, self.log_object, self.internal_id
+                self.context, self.line_item, self.line_dict, 1, self.internal_id, self.log_object
             )
 
         self.assertEqual(
@@ -594,7 +594,7 @@ class TestValidateLineItem(CreatePrescriptionValidatorTest):
         self.context.msgOutput[message_vocab.REPEATHIGH] = "3"
 
         create_validator.validate_line_item(
-            self.context, self.line_item, self.line_dict, 1, self.log_object, self.internal_id
+            self.context, self.line_item, self.line_dict, 1, self.internal_id, self.log_object
         )
 
         self.assertTrue(self.log_object.logger.was_logged("EPS0509"))
@@ -617,7 +617,7 @@ class TestValidateLineItem(CreatePrescriptionValidatorTest):
 
         with self.assertRaises(EpsValidationError) as cm:
             create_validator.validate_line_item(
-                self.context, self.line_item, self.line_dict, 1, self.log_object, self.internal_id
+                self.context, self.line_item, self.line_dict, 1, self.internal_id, self.log_object
             )
 
         self.assertEqual(str(cm.exception), "repeat.Low for line item 1 is not an integer")
@@ -640,7 +640,7 @@ class TestValidateLineItem(CreatePrescriptionValidatorTest):
 
         with self.assertRaises(EpsValidationError) as cm:
             create_validator.validate_line_item(
-                self.context, self.line_item, self.line_dict, 1, self.log_object, self.internal_id
+                self.context, self.line_item, self.line_dict, 1, self.internal_id, self.log_object
             )
 
         self.assertEqual(str(cm.exception), "repeat.Low for line item 1 is not set to 1")

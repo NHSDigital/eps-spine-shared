@@ -39,7 +39,7 @@ def check_nominated_performer(context):
     context.outputFields.add(message_vocab.NOMPERFORMER_TYPE)
 
 
-def check_prescription_id(context, internal_id, log_object):
+def check_prescription_id(context, internal_id, log_object: EpsLogger):
     """
     Check the format of a prescription ID and that it has the correct checksum
     """
@@ -55,7 +55,7 @@ def check_prescription_id(context, internal_id, log_object):
     context.outputFields.add(message_vocab.PRESCID)
 
 
-def check_organisation_and_roles(context, log_object, internal_id):
+def check_organisation_and_roles(context, internal_id, log_object: EpsLogger):
     """
     Check the organisation and role information is of the correct format
     Requires:
@@ -107,7 +107,7 @@ def check_nhs_number(context):
         raise EpsValidationError(supp_info)
 
 
-def check_standard_date_time(context, attribute_name, log_object: EpsLogger, internal_id):
+def check_standard_date_time(context, attribute_name, internal_id, log_object: EpsLogger):
     """
     Check for a valid time
     """

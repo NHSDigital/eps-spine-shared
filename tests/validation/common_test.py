@@ -89,7 +89,7 @@ class TestCheckOrganisationAndRoles(CommonPrescriptionValidatorTest):
 
     def test_valid_organisation_and_roles(self):
         common_validator.check_organisation_and_roles(
-            self.context, self.log_object, self.internal_id
+            self.context, self.internal_id, self.log_object
         )
 
         self.assertIn(message_vocab.AGENTORG, self.context.outputFields)
@@ -101,7 +101,7 @@ class TestCheckOrganisationAndRoles(CommonPrescriptionValidatorTest):
 
         with self.assertRaises(EpsValidationError) as cm:
             common_validator.check_organisation_and_roles(
-                self.context, self.log_object, self.internal_id
+                self.context, self.internal_id, self.log_object
             )
 
         self.assertEqual(str(cm.exception), message_vocab.AGENTORG + " has invalid format")
@@ -110,7 +110,7 @@ class TestCheckOrganisationAndRoles(CommonPrescriptionValidatorTest):
         self.context.msgOutput[message_vocab.ROLEPROFILE] = "invalid_role_profile"
 
         common_validator.check_organisation_and_roles(
-            self.context, self.log_object, self.internal_id
+            self.context, self.internal_id, self.log_object
         )
 
         self.assertTrue(self.log_object.logger.was_logged("EPS0323b"))
@@ -122,7 +122,7 @@ class TestCheckOrganisationAndRoles(CommonPrescriptionValidatorTest):
         self.context.msgOutput[message_vocab.ROLE] = "NotProvided"
 
         common_validator.check_organisation_and_roles(
-            self.context, self.log_object, self.internal_id
+            self.context, self.internal_id, self.log_object
         )
 
         self.assertTrue(self.log_object.logger.was_logged("EPS0330"))
@@ -134,7 +134,7 @@ class TestCheckOrganisationAndRoles(CommonPrescriptionValidatorTest):
         self.context.msgOutput[message_vocab.ROLE] = "invalid_role"
 
         common_validator.check_organisation_and_roles(
-            self.context, self.log_object, self.internal_id
+            self.context, self.internal_id, self.log_object
         )
 
         self.assertTrue(self.log_object.logger.was_logged("EPS0323"))
@@ -173,7 +173,7 @@ class TestCheckStandardDateTime(CommonPrescriptionValidatorTest):
         self.context.msgOutput[message_vocab.CLAIM_DATE] = "20240101120000"
 
         common_validator.check_standard_date_time(
-            self.context, message_vocab.CLAIM_DATE, self.log_object, self.internal_id
+            self.context, message_vocab.CLAIM_DATE, self.internal_id, self.log_object
         )
 
         self.assertIn(message_vocab.CLAIM_DATE, self.context.outputFields)
@@ -182,7 +182,7 @@ class TestCheckStandardDateTime(CommonPrescriptionValidatorTest):
         self.context.msgOutput[message_vocab.CLAIM_DATE] = "20240101120000+0100"
 
         common_validator.check_standard_date_time(
-            self.context, message_vocab.CLAIM_DATE, self.log_object, self.internal_id
+            self.context, message_vocab.CLAIM_DATE, self.internal_id, self.log_object
         )
 
         self.assertIn(message_vocab.CLAIM_DATE, self.context.outputFields)
@@ -192,7 +192,7 @@ class TestCheckStandardDateTime(CommonPrescriptionValidatorTest):
 
         with self.assertRaises(EpsValidationError) as cm:
             common_validator.check_standard_date_time(
-                self.context, message_vocab.CLAIM_DATE, self.log_object, self.internal_id
+                self.context, message_vocab.CLAIM_DATE, self.internal_id, self.log_object
             )
 
         self.assertEqual(
@@ -206,7 +206,7 @@ class TestCheckStandardDateTime(CommonPrescriptionValidatorTest):
 
         with self.assertRaises(EpsValidationError) as cm:
             common_validator.check_standard_date_time(
-                self.context, message_vocab.CLAIM_DATE, self.log_object, self.internal_id
+                self.context, message_vocab.CLAIM_DATE, self.internal_id, self.log_object
             )
 
         self.assertEqual(

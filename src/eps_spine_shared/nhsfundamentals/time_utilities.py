@@ -120,7 +120,7 @@ def convert_international_time(international_date, log_object: EpsLogger, intern
         loggedTimeZone = TZ_BST
         formatted_date = datetime.strptime(international_date[:14], date_format)
         corrected_date = formatted_date.replace(tzinfo=zoneinfo.ZoneInfo(TZ_BST_OFFSET))
-        localised_date = corrected_date.astimezone(zoneinfo.ZoneInfo(TZ_UTC))
+        localised_date = corrected_date.astimezone(zoneinfo.ZoneInfo(TZ_GMT))
         returned_date = localised_date.strftime(date_format)
 
     elif international_date[-5:] == "+0000" or international_date[-5:] == "-0000":
