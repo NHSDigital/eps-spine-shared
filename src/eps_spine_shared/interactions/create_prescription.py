@@ -133,14 +133,14 @@ def check_for_duplicate(
     check_for_late_upload_request(record_returned, internal_id, log_object)
 
     context.replayDetected = check_for_replay(
-        eps_record_id, record_returned["value"], context.messageID, context
+        eps_record_id, record_returned["value"], context.messageID, context, internal_id, log_object
     )
 
     if context.replayDetected:
         return
 
     context.recordToProcess = record_returned
-    if not check_existing_record_real(eps_record_id, context):
+    if not check_existing_record_real(eps_record_id, context, internal_id, log_object):
         log_object.write_log(
             "EPS0128a", None, {"internalID": internal_id, "prescriptionID": context.prescriptionID}
         )
@@ -179,8 +179,8 @@ def check_existing_record_real(eps_record_id, context, internal_id, log_object: 
 
     build_working_record(context, internal_id, log_object)
 
-    isPrescription = context.epsRecord.check_real()
-    if isPrescription:
+    is_prescription = context.epsRecord.check_real()
+    if is_prescription:
         log_object.write_log(
             "EPS0128",
             None,

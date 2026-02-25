@@ -2296,19 +2296,20 @@ class PrescriptionRecord(object):
             self.log_object.write_log(
                 "EPS0297a",
                 None,
-                dict(
-                    {
-                        "internalID": self.internal_id,
-                        "startInstance": start_instance,
-                        "endInstance": end_instance,
-                    }
-                ),
+                {
+                    "internalID": self.internal_id,
+                    "startInstance": start_instance,
+                    "endInstance": end_instance,
+                },
             )
         else:
             self.log_object.write_log(
                 "EPS0297b",
                 None,
-                dict({"internalID": self.internal_id, "startInstance": start_instance}),
+                {
+                    "internalID": self.internal_id,
+                    "startInstance": start_instance,
+                },
             )
 
         return [instance_range, start_instance, end_instance]
@@ -2620,9 +2621,7 @@ class PrescriptionRecord(object):
                 self.log_object.write_log(
                     "EPS0676",
                     None,
-                    dict(
-                        {"internalID": self.internal_id, "prescriptionID": context.prescriptionID}
-                    ),
+                    {"internalID": self.internal_id, "prescriptionID": context.prescriptionID},
                 )
             nominated_download_date = self._calculate_nominated_download_date(
                 prescribe_date[:8], days_supply, nom_down_lead_days, next_issue_number_str
@@ -2630,19 +2629,17 @@ class PrescriptionRecord(object):
             self.log_object.write_log(
                 "EPS0675",
                 None,
-                dict(
-                    {
-                        "internalID": self.internal_id,
-                        "prescriptionID": context.prescriptionID,
-                        "nominatedDownloadDate": nominated_download_date.strftime(
-                            TimeFormats.STANDARD_DATE_FORMAT
-                        ),
-                        "prescribeDate": prescribe_date,
-                        "daysSupply": str(days_supply),
-                        "leadDays": str(nom_down_lead_days),
-                        "issueNumber": next_issue_number_str,
-                    }
-                ),
+                {
+                    "internalID": self.internal_id,
+                    "prescriptionID": context.prescriptionID,
+                    "nominatedDownloadDate": nominated_download_date.strftime(
+                        TimeFormats.STANDARD_DATE_FORMAT
+                    ),
+                    "prescribeDate": prescribe_date,
+                    "daysSupply": str(days_supply),
+                    "leadDays": str(nom_down_lead_days),
+                    "issueNumber": next_issue_number_str,
+                },
             )
         else:
             nominated_download_date = self._calculate_nominated_download_date_old(
@@ -3344,14 +3341,12 @@ class PrescriptionRecord(object):
                 self.log_object.write_log(
                     "EPS0264a",
                     None,
-                    dict(
-                        {
-                            "internalID": self.internal_id,
-                            "pendingOrg": pending_org,
-                            "cancellationTarget": cancellation_target,
-                            "cancellationOrg": cancellation_org,
-                        }
-                    ),
+                    {
+                        "internalID": self.internal_id,
+                        "pendingOrg": pending_org,
+                        "cancellationTarget": cancellation_target,
+                        "cancellationOrg": cancellation_org,
+                    },
                 )
                 return [False, org_match]
 
@@ -3401,14 +3396,12 @@ class PrescriptionRecord(object):
                 self.log_object.write_log(
                     "EPS0264a",
                     None,
-                    dict(
-                        {
-                            "internalID": self.internal_id,
-                            "pendingOrg": pending_org,
-                            "cancellationTarget": cancellation_target,
-                            "cancellationOrg": cancellation_org,
-                        }
-                    ),
+                    {
+                        "internalID": self.internal_id,
+                        "pendingOrg": pending_org,
+                        "cancellationTarget": cancellation_target,
+                        "cancellationOrg": cancellation_org,
+                    },
                 )
                 return [False, org_match]
 
@@ -3461,13 +3454,11 @@ class PrescriptionRecord(object):
                 self.log_object.write_log(
                     "EPS0340",
                     None,
-                    dict(
-                        {
-                            "internalID": self.internal_id,
-                            "cancellationDate": cancellation_date,
-                            "prescriptionID": self.return_prescription_id(),
-                        }
-                    ),
+                    {
+                        "internalID": self.internal_id,
+                        "cancellationDate": cancellation_date,
+                        "prescriptionID": self.return_prescription_id(),
+                    },
                 )
         else:
             pending_cs.append(cancellation_obj)

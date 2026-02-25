@@ -53,20 +53,20 @@ def guess_common_datetime_format(time_string, raise_error_if_unknown=False):
             Determines the action when the format cannot be determined.
             False (default) will return None, True will raise an error.
     """
-    format = None
+    fmt = None
     if len(time_string) == 19:
         try:
             datetime.strptime(time_string, TimeFormats.EBXML_FORMAT)
-            format = TimeFormats.EBXML_FORMAT
+            fmt = TimeFormats.EBXML_FORMAT
         except ValueError:
-            format = TimeFormats.STANDARD_DATE_TIME_UTC_ZONE_FORMAT
+            fmt = TimeFormats.STANDARD_DATE_TIME_UTC_ZONE_FORMAT
     else:
-        format = _TIMEFORMAT_LENGTH_MAP.get(len(time_string), None)
+        fmt = _TIMEFORMAT_LENGTH_MAP.get(len(time_string), None)
 
-    if not format and raise_error_if_unknown:
+    if not fmt and raise_error_if_unknown:
         raise ValueError("Could not determine datetime format of '{}'".format(time_string))
 
-    return format
+    return fmt
 
 
 def convert_spine_date(date_string, date_format=None):
@@ -92,11 +92,11 @@ def date_today_as_string():
     return time_now_as_string(TimeFormats.STANDARD_DATE_FORMAT)
 
 
-def time_now_as_string(_dateFormat=TimeFormats.STANDARD_DATE_TIME_FORMAT):
+def time_now_as_string(date_format=TimeFormats.STANDARD_DATE_TIME_FORMAT):
     """
     Return the current date and time as a string in standard format
     """
-    return now().strftime(_dateFormat)
+    return now().strftime(date_format)
 
 
 def now():
@@ -115,20 +115,20 @@ def convert_international_time(international_date, log_object: EpsLogger, intern
     """
     date_format = TimeFormats.STANDARD_DATE_TIME_FORMAT
 
-    if international_date[-5:] == "+0100":
+    if international_date.endswith("+0100"):
         # International format BST detected
-        loggedTimeZone = TZ_BST
+        logged_time_zone = TZ_BST
         formatted_date = datetime.strptime(international_date[:14], date_format)
         corrected_date = formatted_date.replace(tzinfo=zoneinfo.ZoneInfo(TZ_BST_OFFSET))
         localised_date = corrected_date.astimezone(zoneinfo.ZoneInfo(TZ_GMT))
         returned_date = localised_date.strftime(date_format)
 
-    elif international_date[-5:] == "+0000" or international_date[-5:] == "-0000":
+    elif international_date.endswith("+0000") or international_date.endswith("-0000"):
         # International format GMT detected
         # specifically looking for  or - (rather than last four digits of 0000 in case
         # of non-international date being passed)
         returned_date = international_date[:14]
-        loggedTimeZone = TZ_GMT
+        logged_time_zone = TZ_GMT
     else:
         # Invalid format detected
         log_object.write_log(
@@ -142,7 +142,7 @@ def convert_international_time(international_date, log_object: EpsLogger, intern
         {
             "internalID": internal_id,
             "datetime": international_date,
-            "timezone": loggedTimeZone,
+            "timezone": logged_time_zone,
             "convertedDateTime": returned_date,
         },
     )

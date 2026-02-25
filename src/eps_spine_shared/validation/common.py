@@ -81,12 +81,10 @@ def check_organisation_and_roles(context, internal_id, log_object: EpsLogger):
         log_object.write_log(
             "EPS0323",
             None,
-            dict(
-                {
-                    "internalID": internal_id,
-                    "agent_sds_role": context.msgOutput[message_vocab.ROLE],
-                }
-            ),
+            {
+                "internalID": internal_id,
+                "agent_sds_role": context.msgOutput[message_vocab.ROLE],
+            },
         )
 
     context.outputFields.add(message_vocab.AGENTORG)

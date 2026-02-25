@@ -67,7 +67,7 @@ def check_repeat_dispense_window(context, handle_time: datetime):
     max_supply_date = handle_time + relativedelta(months=+constants.MAX_FUTURESUPPLYMONTHS)
     max_supply_date_string = max_supply_date.strftime(TimeFormats.STANDARD_DATE_FORMAT)
 
-    if not context.msgOutput[message_vocab.TREATMENTTYPE] == constants.STATUS_REPEAT_DISP:
+    if context.msgOutput[message_vocab.TREATMENTTYPE] != constants.STATUS_REPEAT_DISP:
         context.msgOutput[message_vocab.DAYS_SUPPLY_LOW] = handle_time.strftime(
             TimeFormats.STANDARD_DATE_FORMAT
         )
@@ -108,12 +108,10 @@ def check_prescriber_details(context, internal_id, log_object: EpsLogger):
         log_object.write_log(
             "EPS0323a",
             None,
-            dict(
-                {
-                    "internalID": internal_id,
-                    "prescribingGpCode": context.msgOutput[message_vocab.AGENT_PERSON],
-                }
-            ),
+            {
+                "internalID": internal_id,
+                "prescribingGpCode": context.msgOutput[message_vocab.AGENT_PERSON],
+            },
         )
         if not constants.REGEX_ALPHANUMERIC12.match(context.msgOutput[message_vocab.AGENT_PERSON]):
             raise EpsValidationError(message_vocab.AGENT_PERSON + " has invalid format")

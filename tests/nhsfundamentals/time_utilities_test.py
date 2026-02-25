@@ -25,12 +25,12 @@ class TimeUtilitiesTests(TestCase):
             ("gmt_start", "2021-10-31 02:00:00", "20211031020000"),
         ]
     )
-    def test_time_now_as_string(self, _, utcNow, expected):
+    def test_time_now_as_string(self, _, utc_now, expected):
         """
         Check time_now_as_string returns standard spine format by default matching UTC time.
         """
         with mock.patch("eps_spine_shared.nhsfundamentals.time_utilities.now") as mock_now:
-            mock_now.return_value = datetime.strptime(utcNow, "%Y-%m-%d %H:%M:%S")
+            mock_now.return_value = datetime.strptime(utc_now, "%Y-%m-%d %H:%M:%S")
             result = time_now_as_string()
             self.assertEqual(expected, result)
 

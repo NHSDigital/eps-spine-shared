@@ -58,13 +58,11 @@ def check_for_replay(
         log_object.write_log(
             "EPS0005",
             None,
-            dict(
-                {
-                    "internalID": internal_id,
-                    "epsRecordID": eps_record_id,
-                    "changeLog": str(change_log),
-                }
-            ),
+            {
+                "internalID": internal_id,
+                "epsRecordID": eps_record_id,
+                "changeLog": str(change_log),
+            },
         )
         context.replayedChangeLog = change_log[message_id]
         return True
@@ -81,20 +79,20 @@ def build_working_record(context, internal_id, log_object: EpsLogger):
     Note that Pending Cancellation placeholders will not have a recordType, so
     default this to 'Acute' to allow processing to continue.
     """
-    recordType = (
+    record_type = (
         "Acute"
         if "recordType" not in context.recordToProcess
         else context.recordToProcess["recordType"]
     )
-    if recordType == "Acute":
+    if record_type == "Acute":
         context.epsRecord = SinglePrescribeRecord(log_object, internal_id)
-    elif recordType == "RepeatPrescribe":
+    elif record_type == "RepeatPrescribe":
         context.epsRecord = RepeatPrescribeRecord(log_object, internal_id)
-    elif recordType == "RepeatDispense":
+    elif record_type == "RepeatDispense":
         context.epsRecord = RepeatDispenseRecord(log_object, internal_id)
     else:
         log_object.write_log(
-            "EPS0133", None, dict({"internalID": internal_id, "recordType": str(recordType)})
+            "EPS0133", None, dict({"internalID": internal_id, "recordType": str(record_type)})
         )
         raise EpsSystemError("developmentFailure")
 
@@ -133,14 +131,14 @@ def prepare_document_for_store(
 
     setattr(context, doc_ref_title, document_ref)
 
-    documentToStore = {}
-    documentToStore["key"] = document_ref
-    documentToStore["value"] = extract_body_to_store(
+    document_to_store = {}
+    document_to_store["key"] = document_ref
+    document_to_store["value"] = extract_body_to_store(
         presc_id, doc_type, context, services_dict, deep_copy, internal_id, log_object
     )
-    documentToStore["index"] = create_index_for_document(context, doc_ref_title, presc_id)
-    documentToStore["vectorClock"] = None
-    context.documentsToStore.append(documentToStore)
+    document_to_store["index"] = create_index_for_document(context, doc_ref_title, presc_id)
+    document_to_store["vectorClock"] = None
+    context.documentsToStore.append(document_to_store)
     context.documentReferences.append(document_ref)
 
     log_object.write_log(
@@ -226,10 +224,10 @@ def log_pending_cancellation_event(context, start_issue_number, internal_id, log
 
     context.responseDetails = {}
     context.responseDetails[PrescriptionsChangeLogProcessor.RSP_PARAMS] = context.responseParameters
-    errorResponseStylesheet = "generateHL7MCCIDetectedIssue.xsl"
-    cancellationBodyXSLT = "cancellationRequest_to_cancellationResponse.xsl"
-    responseXSLT = [errorResponseStylesheet, cancellationBodyXSLT]
-    context.responseDetails[PrescriptionsChangeLogProcessor.XSLT] = responseXSLT
+    error_response_stylesheet = "generateHL7MCCIDetectedIssue.xsl"
+    cancellation_body_xslt = "cancellationRequest_to_cancellationResponse.xsl"
+    response_xslt = [error_response_stylesheet, cancellation_body_xslt]
+    context.responseDetails[PrescriptionsChangeLogProcessor.XSLT] = response_xslt
     context.epsRecord.increment_scn()
     create_event_log(context, internal_id, log_object, start_issue_number)
     context.epsRecord.add_event_to_change_log(internal_id, context.eventLog)
@@ -252,8 +250,8 @@ def create_event_log(context, internal_id, log_object: EpsLogger, instance_id=No
     context.instanceID = instance_id
 
     if context.epsRecord:
-        eventLog = PrescriptionsChangeLogProcessor.log_for_domain_update(context, internal_id)
-        context.eventLog = eventLog
+        event_log = PrescriptionsChangeLogProcessor.log_for_domain_update(context, internal_id)
+        context.eventLog = event_log
 
 
 def apply_all_cancellations(
@@ -372,10 +370,10 @@ def create_record_index(context, internal_id, log_object: EpsLogger):
     There may be separate index terms for each individual instance
     (but only unique index terms for the prescription should be returned).
     """
-    indexMaker = indexes.EpsIndexFactory(
+    index_maker = indexes.EpsIndexFactory(
         log_object, internal_id, TEST_PRESCRIBING_SITES, get_nad_references()
     )
-    return indexMaker.build_indexes(context)
+    return index_maker.build_indexes(context)
 
 
 def get_nad_references():

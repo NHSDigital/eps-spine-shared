@@ -42,13 +42,11 @@ def check_checksum(prescription_id, internal_id, log_object):
     log_object.write_log(
         "MWS0042",
         None,
-        dict(
-            {
-                "internalID": internal_id,
-                "prescriptionID": prescription_id,
-                "checkValue": check_value,
-            }
-        ),
+        {
+            "internalID": internal_id,
+            "prescriptionID": prescription_id,
+            "checkValue": check_value,
+        },
     )
 
     return False
