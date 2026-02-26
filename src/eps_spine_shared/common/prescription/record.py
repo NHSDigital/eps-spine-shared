@@ -400,7 +400,7 @@ class PrescriptionRecord(object):
             {"internalID": self.internal_id, "prescriptionID": self.id, "issue": issue_number},
         )
         # Re-raise this as SpineBusinessError with equivalent errorCode from ErrorBase1722.
-        raise EpsBusinessError(EpsErrorBase.PRESCRIPTION_NOT_FOUND)
+        raise EpsBusinessError(EpsErrorBase.MISSING_ISSUE)
 
     @property
     def id(self):
@@ -2606,7 +2606,7 @@ class PrescriptionRecord(object):
         next_issue_number_str = self._find_next_future_issue_number(current_issue_number_str)
         if next_issue_number_str is None:
             # give up if there is no next issue
-            self.pendingInstanceChange = None
+            self.pending_instance_change = None
             return
 
         # update the issue
@@ -2658,7 +2658,7 @@ class PrescriptionRecord(object):
         )
 
         # mark so that we know to update the prescription's current issue number
-        self.pendingInstanceChange = next_issue_number_str
+        self.pending_instance_change = next_issue_number_str
 
     def add_release_document_ref(self, rel_req_document_ref):
         """
@@ -2948,7 +2948,7 @@ class PrescriptionRecord(object):
         for line_item in self.current_issue.line_items:
             line_item_ref = "lineItem" + str(line_item.order)
             item_status = (
-                line_item.previousStatus
+                line_item.previous_status
                 if line_item.status == LineItemStatus.WITH_DISPENSER
                 else line_item.status
             )
@@ -3023,6 +3023,7 @@ class PrescriptionRecord(object):
         new_current_issue_number = False
         for i in range(self.current_issue_number, self.max_repeats + 1):
             try:
+                self.prescription_record[fields.FIELD_INSTANCES][str(i)]
                 new_current_issue_number = i
                 break
             except KeyError:

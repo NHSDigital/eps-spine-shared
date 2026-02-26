@@ -25,8 +25,8 @@ from eps_spine_shared.common.dynamodb_common import (
 from eps_spine_shared.common.dynamodb_datastore import EpsDynamoDbDataStore
 from eps_spine_shared.common.prescription.record import PrescriptionStatus
 from eps_spine_shared.nhsfundamentals.time_utilities import TimeFormats
+from eps_spine_shared.testing.mock_logger import MockLogObject
 from tests.dynamodb_test import DynamoDbTest
-from tests.mock_logger import MockLogObject
 
 
 class EpsDynamoDbDataStoreTest(DynamoDbTest):
@@ -764,7 +764,7 @@ class EpsDynamoDbDataStoreTest(DynamoDbTest):
             logger = MockLogObject()
             loggers.append(logger)
 
-            datastore = EpsDynamoDbDataStore(logger, None, "spine-eps-datastore")
+            datastore = EpsDynamoDbDataStore(logger, self.system_config)
 
             process = Thread(
                 target=insert_record, args=(datastore, (self.internal_id, prescription_id, record))
@@ -829,7 +829,7 @@ class EpsDynamoDbDataStoreTest(DynamoDbTest):
             logger = MockLogObject()
             loggers.append(logger)
 
-            datastore = EpsDynamoDbDataStore(logger, None, "spine-eps-datastore")
+            datastore = EpsDynamoDbDataStore(logger, self.system_config)
 
             index = None
             record_type = None

@@ -314,7 +314,7 @@ class EpsDynamoDbIndex:
 
         return [item[Key.PK.name] for item in items]
 
-    def query_next_activity_date(self, range_start, range_end):
+    def query_next_activity_date(self, range_start, range_end, shard=None):
         """
         Yields the epsRecord keys which match the supplied nextActivity and date range for the nextActivity index.
 
@@ -332,6 +332,10 @@ class EpsDynamoDbIndex:
         if not valid:
             return []
 
+        if shard or shard == "":
+            yield from self._query_next_activity_date_shard(next_activity, sk_expression, shard)
+            return
+
         shards = [None] + list(range(1, NEXT_ACTIVITY_DATE_PARTITIONS + 1))
 
         for shard in shards:
@@ -342,7 +346,9 @@ class EpsDynamoDbIndex:
         Return a generator for the epsRecord keys which match the supplied nextActivity and date range
         for a given pk shard.
         """
-        expected_next_activity = next_activity if shard is None else f"{next_activity}.{shard}"
+        expected_next_activity = (
+            next_activity if shard is None or shard == "" else f"{next_activity}.{shard}"
+        )
         pk_expression = BotoKey(Attribute.NEXT_ACTIVITY.name).eq(expected_next_activity)
 
         return self.client.query_index_yield(

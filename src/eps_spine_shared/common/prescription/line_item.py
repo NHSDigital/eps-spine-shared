@@ -89,7 +89,7 @@ class PrescriptionLineItem(object):
         if current_status not in LineItemStatus.EXPIRY_IMMUTABLE_STATES:
             new_status = LineItemStatus.EXPIRY_LOOKUP[current_status]
             self.update_status(new_status)
-            parent_prescription.logObject.write_log(
+            parent_prescription.log_object.write_log(
                 "EPS0072b",
                 None,
                 {

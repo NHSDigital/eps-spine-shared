@@ -80,28 +80,26 @@ class EpsDynamoDbDataStore:
     DEFAULT_EXPIRY_DAYS = 56
     MAX_NEXT_ACTIVITY_DATE = "99991231"
 
-    def __init__(
-        self,
-        log_object,
-        aws_endpoint_url,
-        table_name,
-        role_arn=None,
-        role_session_name=None,
-        sts_endpoint_url=None,
-    ):
+    def __init__(self, log_object, system_config):
         """
         Instantiate the DynamoDB client.
         """
         self.log_object = EpsLogger(log_object)
         self.client = EpsDynamoDbClient(
             log_object,
-            aws_endpoint_url,
-            table_name,
-            role_arn,
-            role_session_name,
-            sts_endpoint_url,
+            system_config["ddb aws endpoint url"],
+            system_config["datastore table name"],
+            system_config["datastore role arn"],
+            system_config["process name"],
+            system_config["sts endpoint url"],
         )
         self.indexes = EpsDynamoDbIndex(log_object, self.client)
+
+    def testConnection(self):
+        """
+        Placeholder test connection, returns constant value
+        """
+        return True
 
     def base64_decode_document_content(self, internal_id, document):
         """
@@ -595,7 +593,7 @@ class EpsDynamoDbDataStore:
                     self.client.insert_items(internal_id, [item], is_update, False)
                     break
                 except EpsDataStoreError as e:
-                    if e.errorTopic == EpsDataStoreError.CONDITIONAL_UPDATE_FAILURE and tries < 25:
+                    if e.error_topic == EpsDataStoreError.CONDITIONAL_UPDATE_FAILURE and tries < 25:
                         sequence_number = item[Attribute.SEQUENCE_NUMBER.name]
                         item[Attribute.SEQUENCE_NUMBER.name] = (
                             sequence_number + 1 if sequence_number < max_sequence_number else 1
@@ -759,13 +757,13 @@ class EpsDynamoDbDataStore:
 
     @timer
     def return_pids_due_for_next_activity(
-        self, _internal_id, next_activity_start, next_activity_end
+        self, _internal_id, next_activity_start, next_activity_end, shard=None
     ):
         """
         Returns all the epsRecord keys for prescriptions whose nextActivity is the same as that provided,
         and whose next activity date is within the date range provided.
         """
-        return self.indexes.query_next_activity_date(next_activity_start, next_activity_end)
+        return self.indexes.query_next_activity_date(next_activity_start, next_activity_end, shard)
 
     @timer
     def return_prescription_ids_for_nom_pharm(self, _internal_id, nominated_pharmacy_index_term):

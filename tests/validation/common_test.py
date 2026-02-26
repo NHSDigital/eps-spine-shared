@@ -4,8 +4,8 @@ from unittest.mock import MagicMock
 import eps_spine_shared.validation.common as common_validator
 from eps_spine_shared.errors import EpsValidationError
 from eps_spine_shared.logger import EpsLogger
+from eps_spine_shared.testing.mock_logger import MockLogObject
 from eps_spine_shared.validation import message_vocab
-from tests.mock_logger import MockLogObject
 
 
 class CommonPrescriptionValidatorTest(unittest.TestCase):

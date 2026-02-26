@@ -70,10 +70,10 @@ class EpsDynamoDbClient:
 
             resource_args = {"service_name": SERVICE_NAME, "region_name": REGION_NAME}
             if aws_endpoint_url:
-                log_object.write_log("DDB0003", None, {"awsEndpointUrl": aws_endpoint_url})
+                self.log_object.write_log("DDB0003", None, {"awsEndpointUrl": aws_endpoint_url})
                 resource_args["endpoint_url"] = aws_endpoint_url
             else:
-                log_object.write_log("DDB0004", None)
+                self.log_object.write_log("DDB0004", None)
 
             self.resource = session.resource(**resource_args)
             self.table = self.resource.Table(table_name)
@@ -82,7 +82,7 @@ class EpsDynamoDbClient:
             self.deserialiser = TypeDeserializer()
             self.serialiser = TypeSerializer()
         except Exception as ex:
-            log_object.write_log("DDB0000", sys.exc_info(), {"error": str(ex)})
+            self.log_object.write_log("DDB0000", sys.exc_info(), {"error": str(ex)})
             raise ex
 
         self.log_object.write_log("DDB0001", None, {"tableName": table_name})

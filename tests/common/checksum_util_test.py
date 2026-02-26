@@ -1,7 +1,7 @@
 from unittest import TestCase
 
 from eps_spine_shared.common.checksum_util import check_checksum, remove_check_digit
-from tests.mock_logger import MockLogObject
+from eps_spine_shared.testing.mock_logger import MockLogObject
 
 
 class ChecksumUtilTest(TestCase):
