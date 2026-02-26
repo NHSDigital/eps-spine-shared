@@ -81,15 +81,16 @@ class BlindUpdateTest(DynamoDbTest):
 
         object_to_store = {"key": prescription_id, "value": record}
 
-        with self.assertRaises(EpsSystemError) as e:
+        with self.assertRaises(EpsSystemError) as cm:
             apply_blind_update(
                 object_to_store, "epsRecord", self.internal_id, self.logger, self.datastore
             )
-            self.assertEqual(
-                e.exception.error_topic,
-                EpsSystemError.IMMEDIATE_REQUEUE,
-                "Expected EpsSystemError with IMMEDIATE_REQUEUE topic not raised",
-            )
+
+        self.assertEqual(
+            cm.exception.error_topic,
+            EpsSystemError.IMMEDIATE_REQUEUE,
+            "Expected EpsSystemError with IMMEDIATE_REQUEUE topic not raised",
+        )
 
         self.assertTrue(
             "EPS0126" in self.logger.called_references, "Expected EPS0126 log entry not found"
@@ -214,15 +215,16 @@ class SmartUpdateTest(DynamoDbTest):
         self.datastore.insert_eps_record_object = Mock(side_effect=throw_data_store_error)
         self.datastore.delete_document = Mock()
 
-        with self.assertRaises(EpsSystemError) as e:
+        with self.assertRaises(EpsSystemError) as cm:
             apply_smart_update(
                 object_to_store, 0, self.internal_id, self.logger, self.datastore, docs_to_store
             )
-            self.assertEqual(
-                e.exception.error_topic,
-                EpsSystemError.IMMEDIATE_REQUEUE,
-                "Expected EpsSystemError with IMMEDIATE_REQUEUE topic not raised",
-            )
+
+        self.assertEqual(
+            cm.exception.error_topic,
+            EpsSystemError.IMMEDIATE_REQUEUE,
+            "Expected EpsSystemError with IMMEDIATE_REQUEUE topic not raised",
+        )
 
         # Check that smart update failure is logged
         self.assertTrue(
@@ -230,30 +232,30 @@ class SmartUpdateTest(DynamoDbTest):
         )
 
         # Check that document deletion is checked
-        eps0126bKeys = [
+        log_keys_b = [
             keys["key"] for (ref, keys) in self.logger.logged_messages if ref == "EPS0126b"
         ]
         for doc in docs_to_store:
             self.assertTrue(
-                doc["key"] in eps0126bKeys,
+                doc["key"] in log_keys_b,
                 f"Expected EPS0126b log entry for {doc['key']} not found",
             )
 
         # Check that non-notifications are not deleted
-        eps0126dKeys = [
+        log_keys_d = [
             keys["key"] for (ref, keys) in self.logger.logged_messages if ref == "EPS0126d"
         ]
         self.assertTrue(
-            docs_to_store[0]["key"] in eps0126dKeys,
+            docs_to_store[0]["key"] in log_keys_d,
             f"Expected EPS0126d log entry for {docs_to_store[0]['key']} not found",
         )
 
         # Check that notifications are deleted
-        eps0126cKeys = [
+        log_keys_c = [
             keys["key"] for (ref, keys) in self.logger.logged_messages if ref == "EPS0126c"
         ]
         self.assertTrue(
-            docs_to_store[1]["key"] in eps0126cKeys,
+            docs_to_store[1]["key"] in log_keys_c,
             f"Expected EPS0126c log entry for {docs_to_store[1]['key']} not found",
         )
 
