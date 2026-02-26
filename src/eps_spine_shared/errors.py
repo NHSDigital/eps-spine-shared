@@ -3,10 +3,13 @@ from enum import Enum
 from botocore.exceptions import NoCredentialsError
 
 # Try to import spine error classes. If successful, we are on spine and should use wrapper classes.
-onSpine = False
+on_spine = False
 try:
     # from spinecore.prescriptions.common.errors.errorbaseprescriptionsearch \
     #     import ErrorBasePrescSearch # pyright: ignore[reportMissingImports]
+    from spinecore.common.aws.awscommon import (  # pyright: ignore[reportMissingImports]
+        NoCredentialsErrorWithRetry,
+    )
     from spinecore.common.errors import (  # pyright: ignore[reportMissingImports]
         SpineBusinessError,
         SpineSystemError,
@@ -21,21 +24,20 @@ try:
         ErrorBase1722,
     )
 
-    onSpine = True
+    on_spine = True
 except ImportError:
     pass
 
 
-class EpsNoCredentialsErrorWithRetry(NoCredentialsError):
-    """
-    Extends NoCredentialsError to provide information about retry attempts.
-    To be caught in Spine application code and re-raised as NoCredentialsErrorWithRetry.
-    """
+if on_spine:
 
-    fmt = "Unable to locate credentials after {attempts} attempts"
+    class EpsNoCredentialsErrorWithRetry:
+        """
+        Wrapper for NoCredentialsErrorWithRetry
+        """
 
-
-if onSpine:
+        def __init__(self, *args):
+            raise NoCredentialsErrorWithRetry(*args)
 
     class EpsSystemError:
         """
@@ -72,10 +74,16 @@ if onSpine:
 
 else:
 
+    class EpsNoCredentialsErrorWithRetry(NoCredentialsError):
+        """
+        Extends NoCredentialsError to provide information about retry attempts.
+        """
+
+        fmt = "Unable to locate credentials after {attempts} attempts"
+
     class EpsSystemError(Exception):
         """
         Exception to be raised if an unexpected system error occurs.
-        To be caught in Spine application code and re-raised as SpineSystemError.
         """
 
         MESSAGE_FAILURE = "messageFailure"
@@ -86,30 +94,29 @@ else:
         PUBLISHER_HANDLES_REQUEUE = "publisherHandlesRequeue"
         UNRELIABLE_MESSAGE = "unreliableMessage"
 
-        def __init__(self, errorTopic, *args):  # noqa: B042
+        def __init__(self, error_topic, *args):  # noqa: B042
             """
-            errorTopic is the topic to be used when writing the WDO to the error exchange
+            error_topic is the topic to be used when writing the WDO to the error exchange
             """
             super(EpsSystemError, self).__init__(*args)
-            self.errorTopic = errorTopic
+            self.error_topic = error_topic
 
     class EpsBusinessError(Exception):
         """
         Exception to be raised by a message worker if an expected error condition is hit,
         one that is expected to cause a HL7 error response with a set errorCode.
-        To be caught in Spine application code and re-raised as SpineBusinessError.
         """
 
-        def __init__(self, errorCode, suppInfo=None, messageId=None):  # noqa: B042
+        def __init__(self, error_code, supp_info=None, message_id=None):  # noqa: B042
             super(EpsBusinessError, self).__init__()
-            self.errorCode = errorCode
-            self.supplementaryInformation = suppInfo
-            self.messageId = messageId
+            self.error_code = error_code
+            self.supplementary_information = supp_info
+            self.message_id = message_id
 
         def __str__(self):
-            if self.supplementaryInformation:
-                return "{} {}".format(self.errorCode, self.supplementaryInformation)
-            return str(self.errorCode)
+            if self.supplementary_information:
+                return "{} {}".format(self.error_code, self.supplementary_information)
+            return str(self.error_code)
 
     class EpsErrorBase(Enum):
         """

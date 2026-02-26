@@ -346,7 +346,9 @@ class EpsDynamoDbIndex:
         Return a generator for the epsRecord keys which match the supplied nextActivity and date range
         for a given pk shard.
         """
-        expected_next_activity = next_activity if shard is None else f"{next_activity}.{shard}"
+        expected_next_activity = (
+            next_activity if shard is None or shard == "" else f"{next_activity}.{shard}"
+        )
         pk_expression = BotoKey(Attribute.NEXT_ACTIVITY.name).eq(expected_next_activity)
 
         return self.client.query_index_yield(
