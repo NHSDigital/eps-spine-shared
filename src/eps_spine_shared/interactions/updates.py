@@ -8,10 +8,10 @@ from eps_spine_shared.logger import EpsLogger
 
 def apply_smart_update(
     object_to_store,
-    datastore_object: EpsDynamoDbDataStore,
-    log_object: EpsLogger,
-    internal_id,
     failure_count,
+    internal_id,
+    log_object: EpsLogger,
+    datastore_object: EpsDynamoDbDataStore,
     docs_to_store=None,
 ):
     """
@@ -45,7 +45,7 @@ def apply_smart_update(
 
     try:
         datastore_object.insert_eps_record_object(
-            internal_id, key, value, index_dict, record_type, isUpdate=True
+            internal_id, key, value, index_dict, record_type, is_update=True
         )
     except EpsDataStoreError as e:
         if e.error_topic == EpsDataStoreError.CONDITIONAL_UPDATE_FAILURE:
@@ -98,9 +98,9 @@ def apply_smart_update(
 def apply_blind_update(
     object_to_store,
     bucket,
-    datastore_object: EpsDynamoDbDataStore,
-    log_object: EpsLogger,
     internal_id,
+    log_object: EpsLogger,
+    datastore_object: EpsDynamoDbDataStore,
 ):
     """
     Can be used for inserting a new object, or overwriting an object where

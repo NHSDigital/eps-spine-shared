@@ -425,7 +425,7 @@ def add_documents_to_store(
 
     for document_to_store in documents_to_store:
         apply_blind_update(
-            document_to_store, "epsDocument", datastore_object, log_object, internal_id
+            document_to_store, "epsDocument", internal_id, log_object, datastore_object
         )
 
 
@@ -446,13 +446,13 @@ def apply_record_change_to_store(
         return
 
     if not record_to_store["vectorClock"]:
-        apply_blind_update(record_to_store, "epsRecord", datastore_object, log_object, internal_id)
+        apply_blind_update(record_to_store, "epsRecord", internal_id, log_object, datastore_object)
     else:
         apply_smart_update(
             record_to_store,
-            datastore_object,
-            log_object,
-            internal_id,
             failure_count,
+            internal_id,
+            log_object,
+            datastore_object,
             context.documentsToStore,
         )
