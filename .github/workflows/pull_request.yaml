@@ -5,6 +5,10 @@ on:
     branches:
       - main
 
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
   pr_title_format_check:
     name: PR Title Format Check
@@ -87,4 +91,6 @@ jobs:
           poetry config repositories.testpypi https://test.pypi.org/legacy/
 
       - name: poetry test publish
-        run: poetry publish -r testpypi
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/
