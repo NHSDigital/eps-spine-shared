@@ -65,12 +65,12 @@ jobs:
 
       - name: Build package
         run: |
-          poetry version "${NEXT_VERSION}_${PR_NUMBER}"
+          poetry version "${VERSION_TAG}.${PR_NUMBER}"
           make build
           cd dist
           zip -r eps_spine_shared.zip ./*
         env:
-          NEXT_VERSION: ${{ needs.tag_release.outputs.next_version_tag }}
+          VERSION_TAG: ${{ needs.tag_release.outputs.version_tag }}
           PR_NUMBER: ${{ github.event.number }}
 
       - name: poetry config
