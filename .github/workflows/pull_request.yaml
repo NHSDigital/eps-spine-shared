@@ -63,14 +63,20 @@ jobs:
         with:
           asdf_version: ${{ needs.get_asdf_version.outputs.version }}
 
+      - name: Get latest version
+        id: get_latest_version
+        run: |
+          latest_tag=$(git describe --tags --abbrev=0)
+          echo "version_tag=${latest_tag#v}" >> "$GITHUB_OUTPUT"
+
       - name: Build package
         run: |
-          poetry version "${VERSION_TAG}.${PR_NUMBER}"
+          poetry version "${LATEST_VERSION}.${PR_NUMBER}"
           make build
           cd dist
           zip -r eps_spine_shared.zip ./*
         env:
-          VERSION_TAG: ${{ needs.tag_release.outputs.version_tag }}
+          LATEST_VERSION: ${{ steps.get_latest_version.outputs.version_tag }}
           PR_NUMBER: ${{ github.event.number }}
 
       - name: poetry config
