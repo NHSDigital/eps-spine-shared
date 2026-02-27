@@ -6,6 +6,7 @@ import time
 import zlib
 from datetime import datetime, timedelta, timezone
 from random import randint
+from typing import List, Tuple
 
 import simplejson
 from boto3.dynamodb.types import Binary
@@ -14,6 +15,7 @@ from dateutil.relativedelta import relativedelta
 from eps_spine_shared.common import indexes
 from eps_spine_shared.common.dynamodb_client import EpsDataStoreError, EpsDynamoDbClient
 from eps_spine_shared.common.dynamodb_common import (
+    GSI,
     NEXT_ACTIVITY_DATE_PARTITIONS,
     Attribute,
     Key,
@@ -24,6 +26,7 @@ from eps_spine_shared.common.dynamodb_common import (
     replace_decimals,
 )
 from eps_spine_shared.common.dynamodb_index import EpsDynamoDbIndex, PrescriptionStatus
+from eps_spine_shared.common.dynamodb_query import Conditions, DynamoDbQuery
 from eps_spine_shared.logger import EpsLogger
 from eps_spine_shared.nhsfundamentals.timeutilities import (
     TimeFormats,
@@ -302,8 +305,8 @@ class EpsDynamoDbDataStore:
             if not dispenser_org:
                 item[Attribute.DISPENSER_ORG.name] = nominated_pharmacy
         if record_type:
-            item["recordType"] = record_type
-        item["releaseVersion"] = determine_release_version(prescription_id)
+            item[ProjectedAttribute.RECORD_TYPE.name] = record_type
+        item[ProjectedAttribute.RELEASE_VERSION.name] = determine_release_version(prescription_id)
 
         item.update(item_update)
         return item
@@ -803,3 +806,50 @@ class EpsDynamoDbDataStore:
         batch GUID (key) on the basis of sequence number.
         """
         return self.indexes.query_batch_claim_id_sequence_number(sequence_number, nwssp)
+
+    @timer
+    def returnPfPPIDsForNhsNumber(
+        self, internalID, nhsNumber, startDate, endDate, limit
+    ) -> Tuple[bool, List[str]]:
+        """
+        Returns a list of prescription IDs against a given NHS number for PfP.
+        Also returns a boolean indicating if there are more results available.
+        """
+        keyConditions = Conditions.nhsNumber_equals(nhsNumber) & Conditions.creationDatetime_range(
+            startDate, endDate
+        )
+
+        filterExpressions = (
+            Conditions.releaseVersion_R2()
+            & Conditions.nextActivity_not_purged()
+            & Conditions.recordType_not_erd()
+        )
+
+        desiredStatuses = [
+            PrescriptionStatus.TO_BE_DISPENSED,
+            PrescriptionStatus.WITH_DISPENSER,
+            PrescriptionStatus.WITH_DISPENSER_ACTIVE,
+            PrescriptionStatus.DISPENSED,
+            PrescriptionStatus.NOT_DISPENSED,
+            PrescriptionStatus.CLAIMED,
+            PrescriptionStatus.REPEAT_DISPENSE_FUTURE_INSTANCE,
+        ]
+        statusFilters = [Conditions.status_equals(status) for status in desiredStatuses]
+        filterExpressions = filterExpressions & (
+            functools.reduce(lambda a, b: a | b, statusFilters)
+        )
+
+        query = DynamoDbQuery(
+            self.client,
+            self.logObject,
+            internalID,
+            GSI.NHS_NUMBER_DATE_2,
+            keyConditions,
+            filterExpressions,
+            limit,
+            descending=True,
+        )
+
+        prescriptionIDs = list([item["pk"] for item in query])
+        moreResults = not query.complete
+        return moreResults, prescriptionIDs
