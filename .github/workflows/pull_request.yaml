@@ -49,3 +49,33 @@ jobs:
     secrets:
       AUTOMERGE_APP_ID: ${{ secrets.AUTOMERGE_APP_ID }}
       AUTOMERGE_PEM: ${{ secrets.AUTOMERGE_PEM }}
+
+  build:
+    name: Build Package and Perform Test Publish
+    runs-on: ubuntu-22.04
+    needs: [get_asdf_version, tag_release, quality_checks]
+    steps:
+      - name: Git checkout
+        uses: actions/checkout@v6
+
+      - name: Install dependencies
+        uses: ./.github/actions/install_dependencies
+        with:
+          asdf_version: ${{ needs.get_asdf_version.outputs.version }}
+
+      - name: Build package
+        run: |
+          poetry version "${NEXT_VERSION}_${PR_NUMBER}"
+          make build
+          cd dist
+          zip -r eps_spine_shared.zip ./*
+        env:
+          NEXT_VERSION: ${{ needs.tag_release.outputs.next_version_tag }}
+          PR_NUMBER: ${{ github.event.number }}
+
+      - name: poetry config
+        run: |
+          poetry config repositories.testpypi https://test.pypi.org/legacy/
+
+      # - name: poetry test publish
+      #   run: poetry publish -r testpypi
