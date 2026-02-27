@@ -86,5 +86,5 @@ jobs:
         run: |
           poetry config repositories.testpypi https://test.pypi.org/legacy/
 
-      # - name: poetry test publish
-      #   run: poetry publish -r testpypi
+      - name: poetry test publish
+        run: poetry publish -r testpypi
