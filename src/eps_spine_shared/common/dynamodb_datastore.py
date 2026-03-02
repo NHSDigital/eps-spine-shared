@@ -841,7 +841,7 @@ class EpsDynamoDbDataStore:
 
         query = DynamoDbQuery(
             self.client,
-            self.logObject,
+            self.log_object,
             internal_id,
             GSI.NHS_NUMBER_DATE_2,
             key_conditions,
