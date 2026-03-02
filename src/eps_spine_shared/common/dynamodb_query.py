@@ -21,38 +21,38 @@ class DynamoDbQuery:
         self,
         client: EpsDynamoDbClient,
         logger: EpsLogger,
-        internalID: str,
+        internal_id: str,
         index: GSI,
-        keyConditionExpression,
-        filterExpression=None,
+        key_condition_expression,
+        filter_expression=None,
         limit: int = None,
         descending: bool = False,
     ) -> None:
         self._client = client
         self._logger = logger
-        self._internalID = internalID
+        self._internal_id = internal_id
 
-        conditionBuilder = ConditionExpressionBuilder()
-        keyConditionExpression, conditionAttributes, conditionValues = (
-            conditionBuilder.build_expression(keyConditionExpression, True)
+        condition_builder = ConditionExpressionBuilder()
+        key_condition_expression, condition_attributes, condition_values = (
+            condition_builder.build_expression(key_condition_expression, True)
         )
-        if filterExpression:
-            filterExpression, filterAttributes, filterValues = conditionBuilder.build_expression(
-                filterExpression, False
+        if filter_expression:
+            filter_expression, filter_attributes, filter_values = (
+                condition_builder.build_expression(filter_expression, False)
             )
-            conditionAttributes.update(filterAttributes)
-            conditionValues.update(filterValues)
+            condition_attributes.update(filter_attributes)
+            condition_values.update(filter_values)
 
         queryArgs = {
             "TableName": client.table_name,
             "IndexName": index.name,
-            "KeyConditionExpression": keyConditionExpression,
-            "ExpressionAttributeNames": conditionAttributes,
-            "ExpressionAttributeValues": client.serialise_for_dynamodb(conditionValues),
+            "KeyConditionExpression": key_condition_expression,
+            "ExpressionAttributeNames": condition_attributes,
+            "ExpressionAttributeValues": client.serialise_for_dynamodb(condition_values),
         }
 
-        if filterExpression:
-            queryArgs["FilterExpression"] = filterExpression
+        if filter_expression:
+            queryArgs["FilterExpression"] = filter_expression
         if limit:
             queryArgs["PaginationConfig"] = {"MaxItems": limit, "PageSize": limit}
         if descending:
@@ -74,7 +74,7 @@ class DynamoDbQuery:
                 {
                     "itemCount": len(page["Items"]),
                     "hasLastEvaluatedKey": "LastEvaluatedKey" in page,
-                    "internalID": self._internalID,
+                    "internalID": self._internal_id,
                 },
             )
             items = [self._client.deserialise_from_dynamodb(item) for item in page["Items"]]

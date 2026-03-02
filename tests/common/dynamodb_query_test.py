@@ -12,7 +12,7 @@ class DynamoDbQueryTest(DynamoDbTest):
     Unit tests for the DynamoDbQuery Wrapper
     """
 
-    def testPagination(self):
+    def test_pagination(self):
         """
         Test that a query which requires pagination works correctly
         """
@@ -53,67 +53,67 @@ class DynamoDbQueryIntegrationTest(DynamoDbTest):
     Tests of the DynamoDbQuery Wrapper
     """
 
-    def testQuerySingleItem(self):
+    def test_query_single_item(self):
         """
         Test that a single item can be retrieved via a query
         """
 
-        prescriptionId, nhsNumber = self.get_new_record_keys()
-        record = self.get_record(nhsNumber)
+        prescription_id, nhs_number = self.get_new_record_keys()
+        record = self.get_record(nhs_number)
 
-        self.datastore.insert_eps_record_object(self.internal_id, prescriptionId, record)
+        self.datastore.insert_eps_record_object(self.internal_id, prescription_id, record)
 
         query = DynamoDbQuery(
             self.datastore.client,
             self.logger,
             self.internal_id,
             GSI.NHS_NUMBER_DATE,
-            BotoKey(Attribute.NHS_NUMBER.name).eq(nhsNumber),
+            BotoKey(Attribute.NHS_NUMBER.name).eq(nhs_number),
         )
 
         items = list(query)
         self.assertTrue(query.complete)
         self.assertEqual(1, len(items))
-        self.assertEqual(prescriptionId, items[0][Key.PK.name])
+        self.assertEqual(prescription_id, items[0][Key.PK.name])
 
-    def testQueryMultipleItems(self):
+    def test_query_multiple_items(self):
         """
         Test that multiple items can be retrieved via a query
         """
-        _, nhsNumber = self.get_new_record_keys()
+        _, nhs_number = self.get_new_record_keys()
         for _ in range(5):
-            prescriptionId, _ = self.get_new_record_keys()
-            record = self.get_record(nhsNumber)
-            self.datastore.insert_eps_record_object(self.internal_id, prescriptionId, record)
+            prescription_id, _ = self.get_new_record_keys()
+            record = self.get_record(nhs_number)
+            self.datastore.insert_eps_record_object(self.internal_id, prescription_id, record)
 
         query = DynamoDbQuery(
             self.datastore.client,
             self.logger,
             self.internal_id,
             GSI.NHS_NUMBER_DATE,
-            BotoKey(Attribute.NHS_NUMBER.name).eq(nhsNumber),
+            BotoKey(Attribute.NHS_NUMBER.name).eq(nhs_number),
         )
 
         items = list(query)
         self.assertTrue(query.complete)
         self.assertEqual(5, len(items))
 
-    def testQueryWithLimit(self):
+    def test_query_with_limit(self):
         """
         Test that a query with a limit works correctly
         """
-        _, nhsNumber = self.get_new_record_keys()
+        _, nhs_number = self.get_new_record_keys()
         for _ in range(10):
-            prescriptionId, _ = self.get_new_record_keys()
-            record = self.get_record(nhsNumber)
-            self.datastore.insert_eps_record_object(self.internal_id, prescriptionId, record)
+            prescription_id, _ = self.get_new_record_keys()
+            record = self.get_record(nhs_number)
+            self.datastore.insert_eps_record_object(self.internal_id, prescription_id, record)
 
         query = DynamoDbQuery(
             self.datastore.client,
             self.logger,
             self.internal_id,
             GSI.NHS_NUMBER_DATE,
-            BotoKey(Attribute.NHS_NUMBER.name).eq(nhsNumber),
+            BotoKey(Attribute.NHS_NUMBER.name).eq(nhs_number),
             limit=5,
         )
 

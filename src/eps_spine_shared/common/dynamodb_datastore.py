@@ -808,24 +808,24 @@ class EpsDynamoDbDataStore:
         return self.indexes.query_batch_claim_id_sequence_number(sequence_number, nwssp)
 
     @timer
-    def returnPfPPIDsForNhsNumber(
-        self, internalID, nhsNumber, startDate, endDate, limit
+    def return_pfp_pids_for_nhs_number(
+        self, internal_id, nhs_number, start_date, end_date, limit
     ) -> Tuple[bool, List[str]]:
         """
         Returns a list of prescription IDs against a given NHS number for PfP.
         Also returns a boolean indicating if there are more results available.
         """
-        keyConditions = Conditions.nhsNumber_equals(nhsNumber) & Conditions.creationDatetime_range(
-            startDate, endDate
-        )
+        key_conditions = Conditions.nhsNumber_equals(
+            nhs_number
+        ) & Conditions.creationDatetime_range(start_date, end_date)
 
-        filterExpressions = (
+        filter_expressions = (
             Conditions.releaseVersion_R2()
             & Conditions.nextActivity_not_purged()
             & Conditions.recordType_not_erd()
         )
 
-        desiredStatuses = [
+        desired_statuses = [
             PrescriptionStatus.TO_BE_DISPENSED,
             PrescriptionStatus.WITH_DISPENSER,
             PrescriptionStatus.WITH_DISPENSER_ACTIVE,
@@ -834,22 +834,22 @@ class EpsDynamoDbDataStore:
             PrescriptionStatus.CLAIMED,
             PrescriptionStatus.REPEAT_DISPENSE_FUTURE_INSTANCE,
         ]
-        statusFilters = [Conditions.status_equals(status) for status in desiredStatuses]
-        filterExpressions = filterExpressions & (
-            functools.reduce(lambda a, b: a | b, statusFilters)
+        status_filters = [Conditions.status_equals(status) for status in desired_statuses]
+        filter_expressions = filter_expressions & (
+            functools.reduce(lambda a, b: a | b, status_filters)
         )
 
         query = DynamoDbQuery(
             self.client,
             self.logObject,
-            internalID,
+            internal_id,
             GSI.NHS_NUMBER_DATE_2,
-            keyConditions,
-            filterExpressions,
+            key_conditions,
+            filter_expressions,
             limit,
             descending=True,
         )
 
-        prescriptionIDs = list([item["pk"] for item in query])
-        moreResults = not query.complete
-        return moreResults, prescriptionIDs
+        prescription_ids = list([item["pk"] for item in query])
+        more_results = not query.complete
+        return more_results, prescription_ids
