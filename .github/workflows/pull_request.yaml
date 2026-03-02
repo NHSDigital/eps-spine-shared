@@ -13,6 +13,8 @@ jobs:
   pr_title_format_check:
     name: PR Title Format Check
     uses: NHSDigital/eps-common-workflows/.github/workflows/pr_title_check.yml@d215f841eb18b803e339e4ed597ed1f30e086e17
+    permissions:
+      pull-requests: write
 
   get_asdf_version:
     name: Get asdf Version
