@@ -14,6 +14,16 @@ class ReleaseVersion(Enum):
     UNKNOWN = "UNKNOWN"
 
 
+class RecordType(Enum):
+    """
+    Enum of release types to be used in the DynamoDB table.
+    """
+
+    ACUTE = "Acute"
+    REPEAT_PRESCRIBE = "RepeatPrescribe"
+    REPEAT_DISPENSE = "RepeatDispense"
+
+
 class DefinedAttributeType(Enum):
     """
     S/N type for a defined attribute
@@ -95,6 +105,8 @@ class ProjectedAttribute(Enum):
     BODY = "body"
     INDEXES = "indexes"
     EXPIRE_AT = "expireAt"
+    RELEASE_VERSION = "releaseVersion"
+    RECORD_TYPE = "recordType"
 
     @property
     def name(self) -> str:
@@ -130,6 +142,7 @@ class GSI(Enum):
     """
 
     NHS_NUMBER_DATE = Index("nhsNumberDate", Attribute.NHS_NUMBER, Attribute.CREATION_DATETIME)
+    NHS_NUMBER_DATE_2 = Index("nhsNumberDate2", Attribute.NHS_NUMBER, Attribute.CREATION_DATETIME)
     PRESCRIBER_DATE = Index("prescriberDate", Attribute.PRESCRIBER_ORG, Attribute.CREATION_DATETIME)
     DISPENSER_DATE = Index("dispenserDate", Attribute.DISPENSER_ORG, Attribute.CREATION_DATETIME)
     NOMINATED_PHARMACY_STATUS = Index(
