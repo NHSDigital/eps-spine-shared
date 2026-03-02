@@ -81,7 +81,12 @@ class DynamoDbQueryIntegrationTest(DynamoDbTest):
         Test that multiple items can be retrieved via a query
         """
         _, nhs_number = self.get_new_record_keys()
-        for _ in range(5):
+
+        oldest_prescription_id, _ = self.get_new_record_keys()
+        record = self.get_record(nhs_number, creation_time="20210911101112")
+        self.datastore.insert_eps_record_object(self.internal_id, oldest_prescription_id, record)
+
+        for _ in range(4):
             prescription_id, _ = self.get_new_record_keys()
             record = self.get_record(nhs_number)
             self.datastore.insert_eps_record_object(self.internal_id, prescription_id, record)
@@ -97,6 +102,54 @@ class DynamoDbQueryIntegrationTest(DynamoDbTest):
         items = list(query)
         self.assertTrue(query.complete)
         self.assertEqual(5, len(items))
+        self.assertEqual(items[0][Key.PK.name], oldest_prescription_id)
+
+    def test_query_multiple_items_descending(self):
+        """
+        Test that multiple items can be retrieved via a query
+        """
+        _, nhs_number = self.get_new_record_keys()
+
+        oldest_prescription_id, _ = self.get_new_record_keys()
+        record = self.get_record(nhs_number, creation_time="20210911101112")
+        self.datastore.insert_eps_record_object(self.internal_id, oldest_prescription_id, record)
+
+        for _ in range(4):
+            prescription_id, _ = self.get_new_record_keys()
+            record = self.get_record(nhs_number)
+            self.datastore.insert_eps_record_object(self.internal_id, prescription_id, record)
+
+        query = DynamoDbQuery(
+            self.datastore.client,
+            self.logger,
+            self.internal_id,
+            GSI.NHS_NUMBER_DATE,
+            BotoKey(Attribute.NHS_NUMBER.name).eq(nhs_number),
+            descending=True,
+        )
+
+        items = list(query)
+        self.assertTrue(query.complete)
+        self.assertEqual(5, len(items))
+        self.assertEqual(items[4][Key.PK.name], oldest_prescription_id)
+
+    def test_query_no_items(self):
+        """
+        Test that a query with no matching items works correctly
+        """
+        _, nhs_number = self.get_new_record_keys()
+
+        query = DynamoDbQuery(
+            self.datastore.client,
+            self.logger,
+            self.internal_id,
+            GSI.NHS_NUMBER_DATE,
+            BotoKey(Attribute.NHS_NUMBER.name).eq(nhs_number),
+        )
+
+        items = list(query)
+        self.assertTrue(query.complete)
+        self.assertEqual(0, len(items))
 
     def test_query_with_limit(self):
         """
