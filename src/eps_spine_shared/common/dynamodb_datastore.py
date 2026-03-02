@@ -815,14 +815,14 @@ class EpsDynamoDbDataStore:
         Returns a list of prescription IDs against a given NHS number for PfP.
         Also returns a boolean indicating if there are more results available.
         """
-        key_conditions = Conditions.nhsNumber_equals(
+        key_conditions = Conditions.nhs_number_equals(
             nhs_number
-        ) & Conditions.creationDatetime_range(start_date, end_date)
+        ) & Conditions.creation_datetime_range(start_date, end_date)
 
         filter_expressions = (
-            Conditions.releaseVersion_R2()
-            & Conditions.nextActivity_not_purged()
-            & Conditions.recordType_not_erd()
+            Conditions.release_version_r2()
+            & Conditions.next_activity_not_purged()
+            & Conditions.record_type_not_erd()
         )
 
         desired_statuses = [

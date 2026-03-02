@@ -43,7 +43,7 @@ class DynamoDbQuery:
             condition_attributes.update(filter_attributes)
             condition_values.update(filter_values)
 
-        queryArgs = {
+        query_args = {
             "TableName": client.table_name,
             "IndexName": index.name,
             "KeyConditionExpression": key_condition_expression,
@@ -52,13 +52,13 @@ class DynamoDbQuery:
         }
 
         if filter_expression:
-            queryArgs["FilterExpression"] = filter_expression
+            query_args["FilterExpression"] = filter_expression
         if limit:
-            queryArgs["PaginationConfig"] = {"MaxItems": limit, "PageSize": limit}
+            query_args["PaginationConfig"] = {"MaxItems": limit, "PageSize": limit}
         if descending:
-            queryArgs["ScanIndexForward"] = False
+            query_args["ScanIndexForward"] = False
 
-        self._pages = iter(self._client.client.get_paginator("query").paginate(**queryArgs))
+        self._pages = iter(self._client.client.get_paginator("query").paginate(**query_args))
         self._item_iterator = self._items()
         self._is_last_page = False
         self.complete = False
@@ -106,7 +106,7 @@ class Conditions:
     """
 
     @staticmethod
-    def nhsNumber_equals(nhs_number: str):
+    def nhs_number_equals(nhs_number: str):
         """
         Condition expression for nhsNumber equality
         """
@@ -114,7 +114,7 @@ class Conditions:
         return Key(Attribute.NHS_NUMBER.name).eq(nhs_number)
 
     @staticmethod
-    def creationDatetime_range(start: str, end: str = None):
+    def creation_datetime_range(start: str, end: str = None):
         """
         Condition expression for creationDatetime between start and end
         """
@@ -124,7 +124,7 @@ class Conditions:
         return Key(Attribute.CREATION_DATETIME.name).between(start, end)
 
     @staticmethod
-    def releaseVersion_R2():
+    def release_version_r2():
         """
         Condition expression for releaseVersion (sharded) equals R2
         """
@@ -132,7 +132,7 @@ class Conditions:
         return Attr(ProjectedAttribute.RELEASE_VERSION.value).contains(fields.R2_VERSION)
 
     @staticmethod
-    def nextActivity_not_purged():
+    def next_activity_not_purged():
         """
         Condition expression for nextActivity not equal to PURGED
         """
@@ -140,7 +140,7 @@ class Conditions:
         return ~Attr(Attribute.NEXT_ACTIVITY.name).contains(fields.NEXTACTIVITY_PURGE)
 
     @staticmethod
-    def recordType_not_erd():
+    def record_type_not_erd():
         """
         Condition expression for recordType is not repeat dispensing
         """
