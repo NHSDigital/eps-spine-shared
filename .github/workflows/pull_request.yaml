@@ -5,6 +5,10 @@ on:
     branches:
       - main
 
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
   pr_title_format_check:
     name: PR Title Format Check
@@ -49,3 +53,44 @@ jobs:
     secrets:
       AUTOMERGE_APP_ID: ${{ secrets.AUTOMERGE_APP_ID }}
       AUTOMERGE_PEM: ${{ secrets.AUTOMERGE_PEM }}
+
+  build:
+    name: Build Package and Perform Test Publish
+    runs-on: ubuntu-22.04
+    needs: [get_asdf_version, tag_release, quality_checks]
+    steps:
+      - name: Git checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+          fetch-tags: true
+
+      - name: Install dependencies
+        uses: ./.github/actions/install_dependencies
+        with:
+          asdf_version: ${{ needs.get_asdf_version.outputs.version }}
+
+      - name: Get latest version
+        id: get_latest_version
+        run: |
+          latest_tag=$(git describe --tags --abbrev=0)
+          echo "version_tag=${latest_tag#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Build package
+        run: |
+          poetry version "${LATEST_VERSION}.${PR_NUMBER}"
+          make build
+          cd dist
+          zip -r eps_spine_shared.zip ./*
+        env:
+          LATEST_VERSION: ${{ steps.get_latest_version.outputs.version_tag }}
+          PR_NUMBER: ${{ github.event.number }}
+
+      - name: poetry config
+        run: |
+          poetry config repositories.testpypi https://test.pypi.org/legacy/
+
+      - name: poetry test publish
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/
