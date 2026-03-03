@@ -46,6 +46,7 @@ jobs:
       pypi_publish: true
       pypi_test_publish: true
     secrets:
+      PYPI_TOKEN: ${{ secrets.PYPI_TEST_TOKEN }}
       PYPI_TEST_TOKEN: ${{ secrets.PYPI_TEST_TOKEN }}
 
   dependabot_auto_approve_and_merge:
