@@ -43,9 +43,9 @@ jobs:
       asdfVersion: ${{ needs.get_asdf_version.outputs.version }}
       branch_name: ${{ github.event.pull_request.head.ref }}
       dry_run: true
-    #   pypi_publish: true
-    # secrets:
-    #   PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
+      pypi_publish: true
+    secrets:
+      PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
 
   dependabot_auto_approve_and_merge:
     name: Dependabot Auto Approve and Merge
