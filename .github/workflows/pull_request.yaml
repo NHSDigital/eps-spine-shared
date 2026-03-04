@@ -45,7 +45,7 @@ jobs:
       dry_run: true
       pypi_publish: true
     secrets:
-      PYPI_TOKEN: ${{ secrets.PYPI_TEST_TOKEN }}
+      PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
 
   dependabot_auto_approve_and_merge:
     name: Dependabot Auto Approve and Merge
