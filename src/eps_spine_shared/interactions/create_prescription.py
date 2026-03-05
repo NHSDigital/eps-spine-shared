@@ -73,7 +73,6 @@ def output_validate(context, internal_id, log_object: EpsLogger):
                 "lastLogLine": last_log_line,
             },
         )
-        # Re-raise this as SpineBusinessError with equivalent errorCode from ErrorBase1634.
         raise EpsBusinessError(EpsErrorBase.UNABLE_TO_PROCESS, e.supp_info) from e
 
 
@@ -161,7 +160,6 @@ def check_for_late_upload_request(existing_record, internal_id, log_object: EpsL
         log_object.write_log(
             "EPS0818", None, {"prescriptionID": prescription_id, "internalID": internal_id}
         )
-        # Re-raise this as SpineBusinessError with equivalent errorCode from ErrorBase1722.
         raise EpsBusinessError(EpsErrorBase.EXISTS_WITH_NEXT_ACTIVITY_PURGE)
 
 
@@ -186,7 +184,6 @@ def check_existing_record_real(eps_record_id, context, internal_id, log_object: 
             None,
             {"internalID": internal_id, "prescriptionID": context.prescriptionID},
         )
-        # Re-raise this as SpineBusinessError with equivalent errorCode from ErrorBase1722.
         raise EpsBusinessError(EpsErrorBase.DUPLICATE_PRESRIPTION)
 
     # Pending Cancellation

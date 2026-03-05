@@ -399,7 +399,6 @@ class PrescriptionRecord(object):
             None,
             {"internalID": self.internal_id, "prescriptionID": self.id, "issue": issue_number},
         )
-        # Re-raise this as SpineBusinessError with equivalent errorCode from ErrorBase1722.
         raise EpsBusinessError(EpsErrorBase.MISSING_ISSUE)
 
     @property
@@ -1432,7 +1431,6 @@ class PrescriptionRecord(object):
                     "passedIDs": str(passed_ids),
                 },
             )
-            # Re-raise this as SpineBusinessError with equivalent errorCode from ErrorBase1722.
             raise EpsBusinessError(EpsErrorBase.ITEM_NOT_FOUND)
 
         for line_item in passed_line_items:
@@ -1453,7 +1451,6 @@ class PrescriptionRecord(object):
                         "newStatus": new_status,
                     },
                 )
-                # Re-raise this as SpineBusinessError with equivalent errorCode from ErrorBase1722.
                 raise EpsBusinessError(EpsErrorBase.INVALID_LINE_STATE_TRANSITION)
 
             if treatment_type == fields.TREATMENT_TYPE_ACUTE:
@@ -1491,7 +1488,6 @@ class PrescriptionRecord(object):
                             "lineItemID": line_item.get(fields.FIELD_ID),
                         },
                     )
-                    # Re-raise this as SpineBusinessError with equivalent errorCode from ErrorBase1722.
                     raise EpsBusinessError(EpsErrorBase.MAX_REPEAT_MISMATCH)
 
                 if int(line_item[fields.FIELD_MAX_REPEATS]) == int(self.max_repeats):
@@ -1517,7 +1513,6 @@ class PrescriptionRecord(object):
                         "lineItemID": line_item[fields.FIELD_ID],
                     },
                 )
-                # Re-raise this as SpineBusinessError with equivalent errorCode from ErrorBase1722.
                 raise EpsBusinessError(EpsErrorBase.MAX_REPEAT_MISMATCH)
 
     def _return_matching_line_item(self, stored_line_items, line_item):
