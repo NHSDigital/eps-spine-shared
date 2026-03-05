@@ -19,9 +19,6 @@ try:
     from spinecore.prescriptions.common.errors.errorbase1634 import (  # pyright: ignore[reportMissingImports]
         ErrorBase1634,
     )
-
-    # from spinecore.prescriptions.common.errors.errorbase1634 \
-    #     import ErrorBase1634 # pyright: ignore[reportMissingImports]
     from spinecore.prescriptions.common.errors.errorbase1719 import (  # pyright: ignore[reportMissingImports]
         ErrorBase1719,
     )
