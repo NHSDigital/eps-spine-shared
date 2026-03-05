@@ -29,7 +29,7 @@ jobs:
 
   get_next_version:
     name: Get Next Version Number for Poetry
-    uses: NHSDigital/eps-common-workflows/.github/workflows/tag-release.yml@8404cf6e3a61ac8de4d1644e175e288aa4965815
+    uses: NHSDigital/eps-common-workflows/.github/workflows/tag-release.yml@aac5b797ee198b8bd260d618cf7cbdf723860033
     needs: [get_asdf_version, quality_checks]
     with:
       asdfVersion: ${{ needs.get_asdf_version.outputs.version }}
@@ -70,7 +70,7 @@ jobs:
 
   tag_release:
     name: Tag Release
-    uses: NHSDigital/eps-common-workflows/.github/workflows/tag-release.yml@8404cf6e3a61ac8de4d1644e175e288aa4965815
+    uses: NHSDigital/eps-common-workflows/.github/workflows/tag-release.yml@aac5b797ee198b8bd260d618cf7cbdf723860033
     needs: [build, get_asdf_version]
     with:
       asdfVersion: ${{ needs.get_asdf_version.outputs.version }}
@@ -80,3 +80,6 @@ jobs:
       extra_artifact_run_id: ${{ github.run_id }}
       extra_artifact_repository: ${{ github.repository }}
       dry_run: false
+      pypi_publish: true
+    secrets:
+      PYPI_TOKEN: ${{ secrets.PYPI_TOKEN }}
