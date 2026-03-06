@@ -473,6 +473,21 @@ class PrescriptionRecordTest(TestCase):
 
         self.assertEqual(result, "pre_change_current_issue")
 
+    def test_create_initial_record(self):
+        """
+        Test that we can create the initial record.
+        """
+        prescription = PrescriptionRecord(self.mock_log_object, "test")
+        context = MagicMock()
+        prescription.create_initial_record(context)
+
+        self.assertTrue(
+            all(
+                field in prescription.prescription_record[fields.FIELD_PRESCRIPTION]
+                for field in fields.PRESCRIPTION_DETAILS
+            )
+        )
+
 
 class PrescriptionRecordChangeLogTest(TestCase):
     """
