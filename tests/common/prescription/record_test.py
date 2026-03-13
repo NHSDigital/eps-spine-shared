@@ -273,19 +273,19 @@ class PrescriptionRecordTest(TestCase):
         """
         prescription = load_test_example_json(self.mock_log_object, "50EE48-B83002-490F7.json")
         self.assertEqual(prescription.current_issue_number, 4)
-        (old, new) = prescription.reset_current_instance()
+        old, new = prescription.reset_current_instance()
         self.assertEqual((old, new), (4, 4))
         self.assertEqual(prescription.current_issue_number, 4)
 
         prescription = load_test_example_json(self.mock_log_object, "DD0180-ZBED5C-11E3A.json")
         self.assertEqual(prescription.current_issue_number, 1)
-        (old, new) = prescription.reset_current_instance()
+        old, new = prescription.reset_current_instance()
         self.assertEqual((old, new), (1, 1))
         self.assertEqual(prescription.current_issue_number, 1)
 
         prescription = load_test_example_json(self.mock_log_object, "7D9625-Z72BF2-11E3A.json")
         self.assertEqual(prescription.current_issue_number, 3)
-        (old, new) = prescription.reset_current_instance()
+        old, new = prescription.reset_current_instance()
         self.assertEqual((old, new), (3, 3))
         self.assertEqual(prescription.current_issue_number, 3)
 

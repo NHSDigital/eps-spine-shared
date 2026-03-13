@@ -90,7 +90,7 @@ class ChangeLogProcessor(object):
         """
         Return the (guid, scn) from the first change_log found with the highest SCN
         """
-        (highest_guid, highest_scn) = (None, cls.INVALID_SCN)
+        highest_guid, highest_scn = (None, cls.INVALID_SCN)
         for guid in change_log:
             scn = int(change_log[guid].get(cls.SCN, cls.INVALID_SCN))
             if scn > highest_scn:
@@ -388,7 +388,7 @@ class PrescriptionsChangeLogProcessor(ChangeLogProcessor):
             if icl_scn > (max_scn - cls.MIN_RECENTHISTORY) or icl_scn < cls.MIN_INITIALHISTORY:
                 continue
             this_int_id = inverted_change_log.get(icl_scn, (None, None))[1]
-            (previous_guid, previous_int_id) = inverted_change_log.get(icl_scn - 1, (None, None))
+            previous_guid, previous_int_id = inverted_change_log.get(icl_scn - 1, (None, None))
             one_before_int_id = inverted_change_log.get(icl_scn - 2, (None, None))[1]
             if (
                 this_int_id

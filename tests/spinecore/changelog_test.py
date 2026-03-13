@@ -78,7 +78,7 @@ class ChangeLogProcessorTest(unittest.TestCase):
         """
         test highest guid and scn returned
         """
-        (guid, scn) = ChangeLogProcessor.get_highest_scn(CHANGE_LOG_TO_PRUNE)
+        guid, scn = ChangeLogProcessor.get_highest_scn(CHANGE_LOG_TO_PRUNE)
         self.assertEqual(guid, "GUID8")
         self.assertEqual(scn, 10)
 
@@ -89,7 +89,7 @@ class ChangeLogProcessorTest(unittest.TestCase):
         new_record = ChangeLogProcessor.update_change_log(record, new_log, "GUID9", 6)
         new_change_log = new_record["changeLog"]
 
-        (guid, scn) = ChangeLogProcessor.get_highest_scn(new_change_log)
+        guid, scn = ChangeLogProcessor.get_highest_scn(new_change_log)
         self.assertEqual(guid, "GUID9")
         self.assertEqual(scn, 12)
 
