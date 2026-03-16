@@ -6,9 +6,6 @@ SHELL:=/usr/bin/env bash -O globstar
 build:
 	poetry build
 
-check-licenses:
-	scripts/check_python_licenses.sh
-
 clean:
 	rm -rf dist
 	rm -rf htmlcov
