@@ -68,10 +68,51 @@ jobs:
           path: |
             dist/eps_spine_shared.zip
 
+  pypi_token:
+    name: Retrieve PyPI Token for Trusted Publishing
+    runs-on: ubuntu-22.04
+    outputs:
+      api-token: ${{ steps.retrieve-pypi-token.outputs.api-token }}
+    steps:
+      - name: Retrieve PyPI OIDC token
+        id: retrieve-pypi-oidc-token
+        run: |
+          set -euo pipefail
+
+          resp=$(curl -sSf -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+                  "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=pypi")
+
+          if ! oidc_token=$(jq -er '.value' <<< "${resp}"); then
+              echo "Failed to retrieve OIDC token from GitHub. Response:"
+              echo "${resp}" | jq .
+              exit 1
+          fi
+
+          echo "::add-mask::${oidc_token}"
+          echo "oidc-token=${oidc_token}" >> "${GITHUB_OUTPUT}"
+
+      - name: Exchange PyPI OIDC token for API token
+        id: retrieve-pypi-token
+        run: |
+          set -euo pipefail
+
+          resp=$(curl -sSf -X POST "https://pypi.org/_/oidc/mint-token" \
+                  -H "Content-Type: application/json" \
+                  --data "{\"token\":\"${{ steps.retrieve-pypi-oidc-token.outputs.oidc-token }}\"}")
+
+          if ! api_token=$(jq -er '.token' <<< "${resp}"); then
+              echo "Failed to exchange OIDC token for a PyPI API token. Response:"
+              echo "${resp}" | jq .
+              exit 1
+          fi
+
+          echo "::add-mask::${api_token}"
+          echo "api-token=${api_token}" >> "${GITHUB_OUTPUT}"
+
   tag_release:
     name: Tag Release
     uses: NHSDigital/eps-common-workflows/.github/workflows/tag-release.yml@aea-5986-test-trusted-publishing
-    needs: [build, get_asdf_version]
+    needs: [build, get_asdf_version, pypi_token]
     with:
       asdfVersion: ${{ needs.get_asdf_version.outputs.version }}
       branch_name: main
@@ -81,6 +122,8 @@ jobs:
       extra_artifact_repository: ${{ github.repository }}
       dry_run: false
       pypi_publish: true
+    secrets:
+      PYPI_TOKEN: ${{ needs.pypi_token.outputs.api-token }}
     permissions:
       actions: write
       contents: write
