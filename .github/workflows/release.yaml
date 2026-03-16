@@ -71,25 +71,27 @@ jobs:
   pypi_token:
     name: Retrieve PyPI Token for Trusted Publishing
     runs-on: ubuntu-22.04
+    permissions:
+      id-token: write
     outputs:
-      api-token: ${{ steps.retrieve-pypi-token.outputs.api-token }}
+      api-tkn: ${{ steps.retrieve-pypi-token.outputs.api-tkn }}
     steps:
       - name: Retrieve PyPI OIDC token
-        id: retrieve-pypi-oidc-token
+        id: retrieve-pypi-oidc-tkn
         run: |
           set -euo pipefail
 
           resp=$(curl -sSf -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
                   "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=pypi")
 
-          if ! oidc_token=$(jq -er '.value' <<< "${resp}"); then
+          if ! oidc_tkn=$(jq -er '.value' <<< "${resp}"); then
               echo "Failed to retrieve OIDC token from GitHub. Response:"
               echo "${resp}" | jq .
               exit 1
           fi
 
-          echo "::add-mask::${oidc_token}"
-          echo "oidc-token=${oidc_token}" >> "${GITHUB_OUTPUT}"
+          echo "::add-mask::${oidc_tkn}"
+          echo "oidc-tkn=${oidc_tkn}" >> "${GITHUB_OUTPUT}"
 
       - name: Exchange PyPI OIDC token for API token
         id: retrieve-pypi-token
@@ -98,16 +100,16 @@ jobs:
 
           resp=$(curl -sSf -X POST "https://pypi.org/_/oidc/mint-token" \
                   -H "Content-Type: application/json" \
-                  --data "{\"token\":\"${{ steps.retrieve-pypi-oidc-token.outputs.oidc-token }}\"}")
+                  --data "{\"token\":\"${{ steps.retrieve-pypi-oidc-tkn.outputs.oidc-tkn }}\"}")
 
-          if ! api_token=$(jq -er '.token' <<< "${resp}"); then
+          if ! api_tkn=$(jq -er '.token' <<< "${resp}"); then
               echo "Failed to exchange OIDC token for a PyPI API token. Response:"
               echo "${resp}" | jq .
               exit 1
           fi
 
-          echo "::add-mask::${api_token}"
-          echo "api-token=${api_token}" >> "${GITHUB_OUTPUT}"
+          echo "::add-mask::${api_tkn}"
+          echo "api-tkn=${api_tkn}" >> "${GITHUB_OUTPUT}"
 
   tag_release:
     name: Tag Release
@@ -123,7 +125,7 @@ jobs:
       dry_run: false
       pypi_publish: true
     secrets:
-      PYPI_TOKEN: ${{ needs.pypi_token.outputs.api-token }}
+      PYPI_TOKEN: ${{ needs.pypi_token.outputs.api-tkn }}
     permissions:
       actions: write
       contents: write
