@@ -1,7 +1,7 @@
 # GitHub workflows
 id-token: write
-echo "oidc-token" >> "${GITHUB_OUTPUT}"
-echo "api-token" >> "${GITHUB_OUTPUT}"
+echo "oidc-token=${oidc_token}" >> "${GITHUB_OUTPUT}"
+echo "api-token=${api_token}" >> "${GITHUB_OUTPUT}"
 
 # Test data
 "agentSystemSDS1CodeSystem": *
