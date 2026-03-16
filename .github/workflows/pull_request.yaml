@@ -4,6 +4,7 @@ on:
   pull_request:
     branches:
       - main
+  workflow_dispatch:
 
 jobs:
   pr_title_format_check:
@@ -46,6 +47,7 @@ jobs:
       pypi_publish: true
     permissions:
       id-token: write
+      contents: write
 
   dependabot_auto_approve_and_merge:
     name: Dependabot Auto Approve and Merge
@@ -57,3 +59,44 @@ jobs:
     secrets:
       AUTOMERGE_APP_ID: ${{ secrets.AUTOMERGE_APP_ID }}
       AUTOMERGE_PEM: ${{ secrets.AUTOMERGE_PEM }}
+
+  pypi_token:
+    name: Retrieve PyPI Token for Trusted Publishing
+    runs-on: ubuntu-22.04
+    permissions:
+      id-token: write
+    steps:
+      - name: Retrieve PyPI OIDC token
+        id: retrieve-pypi-oidc-tkn
+        run: |
+          set -euo pipefail
+
+          resp=$(curl -sSf -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+                  "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=pypi")
+
+          if ! oidc_tkn=$(jq -er '.value' <<< "${resp}"); then
+              echo "Failed to retrieve OIDC token from GitHub. Response:"
+              echo "${resp}" | jq .
+              exit 1
+          fi
+
+          echo "::add-mask::${oidc_tkn}"
+          echo "oidc-tkn=${oidc_tkn}" >> "${GITHUB_OUTPUT}"
+
+      - name: Exchange PyPI OIDC token for API token
+        id: retrieve-pypi-token
+        run: |
+          set -euo pipefail
+
+          resp=$(curl -sSf -X POST "https://pypi.org/_/oidc/mint-token" \
+                  -H "Content-Type: application/json" \
+                  --data "{\"token\":\"${{ steps.retrieve-pypi-oidc-tkn.outputs.oidc-tkn }}\"}")
+
+          if ! api_tkn=$(jq -er '.token' <<< "${resp}"); then
+              echo "Failed to exchange OIDC token for a PyPI API token. Response:"
+              echo "${resp}" | jq .
+              exit 1
+          fi
+
+          echo "::add-mask::${api_tkn}"
+          echo "api-tkn=${api_tkn}" >> "${GITHUB_OUTPUT}"
