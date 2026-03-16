@@ -47,6 +47,7 @@ jobs:
       pypi_publish: true
     permissions:
       id-token: write
+      contents: write
 
   dependabot_auto_approve_and_merge:
     name: Dependabot Auto Approve and Merge
