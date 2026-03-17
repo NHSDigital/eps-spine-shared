@@ -23,7 +23,7 @@ jobs:
     permissions:
       id-token: write
     outputs:
-      pypi-tkn: ${{ steps.get_pypi_token.outputs.pypi-tkn }}
+      pypi_token: ${{ steps.get_pypi_token.outputs.pypi_token }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         name: Checkout source code
@@ -97,7 +97,7 @@ jobs:
       dry_run: false
       pypi_publish: true
     secrets:
-      PYPI_TOKEN: ${{ needs.get_pypi_token.outputs.pypi-tkn }}
+      PYPI_TOKEN: ${{ needs.get_pypi_token.outputs.pypi_token }}
     permissions:
       actions: write
       contents: write

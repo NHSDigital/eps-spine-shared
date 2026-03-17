@@ -2,8 +2,8 @@ name: Get PyPI Token
 description: Get PyPI token for trusted publishing
 
 outputs:
-  pypi-tkn:
-    value: ${{ steps.get_pypi_token.outputs.api-tkn }}
+  pypi_token:
+    value: ${{ steps.get_pypi_token.outputs.pypi_token }}
     description: PyPI token for trusted publishing
 
 runs:
@@ -18,7 +18,7 @@ runs:
         oidc_resp=$(curl -sSf -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
           "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=pypi")
 
-        if ! oidc_tkn=$(jq -er '.value' <<< "${oidc_resp}"); then
+        if ! oidc_token=$(jq -er '.value' <<< "${oidc_resp}"); then
           echo "Failed to retrieve OIDC token from GitHub. Response:"
           echo "${oidc_resp}" | jq .
           exit 1
@@ -26,12 +26,12 @@ runs:
 
         api_resp=$(curl -sSf -X POST "https://pypi.org/_/oidc/mint-token" \
           -H "Content-Type: application/json" \
-          --data "{\"token\":\"${oidc_tkn}\"}")
+          --data "{\"token\":\"${oidc_token}\"}")
 
-        if ! api_tkn=$(jq -er '.token' <<< "${api_resp}"); then
+        if ! pypi_token=$(jq -er '.token' <<< "${api_resp}"); then
           echo "Failed to exchange OIDC token for a PyPI API token. Response:"
           echo "${api_resp}" | jq .
           exit 1
         fi
 
-        echo "api-tkn=${api_tkn}" >> "${GITHUB_OUTPUT}"
+        echo "pypi_token=${pypi_token}" >> "${GITHUB_OUTPUT}"
