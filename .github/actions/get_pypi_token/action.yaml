@@ -24,11 +24,9 @@ runs:
           exit 1
         fi
 
-        echo "oidc-tkn=${oidc_tkn}" >> "${GITHUB_OUTPUT}"
-
         api_resp=$(curl -sSf -X POST "https://pypi.org/_/oidc/mint-token" \
           -H "Content-Type: application/json" \
-          --data "{\"token\":\"${{ steps.retrieve-pypi-oidc-tkn.outputs.oidc-tkn }}\"}")
+          --data "{\"token\":\"${oidc_tkn}\"}")
 
         if ! api_tkn=$(jq -er '.token' <<< "${api_resp}"); then
           echo "Failed to exchange OIDC token for a PyPI API token. Response:"
