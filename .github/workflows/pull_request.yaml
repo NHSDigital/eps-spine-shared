@@ -34,6 +34,9 @@ jobs:
     outputs:
       pypi-tkn: ${{ steps.get_pypi_token.outputs.pypi-tkn }}
     steps:
+      - uses: actions/checkout@v6
+        name: Checkout source code
+
       - name: Get PyPI token
         id: get_pypi_token
         uses: ./.github/actions/get_pypi_token
