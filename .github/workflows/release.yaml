@@ -17,10 +17,25 @@ jobs:
         id: get-asdf-version
         uses: ./.github/actions/get_asdf_version
 
+  get_pypi_token:
+    name: Get PyPI Token for Trusted Publishing
+    runs-on: ubuntu-22.04
+    permissions:
+      id-token: write
+    outputs:
+      pypi-tkn: ${{ steps.get_pypi_token.outputs.pypi-tkn }}
+    steps:
+      - uses: actions/checkout@v6
+        name: Checkout source code
+
+      - name: Get PyPI token
+        id: get_pypi_token
+        uses: ./.github/actions/get_pypi_token
+
   quality_checks:
     name: Quality Checks
     needs: get_asdf_version
-    uses: NHSDigital/eps-common-workflows/.github/workflows/quality-checks.yml@e208462679dedaded1e066c25c9830b9c0bf1930
+    uses: NHSDigital/eps-common-workflows/.github/workflows/quality-checks.yml@3166a790ef94af847ffcafc6b9fbadbf4c56f6d0
     with:
       asdfVersion: ${{ needs.get_asdf_version.outputs.version }}
       reinstall_poetry: true
@@ -29,7 +44,7 @@ jobs:
 
   get_next_version:
     name: Get Next Version Number for Poetry
-    uses: NHSDigital/eps-common-workflows/.github/workflows/tag-release.yml@e208462679dedaded1e066c25c9830b9c0bf1930
+    uses: NHSDigital/eps-common-workflows/.github/workflows/tag-release.yml@3166a790ef94af847ffcafc6b9fbadbf4c56f6d0
     needs: [get_asdf_version, quality_checks]
     with:
       asdfVersion: ${{ needs.get_asdf_version.outputs.version }}
@@ -68,53 +83,10 @@ jobs:
           path: |
             dist/eps_spine_shared.zip
 
-  pypi_token:
-    name: Retrieve PyPI Token for Trusted Publishing
-    runs-on: ubuntu-22.04
-    permissions:
-      id-token: write
-    outputs:
-      api-tkn: ${{ steps.retrieve-pypi-token.outputs.api-tkn }}
-    steps:
-      - name: Retrieve PyPI OIDC token
-        id: retrieve-pypi-oidc-tkn
-        run: |
-          set -euo pipefail
-
-          resp=$(curl -sSf -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
-                  "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=pypi")
-
-          if ! oidc_tkn=$(jq -er '.value' <<< "${resp}"); then
-              echo "Failed to retrieve OIDC token from GitHub. Response:"
-              echo "${resp}" | jq .
-              exit 1
-          fi
-
-          echo "::add-mask::${oidc_tkn}"
-          echo "oidc-tkn=${oidc_tkn}" >> "${GITHUB_OUTPUT}"
-
-      - name: Exchange PyPI OIDC token for API token
-        id: retrieve-pypi-token
-        run: |
-          set -euo pipefail
-
-          resp=$(curl -sSf -X POST "https://pypi.org/_/oidc/mint-token" \
-                  -H "Content-Type: application/json" \
-                  --data "{\"token\":\"${{ steps.retrieve-pypi-oidc-tkn.outputs.oidc-tkn }}\"}")
-
-          if ! api_tkn=$(jq -er '.token' <<< "${resp}"); then
-              echo "Failed to exchange OIDC token for a PyPI API token. Response:"
-              echo "${resp}" | jq .
-              exit 1
-          fi
-
-          echo "::add-mask::${api_tkn}"
-          echo "api-tkn=${api_tkn}" >> "${GITHUB_OUTPUT}"
-
   tag_release:
     name: Tag Release
-    uses: NHSDigital/eps-common-workflows/.github/workflows/tag-release.yml@aea-5986-test-trusted-publishing
-    needs: [build, get_asdf_version, pypi_token]
+    uses: NHSDigital/eps-common-workflows/.github/workflows/tag-release.yml@3166a790ef94af847ffcafc6b9fbadbf4c56f6d0
+    needs: [build, get_asdf_version, get_pypi_token]
     with:
       asdfVersion: ${{ needs.get_asdf_version.outputs.version }}
       branch_name: main
@@ -125,7 +97,7 @@ jobs:
       dry_run: false
       pypi_publish: true
     secrets:
-      PYPI_TOKEN: ${{ needs.pypi_token.outputs.api-tkn }}
+      PYPI_TOKEN: ${{ needs.get_pypi_token.outputs.pypi-tkn }}
     permissions:
       actions: write
       contents: write
