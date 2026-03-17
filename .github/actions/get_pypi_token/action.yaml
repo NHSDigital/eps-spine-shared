@@ -3,7 +3,7 @@ description: Get PyPI token for trusted publishing
 
 outputs:
   pypi-tkn:
-    value: ${{ steps.get_pypi_token.outputs.pypi-tkn }}
+    value: ${{ steps.get_pypi_token.outputs.api-tkn }}
     description: PyPI token for trusted publishing
 
 runs:
