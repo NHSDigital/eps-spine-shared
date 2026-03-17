@@ -102,5 +102,4 @@ jobs:
               exit 1
           fi
 
-          echo "::add-mask::${api_tkn}"
           echo "api-tkn=${api_tkn}" >> "${GITHUB_OUTPUT}"
