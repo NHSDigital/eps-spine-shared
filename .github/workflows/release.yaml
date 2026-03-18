@@ -10,17 +10,32 @@ jobs:
     outputs:
       version: ${{ steps.get-asdf-version.outputs.version }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         name: Checkout source code
 
       - name: Get asdf version
         id: get-asdf-version
         uses: ./.github/actions/get_asdf_version
 
+  get_pypi_token:
+    name: Get PyPI Token for Trusted Publishing
+    runs-on: ubuntu-22.04
+    permissions:
+      id-token: write
+    outputs:
+      pypi_token: ${{ steps.get_pypi_token.outputs.pypi_token }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        name: Checkout source code
+
+      - name: Get PyPI token
+        id: get_pypi_token
+        uses: ./.github/actions/get_pypi_token
+
   quality_checks:
     name: Quality Checks
     needs: get_asdf_version
-    uses: NHSDigital/eps-common-workflows/.github/workflows/quality-checks.yml@e208462679dedaded1e066c25c9830b9c0bf1930
+    uses: NHSDigital/eps-common-workflows/.github/workflows/quality-checks.yml@3166a790ef94af847ffcafc6b9fbadbf4c56f6d0
     with:
       asdfVersion: ${{ needs.get_asdf_version.outputs.version }}
       reinstall_poetry: true
@@ -29,7 +44,7 @@ jobs:
 
   get_next_version:
     name: Get Next Version Number for Poetry
-    uses: NHSDigital/eps-common-workflows/.github/workflows/tag-release.yml@e208462679dedaded1e066c25c9830b9c0bf1930
+    uses: NHSDigital/eps-common-workflows/.github/workflows/tag-release.yml@3166a790ef94af847ffcafc6b9fbadbf4c56f6d0
     needs: [get_asdf_version, quality_checks]
     with:
       asdfVersion: ${{ needs.get_asdf_version.outputs.version }}
@@ -44,7 +59,7 @@ jobs:
       artifact_id: ${{ steps.upload-artifact.outputs.artifact-id }}
     steps:
       - name: Git checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
 
       - name: Install dependencies
         uses: ./.github/actions/install_dependencies
@@ -70,8 +85,8 @@ jobs:
 
   tag_release:
     name: Tag Release
-    uses: NHSDigital/eps-common-workflows/.github/workflows/tag-release.yml@aea-5986-test-trusted-publishing
-    needs: [build, get_asdf_version]
+    uses: NHSDigital/eps-common-workflows/.github/workflows/tag-release.yml@3166a790ef94af847ffcafc6b9fbadbf4c56f6d0
+    needs: [build, get_asdf_version, get_pypi_token]
     with:
       asdfVersion: ${{ needs.get_asdf_version.outputs.version }}
       branch_name: main
@@ -81,6 +96,8 @@ jobs:
       extra_artifact_repository: ${{ github.repository }}
       dry_run: false
       pypi_publish: true
+    secrets:
+      PYPI_TOKEN: ${{ needs.get_pypi_token.outputs.pypi_token }}
     permissions:
       actions: write
       contents: write
