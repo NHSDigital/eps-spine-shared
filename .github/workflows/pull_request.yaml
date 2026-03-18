@@ -4,11 +4,12 @@ on:
   pull_request:
     branches:
       - main
+  workflow_dispatch:
 
 jobs:
   pr_title_format_check:
     name: PR Title Format Check
-    uses: NHSDigital/eps-common-workflows/.github/workflows/pr_title_check.yml@e208462679dedaded1e066c25c9830b9c0bf1930
+    uses: NHSDigital/eps-common-workflows/.github/workflows/pr_title_check.yml@3166a790ef94af847ffcafc6b9fbadbf4c56f6d0
     permissions:
       pull-requests: write
   get_config_values:
@@ -16,6 +17,21 @@ jobs:
     with:
       verify_published_from_main_image: false
 
+
+  get_pypi_token:
+    name: Get PyPI Token for Trusted Publishing
+    runs-on: ubuntu-22.04
+    permissions:
+      id-token: write
+    outputs:
+      pypi_token: ${{ steps.get_pypi_token.outputs.pypi_token }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        name: Checkout source code
+
+      - name: Get PyPI token
+        id: get_pypi_token
+        uses: ./.github/actions/get_pypi_token
 
   quality_checks:
     name: Quality Checks
@@ -28,20 +44,23 @@ jobs:
 
   tag_release:
     name: Tag Release (Dry Run)
-    needs: get_config_values
+    needs: [get_config_values, get_pypi_token]
     uses: NHSDigital/eps-common-workflows/.github/workflows/tag-release-devcontainer.yml@e208462679dedaded1e066c25c9830b9c0bf1930
     with:
       pinned_image: ${{ needs.get_config_values.outputs.pinned_image }}
       branch_name: ${{ github.event.pull_request.head.ref }}
       dry_run: true
       pypi_publish: true
+    secrets:
+      PYPI_TOKEN: ${{ needs.get_pypi_token.outputs.pypi_token }}
     permissions:
       id-token: write
+      contents: write
 
   dependabot_auto_approve_and_merge:
     name: Dependabot Auto Approve and Merge
     needs: quality_checks
-    uses: NHSDigital/eps-common-workflows/.github/workflows/dependabot-auto-approve-and-merge.yml@e208462679dedaded1e066c25c9830b9c0bf1930
+    uses: NHSDigital/eps-common-workflows/.github/workflows/dependabot-auto-approve-and-merge.yml@3166a790ef94af847ffcafc6b9fbadbf4c56f6d0
     permissions:
       contents: write
       pull-requests: write

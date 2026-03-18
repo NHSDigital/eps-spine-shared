@@ -4,6 +4,20 @@ on:
   workflow_dispatch:
 
 jobs:
+  get_pypi_token:
+    name: Get PyPI Token for Trusted Publishing
+    runs-on: ubuntu-22.04
+    permissions:
+      id-token: write
+    outputs:
+      pypi_token: ${{ steps.get_pypi_token.outputs.pypi_token }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        name: Checkout source code
+
+      - name: Get PyPI token
+        id: get_pypi_token
+        uses: ./.github/actions/get_pypi_token
   get_config_values:
     uses: NHSDigital/eps-common-workflows/.github/workflows/get-repo-config.yml@e208462679dedaded1e066c25c9830b9c0bf1930
     with:
@@ -67,7 +81,7 @@ jobs:
   tag_release:
     name: Tag Release
     uses: NHSDigital/eps-common-workflows/.github/workflows/tag-release-devcontainer.yml@e208462679dedaded1e066c25c9830b9c0bf1930
-    needs: [build, get_config_values]
+    needs: [build, get_config_values, get_pypi_token]
     with:
       pinned_image: ${{ needs.get_config_values.outputs.pinned_image }}
       branch_name: main
@@ -77,6 +91,8 @@ jobs:
       extra_artifact_repository: ${{ github.repository }}
       dry_run: false
       pypi_publish: true
+    secrets:
+      PYPI_TOKEN: ${{ needs.get_pypi_token.outputs.pypi_token }}
     permissions:
       actions: write
       contents: write
