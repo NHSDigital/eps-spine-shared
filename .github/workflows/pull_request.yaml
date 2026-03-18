@@ -45,7 +45,7 @@ jobs:
   tag_release:
     name: Tag Release (Dry Run)
     needs: [get_config_values, get_pypi_token]
-    uses: NHSDigital/eps-common-workflows/.github/workflows/tag-release-devcontainer.yml@e208462679dedaded1e066c25c9830b9c0bf1930
+    uses: NHSDigital/eps-common-workflows/.github/workflows/tag-release-devcontainer.yml@aea-5986-add-pypi-publish-to-tag-release-devcontainer-workflow
     with:
       pinned_image: ${{ needs.get_config_values.outputs.pinned_image }}
       branch_name: ${{ github.event.pull_request.head.ref }}
