@@ -9,11 +9,11 @@ on:
 jobs:
   pr_title_format_check:
     name: PR Title Format Check
-    uses: NHSDigital/eps-common-workflows/.github/workflows/pr_title_check.yml@3166a790ef94af847ffcafc6b9fbadbf4c56f6d0
+    uses: NHSDigital/eps-common-workflows/.github/workflows/pr_title_check.yml@cd3cf9fa582d391ce9c50b10c43155eb48ca65e3
     permissions:
       pull-requests: write
   get_config_values:
-    uses: NHSDigital/eps-common-workflows/.github/workflows/get-repo-config.yml@e208462679dedaded1e066c25c9830b9c0bf1930
+    uses: NHSDigital/eps-common-workflows/.github/workflows/get-repo-config.yml@cd3cf9fa582d391ce9c50b10c43155eb48ca65e3
     with:
       verify_published_from_main_image: false
 
@@ -36,7 +36,7 @@ jobs:
   quality_checks:
     name: Quality Checks
     needs: get_config_values
-    uses: NHSDigital/eps-common-workflows/.github/workflows/quality-checks-devcontainer.yml@e208462679dedaded1e066c25c9830b9c0bf1930
+    uses: NHSDigital/eps-common-workflows/.github/workflows/quality-checks-devcontainer.yml@cd3cf9fa582d391ce9c50b10c43155eb48ca65e3
     with:
       pinned_image: ${{ needs.get_config_values.outputs.pinned_image }}
     secrets:
@@ -45,7 +45,7 @@ jobs:
   tag_release:
     name: Tag Release (Dry Run)
     needs: [get_config_values, get_pypi_token]
-    uses: NHSDigital/eps-common-workflows/.github/workflows/tag-release-devcontainer.yml@aea-5986-add-pypi-publish-to-tag-release-devcontainer-workflow
+    uses: NHSDigital/eps-common-workflows/.github/workflows/tag-release-devcontainer.yml@cd3cf9fa582d391ce9c50b10c43155eb48ca65e3
     with:
       pinned_image: ${{ needs.get_config_values.outputs.pinned_image }}
       branch_name: ${{ github.event.pull_request.head.ref }}
@@ -60,7 +60,7 @@ jobs:
   dependabot_auto_approve_and_merge:
     name: Dependabot Auto Approve and Merge
     needs: quality_checks
-    uses: NHSDigital/eps-common-workflows/.github/workflows/dependabot-auto-approve-and-merge.yml@3166a790ef94af847ffcafc6b9fbadbf4c56f6d0
+    uses: NHSDigital/eps-common-workflows/.github/workflows/dependabot-auto-approve-and-merge.yml@cd3cf9fa582d391ce9c50b10c43155eb48ca65e3
     permissions:
       contents: write
       pull-requests: write

@@ -19,13 +19,13 @@ jobs:
         id: get_pypi_token
         uses: ./.github/actions/get_pypi_token
   get_config_values:
-    uses: NHSDigital/eps-common-workflows/.github/workflows/get-repo-config.yml@e208462679dedaded1e066c25c9830b9c0bf1930
+    uses: NHSDigital/eps-common-workflows/.github/workflows/get-repo-config.yml@cd3cf9fa582d391ce9c50b10c43155eb48ca65e3
     with:
       verify_published_from_main_image: false
   quality_checks:
     name: Quality Checks
     needs: get_config_values
-    uses: NHSDigital/eps-common-workflows/.github/workflows/quality-checks-devcontainer.yml@e208462679dedaded1e066c25c9830b9c0bf1930
+    uses: NHSDigital/eps-common-workflows/.github/workflows/quality-checks-devcontainer.yml@cd3cf9fa582d391ce9c50b10c43155eb48ca65e3
     with:
       pinned_image: ${{ needs.get_config_values.outputs.pinned_image }}
     secrets:
@@ -33,7 +33,7 @@ jobs:
 
   get_next_version:
     name: Get Next Version Number for Poetry
-    uses: NHSDigital/eps-common-workflows/.github/workflows/tag-release-devcontainer.yml@aea-5986-add-pypi-publish-to-tag-release-devcontainer-workflow
+    uses: NHSDigital/eps-common-workflows/.github/workflows/tag-release-devcontainer.yml@cd3cf9fa582d391ce9c50b10c43155eb48ca65e3
     needs: [get_config_values, quality_checks]
     with:
       pinned_image: ${{ needs.get_config_values.outputs.pinned_image }}
@@ -80,7 +80,7 @@ jobs:
 
   tag_release:
     name: Tag Release
-    uses: NHSDigital/eps-common-workflows/.github/workflows/tag-release-devcontainer.yml@aea-5986-add-pypi-publish-to-tag-release-devcontainer-workflow
+    uses: NHSDigital/eps-common-workflows/.github/workflows/tag-release-devcontainer.yml@cd3cf9fa582d391ce9c50b10c43155eb48ca65e3
     needs: [build, get_config_values, get_pypi_token]
     with:
       pinned_image: ${{ needs.get_config_values.outputs.pinned_image }}

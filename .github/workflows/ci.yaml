@@ -7,14 +7,14 @@ on:
 
 jobs:
   get_config_values:
-    uses: NHSDigital/eps-common-workflows/.github/workflows/get-repo-config.yml@e208462679dedaded1e066c25c9830b9c0bf1930
+    uses: NHSDigital/eps-common-workflows/.github/workflows/get-repo-config.yml@cd3cf9fa582d391ce9c50b10c43155eb48ca65e3
     with:
       verify_published_from_main_image: true
 
   quality_checks:
     name: Quality Checks
     needs: get_config_values
-    uses: NHSDigital/eps-common-workflows/.github/workflows/quality-checks-devcontainer.yml@e208462679dedaded1e066c25c9830b9c0bf1930
+    uses: NHSDigital/eps-common-workflows/.github/workflows/quality-checks-devcontainer.yml@cd3cf9fa582d391ce9c50b10c43155eb48ca65e3
     with:
       pinned_image: ${{ needs.get_config_values.outputs.pinned_image }}
     secrets:
