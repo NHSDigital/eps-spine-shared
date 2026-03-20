@@ -37,12 +37,12 @@ class ValidationError(Exception):
     information to be appended to the error response text.
     """
 
-    def __init__(self, supplementaryInfo):
+    def __init__(self, supplementary_info):
         """
         Add supplementary information
         """
-        super(ValidationError, self).__init__(supplementaryInfo)
-        self.suppInfo = supplementaryInfo
+        super(ValidationError, self).__init__(supplementary_info)
+        self.suppInfo = supplementary_info
 
 
 if on_spine:
