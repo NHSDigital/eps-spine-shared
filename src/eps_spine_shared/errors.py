@@ -25,13 +25,24 @@ try:
     from spinecore.prescriptions.common.errors.errorbase1722 import (  # pyright: ignore[reportMissingImports]
         ErrorBase1722,
     )
-    from spinecore.prescriptions.common.local_validator import (  # pyright: ignore[reportMissingImports]
-        ValidationError,
-    )
 
     on_spine = True
 except ImportError:
     pass
+
+
+class ValidationError(Exception):
+    """
+    Exception to be raised by a validation method - needs to be passed supplementary
+    information to be appended to the error response text.
+    """
+
+    def __init__(self, supplementary_info):
+        """
+        Add supplementary information
+        """
+        super(ValidationError, self).__init__(supplementary_info)
+        self.suppInfo = supplementary_info
 
 
 if on_spine:
