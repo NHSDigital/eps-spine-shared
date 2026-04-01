@@ -137,14 +137,14 @@ def prepare_document_for_store(
         presc_id, doc_type, context, services_dict, deep_copy, internal_id, log_object
     )
     document_to_store["index"] = create_index_for_document(context, doc_ref_title, presc_id)
-    document_to_store["vectorClock"] = None
+    document_to_store["inDatastore"] = False
     context.documentsToStore.append(document_to_store)
     context.documentReferences.append(document_ref)
 
     log_object.write_log(
         "EPS0125",
         None,
-        {"internalID": internal_id, "type": doc_type, "key": document_ref, "vectorClock": "None"},
+        {"internalID": internal_id, "type": doc_type, "key": document_ref, "inDatastore": False},
     )
 
 
@@ -316,9 +316,8 @@ def prepare_record_for_store(
     4 - Set the index (including calculation of nextActivity)
     5 - Set the value (from the epsRecord object)
 
-    fetched_record indicates whether the recordToStore is based on one retrieved by
-    this interactionWorker process.  If it is, there will be a vectorClock, which
-    is required in order for the updateApplier to use as an optimistic 'lock'
+    fetchedRecord indicates whether the recordToStore is based on one retrieved by
+    this interactionWorker process. If it is, the inDatastore attribute will be True
 
     key if passed will be used as the key to be stored (otherwise generate from
     context.prescriptionID)
@@ -346,9 +345,9 @@ def prepare_record_for_store(
     context.recordToStore["value"] = context.epsRecord.return_record_to_be_stored()
 
     if fetched_record:
-        context.recordToStore["vectorClock"] = context.recordToProcess["vectorClock"]
+        context.recordToStore["inDatastore"] = context.recordToProcess["inDatastore"]
     else:
-        context.recordToStore["vectorClock"] = None
+        context.recordToStore["inDatastore"] = False
 
     context.recordToStore["recordType"] = context.epsRecord.record_type
 
@@ -359,7 +358,7 @@ def prepare_record_for_store(
             "internalID": internal_id,
             "type": "prescriptionRecord",
             "key": context.recordToStore["key"],
-            "vectorClock": "None",
+            "inDatastore": context.recordToStore["inDatastore"],
         },
     )
 
@@ -445,7 +444,7 @@ def apply_record_change_to_store(
         log_object.write_log("EPS0920", None, {"internalID": internal_id})
         return
 
-    if not record_to_store["vectorClock"]:
+    if not record_to_store["inDatastore"]:
         apply_blind_update(record_to_store, "epsRecord", internal_id, log_object, datastore_object)
     else:
         apply_smart_update(

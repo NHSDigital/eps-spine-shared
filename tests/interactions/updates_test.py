@@ -119,7 +119,7 @@ class SmartUpdateTest(DynamoDbTest):
         self.datastore.insert_eps_record_object(self.internal_id, prescription_id, record)
 
         record["SCN"] += 1
-        object_to_store = {"key": prescription_id, "value": record, "vectorClock": None}
+        object_to_store = {"key": prescription_id, "value": record, "inDatastore": False}
 
         apply_smart_update(object_to_store, 0, self.internal_id, self.logger, self.datastore)
 
@@ -141,7 +141,7 @@ class SmartUpdateTest(DynamoDbTest):
         record["SCN"] = 5
         self.datastore.insert_eps_record_object(self.internal_id, prescription_id, record)
 
-        object_to_store = {"key": prescription_id, "value": record, "vectorClock": None}
+        object_to_store = {"key": prescription_id, "value": record, "inDatastore": False}
 
         apply_smart_update(object_to_store, 0, self.internal_id, self.logger, self.datastore)
 
@@ -164,7 +164,7 @@ class SmartUpdateTest(DynamoDbTest):
         record["SCN"] = 0
         self.datastore.insert_eps_record_object(self.internal_id, prescription_id, record)
 
-        object_to_store = {"key": prescription_id, "value": record, "vectorClock": None}
+        object_to_store = {"key": prescription_id, "value": record, "inDatastore": False}
 
         apply_smart_update(object_to_store, 0, self.internal_id, self.logger, self.datastore)
 
@@ -205,7 +205,7 @@ class SmartUpdateTest(DynamoDbTest):
 
         # Update record
         record["SCN"] += 1
-        object_to_store = {"key": prescription_id, "value": record, "vectorClock": None}
+        object_to_store = {"key": prescription_id, "value": record, "inDatastore": False}
 
         def throw_data_store_error(*_, is_update=None):
             raise EpsDataStoreError(

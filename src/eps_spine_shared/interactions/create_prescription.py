@@ -168,11 +168,11 @@ def check_existing_record_real(eps_record_id, context, internal_id, log_object: 
     Presence of cancellation placeholder has already been confirmed, so now retrieve
     the pending cancellation for processing so that the new prescription may overwrite it.
     """
-    vector_clock = context.recordToProcess["vectorClock"]
+    in_datastore = context.recordToProcess["inDatastore"]
     log_object.write_log(
         "EPS0139",
         None,
-        {"internalID": internal_id, "key": eps_record_id, "vectorClock": vector_clock},
+        {"internalID": internal_id, "key": eps_record_id, "inDatastore": in_datastore},
     )
 
     build_working_record(context, internal_id, log_object)

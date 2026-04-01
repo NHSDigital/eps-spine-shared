@@ -132,7 +132,7 @@ class EpsDynamoDbDataStoreTest(DynamoDbTest):
             self.internal_id, prescription_id
         )
 
-        expected_record = {"value": record, "vectorClock": "vc", "releaseVersion": "R2"}
+        expected_record = {"value": record, "inDatastore": True, "releaseVersion": "R2"}
 
         self.assertEqual(expected_record, returned_record)
         self.assertEqual(type(returned_record["value"]["prescription"]["daysSupply"]), int)
@@ -150,7 +150,7 @@ class EpsDynamoDbDataStoreTest(DynamoDbTest):
 
         returned_record = self.datastore.return_record_for_update(self.internal_id, prescription_id)
 
-        expected_record = {"value": record, "vectorClock": "vc", "releaseVersion": "R2"}
+        expected_record = {"value": record, "inDatastore": True, "releaseVersion": "R2"}
 
         self.assertEqual(expected_record, returned_record)
         self.assertEqual(record, self.datastore.dataObject)
@@ -172,7 +172,7 @@ class EpsDynamoDbDataStoreTest(DynamoDbTest):
 
         updated_record = self.datastore.return_record_for_process(self.internal_id, prescription_id)
 
-        expected_record = {"value": record, "vectorClock": "vc", "releaseVersion": "R2"}
+        expected_record = {"value": record, "inDatastore": True, "releaseVersion": "R2"}
 
         self.assertEqual(expected_record, updated_record)
 
@@ -201,7 +201,7 @@ class EpsDynamoDbDataStoreTest(DynamoDbTest):
 
         updated_record = self.datastore.return_record_for_process(self.internal_id, prescription_id)
 
-        expected_record = {"value": record, "vectorClock": "vc", "releaseVersion": "R2"}
+        expected_record = {"value": record, "inDatastore": True, "releaseVersion": "R2"}
 
         self.assertEqual(expected_record, updated_record)
 
