@@ -193,6 +193,13 @@ def check_existing_record_real(eps_record_id, context, internal_id, log_object: 
     return True
 
 
+def is_fetched_record(context):
+    """
+    Is this a fetched record (i.e. already exists in the datastore)
+    """
+    return context.fetchedRecord
+
+
 def create_initial_record(context, internal_id, log_object: EpsLogger):
     """
     Create a Prescriptions Record object, and set all initial values
@@ -255,5 +262,5 @@ def prescriptions_workflow(
     create_initial_record(context, internal_id, log_object)
     log_pending_cancellation_events(context, internal_id, log_object)
     create_event_log(context, internal_id, log_object)
-    prepare_record_for_store(context, internal_id, log_object)
+    prepare_record_for_store(context, internal_id, log_object, is_fetched_record(context))
     apply_updates(context, failure_count, internal_id, log_object, datastore_object)

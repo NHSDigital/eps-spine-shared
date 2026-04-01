@@ -316,7 +316,7 @@ def prepare_record_for_store(
     4 - Set the index (including calculation of nextActivity)
     5 - Set the value (from the epsRecord object)
 
-    fetchedRecord indicates whether the recordToStore is based on one retrieved by
+    fetched_record indicates whether the recordToStore is based on one retrieved by
     this interactionWorker process. If it is, the inDatastore attribute will be True
 
     key if passed will be used as the key to be stored (otherwise generate from
