@@ -442,7 +442,7 @@ class EpsDynamoDbDataStore:
         """
         replace_decimals(body)
 
-        record = {"value": body, "vectorClock": "vc"}
+        record = {"value": body, "inDatastore": True}
 
         if record_type := item.get("recordType"):
             record["recordType"] = record_type

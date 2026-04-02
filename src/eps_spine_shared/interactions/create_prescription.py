@@ -168,11 +168,11 @@ def check_existing_record_real(eps_record_id, context, internal_id, log_object: 
     Presence of cancellation placeholder has already been confirmed, so now retrieve
     the pending cancellation for processing so that the new prescription may overwrite it.
     """
-    vector_clock = context.recordToProcess["vectorClock"]
+    in_datastore = context.recordToProcess["inDatastore"]
     log_object.write_log(
         "EPS0139",
         None,
-        {"internalID": internal_id, "key": eps_record_id, "vectorClock": vector_clock},
+        {"internalID": internal_id, "key": eps_record_id, "inDatastore": in_datastore},
     )
 
     build_working_record(context, internal_id, log_object)
@@ -191,6 +191,13 @@ def check_existing_record_real(eps_record_id, context, internal_id, log_object: 
     context.cancellationPlaceholderFound = True
     context.fetchedRecord = True
     return True
+
+
+def is_fetched_record(context):
+    """
+    Is this a fetched record (i.e. already exists in the datastore)
+    """
+    return context.fetchedRecord
 
 
 def create_initial_record(context, internal_id, log_object: EpsLogger):
@@ -255,5 +262,5 @@ def prescriptions_workflow(
     create_initial_record(context, internal_id, log_object)
     log_pending_cancellation_events(context, internal_id, log_object)
     create_event_log(context, internal_id, log_object)
-    prepare_record_for_store(context, internal_id, log_object)
+    prepare_record_for_store(context, internal_id, log_object, is_fetched_record(context))
     apply_updates(context, failure_count, internal_id, log_object, datastore_object)

@@ -77,7 +77,7 @@ def apply_smart_update(
                 "key": key,
                 "scn": scn,
                 "errorCode": e.error_topic,
-                "vectorClock": object_to_store["vectorClock"],
+                "inDatastore": object_to_store["inDatastore"],
             },
         )
 
@@ -90,7 +90,7 @@ def apply_smart_update(
             "internalID": internal_id,
             "key": key,
             "scn": scn,
-            "vectorClock": object_to_store["vectorClock"],
+            "inDatastore": object_to_store["inDatastore"],
         },
     )
 
