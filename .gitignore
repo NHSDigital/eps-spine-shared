@@ -26,3 +26,4 @@ __pycache__/
 
 # Temp
 agents.md
+.sbom/

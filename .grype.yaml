@@ -1,0 +1,5 @@
+ignore:
+  # urllib3 - fixed to older version to match spine
+  - vulnerability: GHSA-gm62-xv2j-4w53
+  - vulnerability: GHSA-2xpw-w6gg-jr37
+  - vulnerability: GHSA-38jv-5279-wg99
