@@ -67,6 +67,7 @@ jobs:
     permissions:
       id-token: write
       contents: write
+      packages: write
 
   dependabot_auto_approve_and_merge:
     name: Dependabot Auto Approve and Merge

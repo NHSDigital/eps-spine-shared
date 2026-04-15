@@ -46,6 +46,10 @@ jobs:
     name: Get Next Version Number for Poetry
     uses: NHSDigital/eps-common-workflows/.github/workflows/tag-release-devcontainer.yml@e798d5aee897de6f7dc387dd5623fcd9ba4c8929
     needs: [get_config_values, quality_checks]
+    permissions:
+      id-token: write
+      contents: write
+      packages: write
     with:
       pinned_image: ${{ needs.get_config_values.outputs.pinned_image }}
       branch_name: main
@@ -107,6 +111,6 @@ jobs:
     secrets:
       PYPI_TOKEN: ${{ needs.get_pypi_token.outputs.pypi_token }}
     permissions:
-      actions: write
-      contents: write
       id-token: write
+      contents: write
+      packages: write
