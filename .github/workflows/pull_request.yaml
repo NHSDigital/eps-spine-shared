@@ -6,6 +6,7 @@ on:
       - main
   workflow_dispatch:
 
+permissions: {}
 jobs:
   pr_title_format_check:
     name: PR Title Format Check
@@ -14,6 +15,10 @@ jobs:
       pull-requests: write
   get_config_values:
     uses: NHSDigital/eps-common-workflows/.github/workflows/get-repo-config.yml@e798d5aee897de6f7dc387dd5623fcd9ba4c8929
+    permissions:
+      attestations: read
+      contents: read
+      packages: read
     with:
       verify_published_from_main_image: false
 
@@ -23,11 +28,14 @@ jobs:
     runs-on: ubuntu-22.04
     permissions:
       id-token: write
+      contents: read
     outputs:
       pypi_token: ${{ steps.get_pypi_token.outputs.pypi_token }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         name: Checkout source code
+        with:
+          persist-credentials: false
 
       - name: Get PyPI token
         id: get_pypi_token
@@ -36,7 +44,11 @@ jobs:
   quality_checks:
     name: Quality Checks
     needs: get_config_values
-    uses: NHSDigital/eps-common-workflows/.github/workflows/quality-checks-devcontainer.yml@5ac2707dd9cd60ad127275179495b9c890d74711
+    uses: NHSDigital/eps-common-workflows/.github/workflows/quality-checks-devcontainer.yml@e798d5aee897de6f7dc387dd5623fcd9ba4c8929
+    permissions:
+      contents: read
+      id-token: write
+      packages: read
     with:
       pinned_image: ${{ needs.get_config_values.outputs.pinned_image }}
     secrets:
@@ -45,7 +57,7 @@ jobs:
   tag_release:
     name: Tag Release (Dry Run)
     needs: [get_config_values, get_pypi_token]
-    uses: NHSDigital/eps-common-workflows/.github/workflows/tag-release-devcontainer.yml@5ac2707dd9cd60ad127275179495b9c890d74711
+    uses: NHSDigital/eps-common-workflows/.github/workflows/tag-release-devcontainer.yml@e798d5aee897de6f7dc387dd5623fcd9ba4c8929
     with:
       pinned_image: ${{ needs.get_config_values.outputs.pinned_image }}
       branch_name: ${{ github.event.pull_request.head.ref }}
@@ -56,6 +68,7 @@ jobs:
     permissions:
       id-token: write
       contents: write
+      packages: write
 
   dependabot_auto_approve_and_merge:
     name: Dependabot Auto Approve and Merge

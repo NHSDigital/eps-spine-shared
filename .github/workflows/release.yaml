@@ -2,6 +2,7 @@ name: Release
 
 on:
   workflow_dispatch:
+permissions: {}
 
 jobs:
   get_pypi_token:
@@ -9,23 +10,34 @@ jobs:
     runs-on: ubuntu-22.04
     permissions:
       id-token: write
+      contents: read
     outputs:
       pypi_token: ${{ steps.get_pypi_token.outputs.pypi_token }}
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
         name: Checkout source code
+        with:
+          persist-credentials: false
 
       - name: Get PyPI token
         id: get_pypi_token
         uses: ./.github/actions/get_pypi_token
   get_config_values:
     uses: NHSDigital/eps-common-workflows/.github/workflows/get-repo-config.yml@e798d5aee897de6f7dc387dd5623fcd9ba4c8929
+    permissions:
+      attestations: read
+      contents: read
+      packages: read
     with:
       verify_published_from_main_image: false
   quality_checks:
     name: Quality Checks
     needs: get_config_values
-    uses: NHSDigital/eps-common-workflows/.github/workflows/quality-checks-devcontainer.yml@5ac2707dd9cd60ad127275179495b9c890d74711
+    uses: NHSDigital/eps-common-workflows/.github/workflows/quality-checks-devcontainer.yml@e798d5aee897de6f7dc387dd5623fcd9ba4c8929
+    permissions:
+      contents: read
+      id-token: write
+      packages: read
     with:
       pinned_image: ${{ needs.get_config_values.outputs.pinned_image }}
     secrets:
@@ -33,8 +45,12 @@ jobs:
 
   get_next_version:
     name: Get Next Version Number for Poetry
-    uses: NHSDigital/eps-common-workflows/.github/workflows/tag-release-devcontainer.yml@5ac2707dd9cd60ad127275179495b9c890d74711
+    uses: NHSDigital/eps-common-workflows/.github/workflows/tag-release-devcontainer.yml@e798d5aee897de6f7dc387dd5623fcd9ba4c8929
     needs: [get_config_values, quality_checks]
+    permissions:
+      id-token: write
+      contents: write
+      packages: write
     with:
       pinned_image: ${{ needs.get_config_values.outputs.pinned_image }}
       branch_name: main
@@ -43,6 +59,8 @@ jobs:
   build:
     name: Build Package and Upload as Artifact
     runs-on: ubuntu-22.04
+    permissions:
+      contents: read
     container:
       image: ${{ needs.get_config_values.outputs.pinned_image }}
       options: --user 1001:1001 --group-add 128
@@ -57,7 +75,9 @@ jobs:
         run: |
           cp /home/vscode/.tool-versions "$HOME/.tool-versions"
       - name: Git checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        with:
+          persist-credentials: false
       - name: make install
         run: |
           make install
@@ -80,7 +100,7 @@ jobs:
 
   tag_release:
     name: Tag Release
-    uses: NHSDigital/eps-common-workflows/.github/workflows/tag-release-devcontainer.yml@5ac2707dd9cd60ad127275179495b9c890d74711
+    uses: NHSDigital/eps-common-workflows/.github/workflows/tag-release-devcontainer.yml@e798d5aee897de6f7dc387dd5623fcd9ba4c8929
     needs: [build, get_config_values, get_pypi_token]
     with:
       pinned_image: ${{ needs.get_config_values.outputs.pinned_image }}
@@ -94,6 +114,6 @@ jobs:
     secrets:
       PYPI_TOKEN: ${{ needs.get_pypi_token.outputs.pypi_token }}
     permissions:
-      actions: write
-      contents: write
       id-token: write
+      contents: write
+      packages: write
