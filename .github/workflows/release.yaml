@@ -10,6 +10,7 @@ jobs:
     runs-on: ubuntu-22.04
     permissions:
       id-token: write
+      contents: read
     outputs:
       pypi_token: ${{ steps.get_pypi_token.outputs.pypi_token }}
     steps:
