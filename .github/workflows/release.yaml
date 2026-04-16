@@ -59,6 +59,8 @@ jobs:
   build:
     name: Build Package and Upload as Artifact
     runs-on: ubuntu-22.04
+    permissions:
+      contents: read
     container:
       image: ${{ needs.get_config_values.outputs.pinned_image }}
       options: --user 1001:1001 --group-add 128
