@@ -28,3 +28,38 @@ jobs:
       pinned_image: ${{ needs.get_config_values.outputs.pinned_image }}
     secrets:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+  get_pypi_token:
+    name: Get PyPI Token for Trusted Publishing
+    runs-on: ubuntu-22.04
+    environment: create_pull_request
+    permissions:
+      id-token: write
+      contents: read
+    outputs:
+      pypi_token: ${{ steps.get_pypi_token.outputs.pypi_token }}
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd
+        name: Checkout source code
+        with:
+          persist-credentials: false
+
+      - name: Get PyPI token
+        id: get_pypi_token
+        uses: ./.github/actions/get_pypi_token
+
+  tag_release:
+    name: Tag Release (Dry Run)
+    needs: [get_config_values, get_pypi_token]
+    uses: NHSDigital/eps-common-workflows/.github/workflows/tag-release-devcontainer.yml@e798d5aee897de6f7dc387dd5623fcd9ba4c8929
+    with:
+      pinned_image: ${{ needs.get_config_values.outputs.pinned_image }}
+      branch_name: main
+      dry_run: true
+      pypi_publish: true
+    secrets:
+      PYPI_TOKEN: ${{ needs.get_pypi_token.outputs.pypi_token }}
+    permissions:
+      id-token: write
+      contents: write
+      packages: write

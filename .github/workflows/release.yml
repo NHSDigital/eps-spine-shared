@@ -8,6 +8,7 @@ jobs:
   get_pypi_token:
     name: Get PyPI Token for Trusted Publishing
     runs-on: ubuntu-22.04
+    environment: create_pull_request
     permissions:
       id-token: write
       contents: read
