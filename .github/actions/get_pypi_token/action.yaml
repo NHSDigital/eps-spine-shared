@@ -15,22 +15,39 @@ runs:
       run: |
         set -euo pipefail
 
-        oidc_resp=$(curl -sSf -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+        oidc_resp_and_status=$(curl -sS -w $'\n%{http_code}' \
+          -H "Authorization: bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
           "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=pypi")
+        oidc_status=${oidc_resp_and_status##*$'\n'}
+        oidc_resp=${oidc_resp_and_status%$'\n'*}
 
-        if ! oidc_token=$(jq -er '.value' <<< "${oidc_resp}"); then
-          echo "Failed to retrieve OIDC token from GitHub. Response:"
-          echo "${oidc_resp}" | jq .
+        if [[ "${oidc_status}" -lt 200 || "${oidc_status}" -ge 300 ]]; then
+          echo "Failed to retrieve OIDC token from GitHub (HTTP ${oidc_status}). Response:"
+          echo "${oidc_resp}" | jq . 2>/dev/null || echo "${oidc_resp}"
           exit 1
         fi
 
-        api_resp=$(curl -sSf -X POST "https://pypi.org/_/oidc/mint-token" \
+        if ! oidc_token=$(jq -er '.value' <<< "${oidc_resp}"); then
+          echo "Failed to retrieve OIDC token from GitHub. Response:"
+          echo "${oidc_resp}" | jq . 2>/dev/null || echo "${oidc_resp}"
+          exit 1
+        fi
+
+        api_resp_and_status=$(curl -sS -w $'\n%{http_code}' -X POST "https://pypi.org/_/oidc/mint-token" \
           -H "Content-Type: application/json" \
           --data "{\"token\":\"${oidc_token}\"}")
+        api_status=${api_resp_and_status##*$'\n'}
+        api_resp=${api_resp_and_status%$'\n'*}
+
+        if [[ "${api_status}" -lt 200 || "${api_status}" -ge 300 ]]; then
+          echo "Failed to exchange OIDC token for a PyPI API token (HTTP ${api_status}). Response:"
+          echo "${api_resp}" | jq . 2>/dev/null || echo "${api_resp}"
+          exit 1
+        fi
 
         if ! pypi_token=$(jq -er '.token' <<< "${api_resp}"); then
           echo "Failed to exchange OIDC token for a PyPI API token. Response:"
-          echo "${api_resp}" | jq .
+          echo "${api_resp}" | jq . 2>/dev/null || echo "${api_resp}"
           exit 1
         fi
 

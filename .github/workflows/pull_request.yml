@@ -1,12 +1,17 @@
-name: CI
+name: Pull Request
 
 on:
-  push:
+  pull_request:
     branches:
       - main
-permissions: {}
 
+permissions: {}
 jobs:
+  pr_title_format_check:
+    name: PR Title Format Check
+    uses: NHSDigital/eps-common-workflows/.github/workflows/pr_title_check.yml@e798d5aee897de6f7dc387dd5623fcd9ba4c8929
+    permissions:
+      pull-requests: write
   get_config_values:
     uses: NHSDigital/eps-common-workflows/.github/workflows/get-repo-config.yml@e798d5aee897de6f7dc387dd5623fcd9ba4c8929
     permissions:
@@ -14,7 +19,7 @@ jobs:
       contents: read
       packages: read
     with:
-      verify_published_from_main_image: true
+      verify_published_from_main_image: false
 
   quality_checks:
     name: Quality Checks
