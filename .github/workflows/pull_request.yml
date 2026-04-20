@@ -70,13 +70,3 @@ jobs:
       contents: write
       packages: write
 
-  dependabot_auto_approve_and_merge:
-    name: Dependabot Auto Approve and Merge
-    needs: quality_checks
-    uses: NHSDigital/eps-common-workflows/.github/workflows/dependabot-auto-approve-and-merge.yml@e798d5aee897de6f7dc387dd5623fcd9ba4c8929
-    permissions:
-      contents: write
-      pull-requests: write
-    secrets:
-      AUTOMERGE_APP_ID: ${{ secrets.AUTOMERGE_APP_ID }}
-      AUTOMERGE_PEM: ${{ secrets.AUTOMERGE_PEM }}
