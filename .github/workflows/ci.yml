@@ -19,7 +19,7 @@ jobs:
   quality_checks:
     name: Quality Checks
     needs: get_config_values
-    uses: NHSDigital/eps-common-workflows/.github/workflows/quality-checks-devcontainer.yml@8399c1f015c1304e40771cbd8ccc24c7ed48fdbc
+    uses: NHSDigital/eps-common-workflows/.github/workflows/quality-checks-devcontainer.yml@ba4bcd7fa2367cc44c9078adb96a654236d3691a
     permissions:
       contents: read
       id-token: write
