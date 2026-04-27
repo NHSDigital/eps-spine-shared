@@ -9,7 +9,7 @@ permissions: {}
 jobs:
   pr_title_format_check:
     name: PR Title Format Check
-    uses: NHSDigital/eps-common-workflows/.github/workflows/pr_title_check.yml@e798d5aee897de6f7dc387dd5623fcd9ba4c8929
+    uses: NHSDigital/eps-common-workflows/.github/workflows/pr_title_check.yml@ba4bcd7fa2367cc44c9078adb96a654236d3691a
     permissions:
       pull-requests: write
   get_config_values:
