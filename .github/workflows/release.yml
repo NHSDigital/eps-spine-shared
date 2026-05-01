@@ -26,7 +26,7 @@ jobs:
         id: get_pypi_token
         uses: ./.github/actions/get_pypi_token
   get_config_values:
-    uses: NHSDigital/eps-common-workflows/.github/workflows/get-repo-config.yml@ba4bcd7fa2367cc44c9078adb96a654236d3691a
+    uses: NHSDigital/eps-common-workflows/.github/workflows/get-repo-config.yml@889349f9d93e4846a642f7973b7c26b180bec5aa
     permissions:
       attestations: read
       contents: read
